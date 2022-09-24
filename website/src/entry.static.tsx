@@ -5,6 +5,6 @@ import { join } from "path";
 
 // Execute Qwik City Static Site Generator
 qwikCityGenerate(render, {
-    origin: "https://qwik.builder.io",
+    origin: "https://faxer.heav.fr",
     outDir: join(fileURLToPath(import.meta.url), "..", "..", "dist"),
 });
