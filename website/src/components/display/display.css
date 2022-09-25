@@ -1,0 +1,25 @@
+
+.display {
+    position: relative;
+    display: block;
+    font-size: 1.25em;
+    font-family: "DSEG14-Classic";
+    font-weight: bold;
+    white-space: nowrap;
+
+    background-color: var(--main-8);
+    padding: 10px;
+    padding-left: 15px;
+    padding-right: 15px;
+    border-radius: 5px;
+}
+.display::before {
+    content: var(--placeholder);
+
+    opacity: 0.1;
+    position: absolute;
+    left: 15px;
+    top: 10px;
+    bottom: 10px;
+}
+

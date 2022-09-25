@@ -1,0 +1,41 @@
+@font-face {
+    font-family: "DSEG14-Classic";
+    src: url("/DSEG14-Classic/DSEG14Classic-Regular.woff") format("woff");
+}
+
+.machine * {
+    box-sizing: border-box;
+}
+
+.machine::before {
+    content: "";
+    --height: 70px;
+
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+
+    position: absolute;
+    top: calc(var(--height) * -1);
+    left: 60px;
+    right: 60px;
+    height: var(--height);
+
+    display: block;
+    /* Put the peper bank under the machine */
+    transform: translateZ(-10px);
+
+    background-color: var(--main-9);
+}
+
+.machine {
+    transform-style: preserve-3d;
+    position: relative;
+    color: white;
+
+    background-color: var(--main-7);
+    height: 300px;
+    width: calc(min(500px, 100%));
+    border-radius: 5px;
+
+    padding: 20px;
+}
