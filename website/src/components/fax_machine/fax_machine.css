@@ -30,12 +30,48 @@
 .machine {
     transform-style: preserve-3d;
     position: relative;
-    color: white;
 
+    color: white;
     background-color: var(--main-7);
-    height: 300px;
+
+    display: flex;
+    flex-direction: column;
+
     width: calc(min(500px, 100%));
     border-radius: 5px;
-
     padding: 20px;
+    gap: 25px;
+}
+
+.machine, .machine::before {
+    box-shadow: 0px 5px 20px 3px rgba(0, 0, 0, 0.3);
+}
+
+.machine .lower_part {
+    display: flex;
+    flex-direction: row;
+    flex-grow: 1;
+}
+
+.machine .keyboard {
+    height: 100%;
+    display: grid;
+    gap: 12px;
+    column-gap: 9px;
+
+    grid-template-columns: 1fr 1fr 1fr;
+    align-items: center;
+    align-content: end;
+}
+
+.machine button {
+    min-width: 50px;
+    height: 30px;
+}
+
+.machine .lower_part>div:nth-child(2) {
+}
+
+.machine .send-button {
+    width: 200px;
 }

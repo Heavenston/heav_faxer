@@ -1,0 +1,61 @@
+:root {
+    --button-default-offset: 6px;
+    --button-hover-offset: 4px;
+    --button-selected-offset: 4.5px;
+    --button-pressed-offset: 0px;
+}
+
+button {
+    --offset: var(--button-default-offset);
+
+    position: relative;
+
+    border-radius: 9px;
+    border: none;
+    padding: 0;
+    margin: 0;
+    color: white;
+    cursor: pointer;
+    background-color: var(--main-9);
+
+    box-shadow: 0px calc(var(--offset)) calc(var(--offset)) 0px rgba(0, 0, 0, 0.3);
+    transition: box-shadow 100ms linear;
+}
+
+button>span {
+    border-radius: 8px;
+    background-color: var(--main-8);
+
+    padding: 4px;
+    padding-left: 7px;
+    padding-right: 7px;
+    margin: 0;
+    width: 100%;
+    height: 100%;
+    transform: translateY(calc(var(--offset) * -1));
+
+    transition: transform 100ms linear;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+button>span>span {
+    font-size: 0.7em;
+}
+
+button:focus {
+    --offset: var(--button-selected-offset);
+}
+
+button:hover {
+    --offset: var(--button-hover-offset);
+}
+
+button:active {
+    --offset: var(--button-pressed-offset);
+}
+
+
