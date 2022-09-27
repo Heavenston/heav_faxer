@@ -54,7 +54,7 @@ export default component$(() => {
             setTimeout(() => {
                 document.body.removeChild(floating_paper);
                 prevent_drawer_close.count -= 1;
-            }, 300);
+            }, 500);
         };
     });
 
