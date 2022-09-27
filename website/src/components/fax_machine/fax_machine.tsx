@@ -4,17 +4,22 @@ import styles from "./fax_machine.scss?inline";
 import Display from "~/components/display/display";
 import Button from "~/components/button/button";
 
+export const num_pad_data: [number | string, string?][] = [
+    [1],   [2, "ABC"], [3, "DEF"],
+    [4],   [5, "ABC"], [6, "DEF"],
+    [7],   [8, "ABC"], [9, "DEF"],
+    ["A"], [0],        ["B"],
+];
+
 export default component$(() => {
     useStylesScoped$(styles);
+
     return (
         <div class="machine">
             <Display text="ABCDEFGHIJKLMNOPQRSTUVWXYZ l'alphabet est" />
             <div class="lower_part">
                 <div class="keyboard">
-                    <Button>1 </Button> <Button>2 <span>ABC</span></Button> <Button>3 <span>DEF</span></Button>
-                    <Button>4 <span>GHI</span></Button> <Button>5 <span>JKL</span></Button> <Button>6 <span>MNO</span></Button>
-                    <Button>7 <span>PQRS</span></Button> <Button>8 <span>TUV</span></Button> <Button>9 <span>WXYZ</span></Button>
-                    <Button>A </Button> <Button>0 </Button> <Button>B</Button>
+                    {num_pad_data.map(([n, a]) => <Button>{n} {a ?? <span>{a}</span>}</Button>)}
                 </div>
                 <div>
                     <Button class="send-button">Send</Button>

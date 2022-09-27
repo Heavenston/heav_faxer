@@ -18,10 +18,6 @@
     padding: 20px;
     gap: 25px;
 
-    * {
-        box-sizing: border-box;
-    }
-
     &::before {
         content: "";
         --height: 70px;
@@ -79,9 +75,8 @@
         align-content: end;
     }
 
-    button {
+    :global(button) {
         min-width: 50px;
         height: 30px;
     }
-
 }

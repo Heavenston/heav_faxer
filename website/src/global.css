@@ -17,6 +17,21 @@
     --main-7: #404040;
     --main-8: #262626;
     --main-9: #171717;
+
+    --button-default-offset: 6px;
+    --button-hover-offset: 3px;
+    --button-selected-offset: 4px;
+    --button-pressed-offset: 0px;
+
+    --button-shadow-color: rgba(0, 0, 0, 0.3);
+    --button-background-color: var(--main-8);
+    --button-foreground-color: var(--main-9);
+    --button-transition-duration: 100ms;
+    --button-transition-function: linear;
+}
+
+* {
+    box-sizing: border-box;
 }
 
 body, html {
