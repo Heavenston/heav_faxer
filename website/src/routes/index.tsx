@@ -1,14 +1,17 @@
-import { component$ } from "@builder.io/qwik";
+import { component$, useStylesScoped$ } from "@builder.io/qwik";
 import type { DocumentHead } from "@builder.io/qwik-city";
 
-import "./index.scss";
+import styles from "./index.scss?inline";
 import Machine from "~/components/fax_machine/fax_machine";
 import Drawer from "~/components/cabinet/cabinet";
 
 export default component$(() => {
+    useStylesScoped$(styles);
+
     return (
-        <div class="index-container center">
+        <div class="container">
             <Drawer />
+            <Machine />
         </div>
     );
 });
