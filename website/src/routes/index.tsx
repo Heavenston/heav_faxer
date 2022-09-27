@@ -3,7 +3,7 @@ import type { DocumentHead } from "@builder.io/qwik-city";
 
 import "./index.scss";
 import Machine from "~/components/fax_machine/fax_machine";
-import Drawer from "~/components/drawer/drawer";
+import Drawer from "~/components/cabinet/cabinet";
 
 export default component$(() => {
     return (

@@ -2,8 +2,6 @@ import { component$, useRef, useStyles$, useStylesScoped$, useClientEffect$, use
 import styles from "./paper.scss?inline";
 import globalStyles from "./paper_global.scss?inline";
 
-import { prevent_drawer_close_context  } from "./drawer";
-
 export function trunc(x: number): number {
     return Math.trunc(x * 10000) / 10000;
 }
@@ -19,8 +17,6 @@ export default component$(() => {
     });
     const ref = useRef<HTMLDivElement>();
 
-    const prevent_drawer_close = useContext(prevent_drawer_close_context);
-    
     useClientEffect$(({ track }) => {
         const element = track(ref, "current");
         if (element === undefined) return;
@@ -47,13 +43,10 @@ export default component$(() => {
         floating_paper.style.width = `${bcr.width}px`;
         floating_paper.style.setProperty("--rot", el.style.getPropertyValue("--rot"))
 
-        prevent_drawer_close.count += 1;
-
         return () => {
             floating_paper.classList.add("hide");
             setTimeout(() => {
                 document.body.removeChild(floating_paper);
-                prevent_drawer_close.count -= 1;
             }, 300);
         };
     });
