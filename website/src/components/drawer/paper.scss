@@ -7,7 +7,7 @@
     }
 
     box-shadow: 0 0 3px 3px rgba(0, 0, 0, 0.3);
-    transform: rotateZ(var(--rot)) translateX(var(--move));
+    transform: rotateZ(var(--rot)) translateX(var(--move)) translateY(-50%) rotateX(-25deg) translateY(50%);
 
     &::after {
         content: "";
@@ -16,7 +16,5 @@
         background: white;
         width: 100%;
         height: 100px;
-
-        transform: translateY(-50%) rotateX(-20deg) translateY(50%);
     }
 }
