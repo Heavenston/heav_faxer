@@ -1,7 +1,8 @@
 import { component$ } from "@builder.io/qwik";
 import type { DocumentHead } from "@builder.io/qwik-city";
 
-import "./index.css";
+import "./index.scss";
+import Machine from "~/components/fax_machine/fax_machine";
 import Drawer from "~/components/drawer/drawer";
 
 export default component$(() => {

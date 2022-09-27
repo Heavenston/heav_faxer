@@ -1,5 +1,5 @@
 import { component$, useRef, useStyles$, useClientEffect$, useStore, useWatch$ } from "@builder.io/qwik";
-import styles from "./display.css?inline";
+import styles from "./display.scss?inline";
 
 export default component$<{ text: string }>((props) => {
     useStyles$(styles);

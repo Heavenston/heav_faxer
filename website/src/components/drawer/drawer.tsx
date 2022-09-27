@@ -1,5 +1,5 @@
 import { component$, useRef, useStyles$, useClientEffect$, useStore, useWatch$ } from "@builder.io/qwik";
-import styles from "./drawer.css?inline";
+import styles from "./drawer.scss?inline";
 
 export default component$(() => {
     useStyles$(styles);

@@ -1,5 +1,5 @@
 import { $, component$, useRef, useOnWindow, useStyles$, useClientEffect$, useStore } from "@builder.io/qwik";
-import styles from "./fax_machine.css?inline";
+import styles from "./fax_machine.scss?inline";
 
 import Display from "~/components/display/display";
 import Button from "~/components/button/button";
