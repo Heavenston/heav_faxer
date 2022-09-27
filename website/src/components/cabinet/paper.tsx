@@ -46,6 +46,7 @@ export default component$(() => {
         floating_paper.style.top = `${bcr.top}px`;
         floating_paper.style.width = `${bcr.width}px`;
         floating_paper.style.setProperty("--rot", el.style.getPropertyValue("--rot"))
+        floating_paper.style.zIndex = `${Math.trunc(bcr.y / 10)}`;
 
         prevent_drawer_close.count += 1;
 
