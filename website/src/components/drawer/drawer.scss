@@ -19,7 +19,12 @@ $animation_duration: 300ms;
 
     border-radius: 30px;
 
-    &>div {
+    &>* {
+        border: none;
+        margin: 0;
+        padding: 0;
+        background: transparent;
+
         position: relative;
         cursor: pointer;
 
@@ -28,7 +33,7 @@ $animation_duration: 300ms;
 
         border-radius: 12px;
         &::after {
-            content: "";
+            content: var(--label);
             position: absolute;
             top: 0; right: 0; left: 0; bottom: 0;
 
@@ -38,6 +43,12 @@ $animation_duration: 300ms;
             transition: transform $animation_duration ease-in-out, box-shadow $animation_duration ease-in-out;
             transform: translateZ(0);
             box-shadow: 0px 0px 0px 0px rgba(0, 0, 0, 0);
+
+            color: white;
+            font-size: 2.4em;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
         &::before {
             content: "";
@@ -57,6 +68,19 @@ $animation_duration: 300ms;
             transition: clip-path $animation_duration ease-in-out;
         }
 
+        &:focus {
+            outline: none;
+
+            &::after {
+                transform: translateZ(30px);
+                box-shadow: 0px calc(10px * 0.3) calc(40px * 0.3) 0px rgba(0, 0, 0, 0.3);
+            }
+
+            &::before {
+                clip-path: inset(0 0 calc(66%) 0);
+            }
+        }
+
         &:hover {
             &::after {
                 transform: translateZ(90px);
@@ -65,10 +89,6 @@ $animation_duration: 300ms;
 
             &::before {
                 clip-path: inset(0 0 0 0);
-            }
-
-            .bar {
-                height: 113px;
             }
         }
     }

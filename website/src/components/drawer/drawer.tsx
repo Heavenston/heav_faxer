@@ -5,9 +5,11 @@ export default component$(() => {
     useStyles$(styles);
 
     return <div class="drawer">
-        <div>
-        </div>
-        <div>
-        </div>
+        <button tabIndex={2} style="--label: 'Files';">
+            <span style="display: none;">Files</span>
+        </button>
+        <button tabIndex={1} style="--label: 'Links';">
+            <span style="display: none;">Links</span>
+        </button>
     </div>;
 });
