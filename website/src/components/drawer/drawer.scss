@@ -1,7 +1,8 @@
+$animation_duration: 300ms;
 
 .drawer {
     * {
-        transform-style: preserve-3d;
+        transform-style:flat;
         perspective: 1000px;
         perspective-origin: center -1000px;
     }
@@ -11,10 +12,12 @@
     width: 350px;
 
     background-color: var(--main-9);
-    padding: 19px;
-    gap: 25px;
+    padding: 30px;
+    padding-top: 36px;
+    padding-bottom: 36px;
+    gap: 30px;
 
-    border-radius: 10px;
+    border-radius: 30px;
 
     &>div {
         position: relative;
@@ -24,47 +27,44 @@
         height: 300px;
 
         border-radius: 12px;
-        background-color: var(--main-5);
-
         &::after {
+            content: "";
             position: absolute;
             top: 0; right: 0; left: 0; bottom: 0;
 
-            content: "";
-            border-radius: 12px;
+            border-radius: inherit;
             background-color: var(--main-7);
 
-            transition: transform 300ms ease-in-out, box-shadow 300ms ease-in-out;
+            transition: transform $animation_duration ease-in-out, box-shadow $animation_duration ease-in-out;
             transform: translateZ(0);
             box-shadow: 0px 0px 0px 0px rgba(0, 0, 0, 0);
         }
-
-        .bar {
-            background-color: var(--main-7);
-            transition: height 300ms ease-in-out;
-
+        &::before {
+            content: "";
             position: absolute;
-            top: 0;
-            width: 10px;
-            height: 0px;
-        }
-        .left-bar {
-            transform: translateY(-50%) rotateZ(7deg) translateY(50%);
+            top: 0; right: 3px; left: 3px;
 
-            border-top-left-radius: 12px;
-            left: 0px;
-        }
-        .right-bar {
-            transform: translateY(-50%) rotateZ(-7deg) translateY(50%);
+            border-radius: inherit;
+            background-color: var(--main-5);
 
-            border-top-right-radius: 12px;
-            right: 0px;
+            border-left: 10px solid var(--main-7);
+            border-right: 10px solid var(--main-7);
+
+            height: 100px;
+            transform: translateY(-50%) rotateX(89deg) translateY(50%);
+
+            clip-path: inset(0 0 calc(100% - 10px) 0);
+            transition: clip-path $animation_duration ease-in-out;
         }
 
         &:hover {
             &::after {
                 transform: translateZ(90px);
                 box-shadow: 0px 10px 40px 0px rgba(0, 0, 0, 0.3);
+            }
+
+            &::before {
+                clip-path: inset(0 0 0 0);
             }
 
             .bar {
