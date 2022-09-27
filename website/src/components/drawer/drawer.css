@@ -1,4 +1,21 @@
 
 .drawer {
+    display: flex;
+    flex-direction: column;
+    width: 350px;
 
+    background-color: var(--main-9);
+    padding: 19px;
+    gap: 25px;
+
+    border-radius: 10px;
 }
+
+.drawer>div {
+    flex-grow: 1;
+    height: 300px;
+
+    border-radius: 12px;
+    background-color: var(--main-7);
+}
+
