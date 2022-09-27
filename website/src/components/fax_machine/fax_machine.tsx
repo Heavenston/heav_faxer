@@ -1,11 +1,11 @@
-import { $, component$, useRef, useOnWindow, useStyles$, useClientEffect$, useStore } from "@builder.io/qwik";
+import { $, component$, useRef, useOnWindow, useStylesScoped$, useClientEffect$, useStore } from "@builder.io/qwik";
 import styles from "./fax_machine.scss?inline";
 
 import Display from "~/components/display/display";
 import Button from "~/components/button/button";
 
 export default component$(() => {
-    useStyles$(styles);
+    useStylesScoped$(styles);
     return (
         <div class="machine">
             <Display text="ABCDEFGHIJKLMNOPQRSTUVWXYZ l'alphabet est" />

@@ -1,8 +1,8 @@
-import { component$, useRef, useStyles$, useClientEffect$, useStore, useWatch$ } from "@builder.io/qwik";
+import { component$, useRef, useStylesScoped$, useClientEffect$, useStore, useWatch$ } from "@builder.io/qwik";
 import styles from "./display.scss?inline";
 
 export default component$<{ text: string }>((props) => {
-    useStyles$(styles);
+    useStylesScoped$(styles);
     const state = useStore({
         display_length: 25,
         text_to_display: "!",
