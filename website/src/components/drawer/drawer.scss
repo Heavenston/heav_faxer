@@ -15,6 +15,9 @@ $animation_duration: 300ms;
 
     background-color: var(--main-9);
     padding: 10px;
+    /*padding: 25px;
+    padding-top: 30px;
+    padding-bottom: 30px;*/
     gap: 30px;
 
     border-radius: 10px;
@@ -97,6 +100,32 @@ $animation_duration: 300ms;
 
             clip-path: inset(0 0 calc(100% - 10px) 0);
             transition: clip-path $animation_duration ease-in-out;
+
+            padding-left: 15px;
+            padding-right: 15px;
+
+            overflow: hidden;
+            &>div {
+                width: 100%;
+                height: 2px;
+
+                &:not(:last-child) {
+                    margin-bottom: 5px;
+                }
+
+                box-shadow: 0 0 3px 3px rgba(0, 0, 0, 0.3);
+
+                &::after {
+                    content: "";
+                    display: block;
+
+                    background: white;
+                    width: 100%;
+                    height: 100px;
+
+                    transform: translateY(-50%) rotateX(-20deg) translateY(50%);
+                }
+            }
         }
 
         &:focus {

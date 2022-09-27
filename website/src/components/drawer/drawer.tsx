@@ -4,6 +4,7 @@ import styles from "./drawer.scss?inline";
 export function D({ label, index }: { label: string, index: number }) {
     return <button tabIndex={index}>
         <div class="background">
+            {Array(13).fill(null).map(_ => <div />)}
         </div>
         <div class="foreground">
             <span>{label}</span>
