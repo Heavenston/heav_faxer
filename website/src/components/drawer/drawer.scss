@@ -1,7 +1,13 @@
 
 .drawer {
+    * {
+        transform-style: preserve-3d;
+        perspective: 1000px;
+        perspective-origin: center -1000px;
+    }
+
     display: flex;
-    flex-direction: column;
+    flex-direction: column-reverse;
     width: 350px;
 
     background-color: var(--main-9);
@@ -9,13 +15,62 @@
     gap: 25px;
 
     border-radius: 10px;
-}
 
-.drawer>div {
-    flex-grow: 1;
-    height: 300px;
+    &>div {
+        position: relative;
+        cursor: pointer;
 
-    border-radius: 12px;
-    background-color: var(--main-7);
+        flex-grow: 1;
+        height: 300px;
+
+        border-radius: 12px;
+        background-color: var(--main-5);
+
+        &::after {
+            position: absolute;
+            top: 0; right: 0; left: 0; bottom: 0;
+
+            content: "";
+            border-radius: 12px;
+            background-color: var(--main-7);
+
+            transition: transform 300ms ease-in-out, box-shadow 300ms ease-in-out;
+            transform: translateZ(0);
+            box-shadow: 0px 0px 0px 0px rgba(0, 0, 0, 0);
+        }
+
+        .bar {
+            background-color: var(--main-7);
+            transition: height 300ms ease-in-out;
+
+            position: absolute;
+            top: 0;
+            width: 10px;
+            height: 0px;
+        }
+        .left-bar {
+            transform: translateY(-50%) rotateZ(7deg) translateY(50%);
+
+            border-top-left-radius: 12px;
+            left: 0px;
+        }
+        .right-bar {
+            transform: translateY(-50%) rotateZ(-7deg) translateY(50%);
+
+            border-top-right-radius: 12px;
+            right: 0px;
+        }
+
+        &:hover {
+            &::after {
+                transform: translateZ(90px);
+                box-shadow: 0px 10px 40px 0px rgba(0, 0, 0, 0.3);
+            }
+
+            .bar {
+                height: 113px;
+            }
+        }
+    }
 }
 

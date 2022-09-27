@@ -6,8 +6,12 @@ export default component$(() => {
 
     return <div class="drawer">
         <div>
+            <div class="bar left-bar" />
+            <div class="bar right-bar" />
         </div>
         <div>
+            <div class="bar left-bar" />
+            <div class="bar right-bar" />
         </div>
     </div>;
 });
