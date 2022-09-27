@@ -14,12 +14,10 @@ $animation_duration: 300ms;
     width: 350px;
 
     background-color: var(--main-9);
-    padding: 30px;
-    padding-top: 36px;
-    padding-bottom: 36px;
+    padding: 10px;
     gap: 30px;
 
-    border-radius: 30px;
+    border-radius: 10px;
 
     &>*:nth-child(1) .foreground>span {
         transform: rotateZ(14deg);
@@ -55,6 +53,7 @@ $animation_duration: 300ms;
             display: flex;
             justify-content: center;
             align-items: center;
+            padding-bottom: 50px;
 
             &>span {
                 color: black;
@@ -74,7 +73,7 @@ $animation_duration: 300ms;
                 content: "";
                 position: absolute;
                 right: auto; left: auto;
-                top: 30px;
+                bottom: 30px;
 
                 background-color: var(--main-9);
                 height: 10px;
