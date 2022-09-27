@@ -32,8 +32,7 @@ $animation_duration: 300ms;
         height: 300px;
 
         border-radius: 12px;
-        &::after {
-            content: var(--label);
+        .foreground {
             position: absolute;
             top: 0; right: 0; left: 0; bottom: 0;
 
@@ -50,8 +49,7 @@ $animation_duration: 300ms;
             justify-content: center;
             align-items: center;
         }
-        &::before {
-            content: "";
+        .background {
             position: absolute;
             top: 0; right: 3px; left: 3px;
 
@@ -71,23 +69,23 @@ $animation_duration: 300ms;
         &:focus {
             outline: none;
 
-            &::after {
+            .foreground {
                 transform: translateZ(30px);
                 box-shadow: 0px calc(10px * 0.3) calc(40px * 0.3) 0px rgba(0, 0, 0, 0.3);
             }
 
-            &::before {
+            .background {
                 clip-path: inset(0 0 calc(66%) 0);
             }
         }
 
         &:hover {
-            &::after {
+            .foreground {
                 transform: translateZ(90px);
                 box-shadow: 0px 10px 40px 0px rgba(0, 0, 0, 0.3);
             }
 
-            &::before {
+            .background {
                 clip-path: inset(0 0 0 0);
             }
         }

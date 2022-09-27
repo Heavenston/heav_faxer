@@ -6,10 +6,16 @@ export default component$(() => {
 
     return <div class="drawer">
         <button tabIndex={2} style="--label: 'Files';">
-            <span style="display: none;">Files</span>
+            <div class="background" />
+            <div class="foreground">
+                <span>Files</span>
+            </div>
         </button>
-        <button tabIndex={1} style="--label: 'Links';">
-            <span style="display: none;">Links</span>
+        <button tabIndex={1}>
+            <div class="background" />
+            <div class="foreground">
+                <span>Links</span>
+            </div>
         </button>
     </div>;
 });
