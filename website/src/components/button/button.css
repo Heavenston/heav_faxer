@@ -1,8 +1,14 @@
 :root {
     --button-default-offset: 6px;
-    --button-hover-offset: 4px;
-    --button-selected-offset: 4.5px;
+    --button-hover-offset: 3px;
+    --button-selected-offset: 4px;
     --button-pressed-offset: 0px;
+
+    --button-shadow-color: rgba(0, 0, 0, 0.3);
+    --button-background-color: var(--main-8);
+    --button-foreground-color: var(--main-9);
+    --button-transition-duration: 100ms;
+    --button-transition-function: linear;
 }
 
 button {
@@ -16,15 +22,15 @@ button {
     margin: 0;
     color: white;
     cursor: pointer;
-    background-color: var(--main-9);
+    background-color: var(--button-background-color);
 
-    box-shadow: 0px calc(var(--offset)) calc(var(--offset)) 0px rgba(0, 0, 0, 0.3);
-    transition: box-shadow 100ms linear;
+    box-shadow: 0px calc(var(--offset)) calc(var(--offset)) 0px var(--button-shadow-color);
+    transition: box-shadow var(--button-transition-duration) var(--button-transition-function);
 }
 
 button>span {
     border-radius: 8px;
-    background-color: var(--main-8);
+    background-color: var(--button-foreground-color);
 
     padding: 4px;
     padding-left: 7px;
@@ -34,7 +40,7 @@ button>span {
     height: 100%;
     transform: translateY(calc(var(--offset) * -1));
 
-    transition: transform 100ms linear;
+    transition: transform var(--button-transition-duration) var(--button-transition-function);
 
     display: flex;
     flex-direction: column;
@@ -48,6 +54,7 @@ button>span>span {
 
 button:focus {
     --offset: var(--button-selected-offset);
+    outline: none;
 }
 
 button:hover {

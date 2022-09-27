@@ -17,7 +17,8 @@ export default component$(() => {
                     <Button>A </Button> <Button>0 </Button> <Button>B</Button>
                 </div>
                 <div>
-                    <Button class="send-button">Send!</Button>
+                    <Button class="send-button">Send</Button>
+                    <Button class="send-button">Print</Button>
                 </div>
             </div>
         </div>

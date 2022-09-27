@@ -13,6 +13,10 @@ export const RouterHead = component$(() => {
             <title>{head.title}</title>
             <meta property="og:site_name" content="heav-faxer" />
             <meta name="twitter:title" content="heav-faxer" />
+            <meta
+                name="viewport" 
+                content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"
+            />
 
             {head.meta.map(m => (
                 <meta {...m} />
