@@ -1,5 +1,7 @@
-$animation_duration: 300ms;
+@use "sass:math";
+@import url('https://fonts.googleapis.com/css2?family=Indie+Flower&display=swap');
 
+$animation_duration: 300ms;
 .drawer {
     * {
         transform-style:flat;
@@ -18,6 +20,13 @@ $animation_duration: 300ms;
     gap: 30px;
 
     border-radius: 30px;
+
+    &>*:nth-child(1) .foreground>span {
+        transform: rotateZ(14deg);
+    }
+    &>*:nth-child(2) .foreground>span {
+        transform: rotateZ(-10deg);
+    }
 
     &>* {
         border: none;
@@ -43,11 +52,36 @@ $animation_duration: 300ms;
             transform: translateZ(0);
             box-shadow: 0px 0px 0px 0px rgba(0, 0, 0, 0);
 
-            color: white;
-            font-size: 2.4em;
             display: flex;
             justify-content: center;
             align-items: center;
+
+            &>span {
+                color: black;
+                font-family: 'Indie Flower', cursive;
+                font-size: 2.4em;
+
+                background-color: #FFF89C;
+
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                height: 90px;
+                width: 90px;
+            }
+
+            &::before {
+                content: "";
+                position: absolute;
+                right: auto; left: auto;
+                top: 30px;
+
+                background-color: var(--main-9);
+                height: 10px;
+                width: 200px;
+
+                border-radius: 5px;
+            }
         }
         .background {
             position: absolute;
