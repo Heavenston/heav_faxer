@@ -7,12 +7,6 @@ export default component$(() => {
     const loc = useLocation();
     const n = useNavigate();
 
-    useClientEffect$(({ track }) => {
-        const query = track(loc, "query");
-        if (!("link" in query))
-            n.path = "/";
-    });
-
     return (
         <div class="center">
             <Machine />

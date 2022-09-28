@@ -22,7 +22,7 @@
     position: absolute;
     inset: 0;
 
-    background: rgba(0, 0, 0, 0.5);
+    background: rgba(0, 0, 0, 0.7);
     backdrop-filter: blur(5px);
 
     display: flex;
@@ -35,7 +35,7 @@
     animation: 300ms linear 0s 1 normal both link-modal-background-appear;
 
     .paper {
-        display: block;
+        position: relative;
         cursor: default;
         width: calc(min(400px, 100%));
         aspect-ratio: 1 / 1.4142;
@@ -45,8 +45,8 @@
         animation: 500ms ease-in-out 0s 1 normal none link-modal-paper-appear;
 
         display: flex;
-        justify-content: center;
-        align-items: flex-start;
+        justify-content: stretch;
+        align-items: stretch;
         padding: 20px;
 
         &>* {
@@ -54,11 +54,18 @@
             flex-grow: 1;
         }
 
+        label {
+            display: flex;
+            flex-direction: column;
+        }
+
         .label {
             display: block;
             font-family: Arial;
+            flex-shrink: 1;
         }
         .input {
+            flex-grow: 1;
             display: block;
             cursor: text;
 
@@ -69,6 +76,47 @@
             font-weight: bold;
 
             word-break: break-all;
+        }
+
+        .previous {
+            font-family: Arial;
+            font-weight: bold;
+            font-size: inherit;
+            cursor: pointer;
+            color: white;
+
+            position: absolute;
+            top: -50px;
+            height: 50px; left: 0; right: 0;
+
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+
+            background: transparent;
+            border: none;
+            margin: 0;
+            padding: 0;
+        }
+        .next {
+            font-family: Arial;
+            font-weight: bold;
+            font-size: inherit;
+            cursor: pointer;
+            color: white;
+
+            position: absolute;
+            bottom: -50px;
+            height: 50px; left: 0; right: 0;
+
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+
+            background: transparent;
+            border: none;
+            margin: 0;
+            padding: 0;
         }
     }
 }

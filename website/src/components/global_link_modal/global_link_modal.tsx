@@ -1,4 +1,5 @@
-import { component$, createContext, useContext, useRef, useStylesScoped$ } from "@builder.io/qwik";
+import { $, component$, createContext, Ref, useContext, useRef, useStylesScoped$ } from "@builder.io/qwik";
+import { Link, useNavigate } from "@builder.io/qwik-city";
 import styles from "./global_link_modal.scss?inline";
 
 export const link_modal_context = createContext<{
@@ -8,15 +9,24 @@ export const link_modal_context = createContext<{
 export default component$(() => {
     useStylesScoped$(styles);
     const c = useContext(link_modal_context);
+    const n = useNavigate();
+
+    const inputRef = useRef<HTMLDivElement>();
+    const previousRef = useRef<HTMLDivElement>();
+    const paperRef = useRef<HTMLDivElement>();
+    const nextRef = useRef<HTMLDivElement>();
+
     if (!c.enable) return <></>;
 
-    const paperRef = useRef<HTMLDivElement>();
     const on_background_click = (e: MouseEvent) => {
-        const cbr = paperRef.current?.getBoundingClientRect();
-        if (!cbr)
-            return;
-        if (e.clientX > cbr.x && e.clientX < (cbr.x + cbr.width) && e.clientY > cbr.y && e.clientY < (cbr.y + cbr.height))
-            return;
+        for (const a of [previousRef ,paperRef, nextRef]) {
+            const cbr = a.current?.getBoundingClientRect();
+            if (!cbr)
+                return;
+            if (e.clientX > cbr.x && e.clientX < (cbr.x + cbr.width) && e.clientY > cbr.y && e.clientY < (cbr.y + cbr.height))
+                return;
+        }
+
         c.enable = false;
     };
 
@@ -35,12 +45,24 @@ export default component$(() => {
             t.innerText = changed;
     };
 
+    const on_submit = $(() => {
+        const v = inputRef.current?.innerText ?? "https://example.com";
+        const r = `/link?link=${encodeURIComponent(v)}`;
+        location.href = r;
+    });
+
     return <div class="modal" onClick$={on_background_click}>
-        <form class="paper" preventdefault:submit preventdefault:click ref={paperRef}>
+        <form class="paper" preventdefault:submit onSubmit$={on_submit} ref={paperRef}>
+            <button type="reset" class="previous" ref={previousRef}>
+                &lt;- Go back to previous screen
+            </button>
             <label>
                 <span class="label">Enter url here:</span>
-                <div class="input" contentEditable="true" onKeyPress$={on_key_press} onInput$={on_input}></div>
+                <div class="input" ref={inputRef} contentEditable="true" onKeyPress$={on_key_press} onInput$={on_input}></div>
             </label>
+            <button type="submit" class="next" ref={nextRef}>
+                Create the shortened link -&gt;
+            </button>
         </form>
     </div>;
 });
