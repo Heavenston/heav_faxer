@@ -1,4 +1,5 @@
-import { component$, createContext, useRef, useStylesScoped$, useClientEffect$, useStore, useWatch$, useContextProvider } from "@builder.io/qwik";
+import { component$, $, createContext, useRef, useStylesScoped$, useClientEffect$, useStore, useWatch$, useContextProvider } from "@builder.io/qwik";
+import { useNavigate } from "@builder.io/qwik-city";
 import styles from "./cabinet.scss?inline";
 
 import { default as Drawer, prevent_drawer_open_context } from "./drawer";

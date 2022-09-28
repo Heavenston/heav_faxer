@@ -1,4 +1,4 @@
-import { component$, useRef, useStyles$, useStylesScoped$, useClientEffect$, useStore, useWatch$, useContext, createContext, useContextProvider } from "@builder.io/qwik";
+import { component$, useStylesScoped$, useStore, useWatch$, useContext, createContext, useContextProvider } from "@builder.io/qwik";
 import styles from "./drawer.scss?inline";
 
 import Paper from "./paper";
@@ -6,8 +6,15 @@ import Paper from "./paper";
 export const prevent_drawer_open_context = createContext<{ index: number }>("prevent_drawer_open_context");
 export const prevent_drawer_close_context = createContext<{ count: number }>("prevent_drawer_close_context");
 
-export default component$<{ index: number, label: string }>(({ index, label }) => {
+interface Props {
+    index: number;
+    label: string;
+    click_cb?: (el: MouseEvent) => void,
+}
+
+export default component$<Props>(({ index, label, click_cb }) => {
     useStylesScoped$(styles);
+
     const prevent_drawer_close = useStore({ count: 0 });
     useContextProvider(prevent_drawer_close_context, prevent_drawer_close);
 
@@ -25,7 +32,11 @@ export default component$<{ index: number, label: string }>(({ index, label }) =
 
     const prevent_open = prevent_drawer_open.index !== -1 && prevent_drawer_open.index !== index;
 
-    return <button class={`drawer ${prevent_drawer_close.count > 0 ? "prevent-close" : ""} ${prevent_open ? "prevent-open" : ""}`} tabIndex={index}>
+    return <button
+        {...(click_cb ? { onClick$: click_cb } : {})} preventdefault:click
+        class={`drawer ${prevent_drawer_close.count > 0 ? "prevent-close" : ""} ${prevent_open ? "prevent-open" : ""}`}
+        tabIndex={index}
+    >
         <div class="background">
             {Array(13).fill(null).map(_ => <Paper />)}
         </div>
