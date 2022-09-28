@@ -19,8 +19,8 @@ $animation_duration: 300ms;
     position: relative;
     cursor: pointer;
 
-    flex-grow: 1;
-    height: 300px;
+    flex-shrink: 1;
+    height: min(300px, calc(50vh - 40px));
 
     border-radius: 12px;
 
