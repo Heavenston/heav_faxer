@@ -1,4 +1,4 @@
-import { $, component$, createContext, Ref, useContext, useRef, useStylesScoped$ } from "@builder.io/qwik";
+import { mutable, $, component$, createContext, Ref, useContext, useRef, useStylesScoped$ } from "@builder.io/qwik";
 import { Link, useNavigate } from "@builder.io/qwik-city";
 import styles from "./global_link_modal.scss?inline";
 
@@ -9,17 +9,15 @@ export const link_modal_context = createContext<{
 export default component$(() => {
     useStylesScoped$(styles);
     const c = useContext(link_modal_context);
-    const n = useNavigate();
+    const nav = useNavigate();
 
     const inputRef = useRef<HTMLDivElement>();
     const previousRef = useRef<HTMLDivElement>();
     const paperRef = useRef<HTMLDivElement>();
     const nextRef = useRef<HTMLDivElement>();
 
-    if (!c.enable) return <></>;
-
     const on_background_click = (e: MouseEvent) => {
-        for (const a of [previousRef ,paperRef, nextRef]) {
+        for (const a of [previousRef, paperRef, nextRef]) {
             const cbr = a.current?.getBoundingClientRect();
             if (!cbr)
                 return;
@@ -48,17 +46,25 @@ export default component$(() => {
     const on_submit = $(() => {
         const v = inputRef.current?.innerText ?? "https://example.com";
         const r = `/link?link=${encodeURIComponent(v)}`;
-        location.href = r;
+        c.enable = false;
+        nav.path = r;
     });
+    const modal_style = c.enable ? "" : "display: none;";
 
-    return <div class="modal" onClick$={on_background_click}>
-        <form class="paper" preventdefault:submit onSubmit$={on_submit} ref={paperRef}>
+    return <div class="modal" onClick$={on_background_click} style={modal_style}>
+        <form class="paper" ref={paperRef} preventdefault:submit onSubmit$={on_submit}>
             <button type="reset" class="previous" ref={previousRef}>
                 &lt;- Go back to previous screen
             </button>
             <label>
                 <span class="label">Enter url here:</span>
-                <div class="input" ref={inputRef} contentEditable="true" onKeyPress$={on_key_press} onInput$={on_input}></div>
+                <div 
+                    class="input"
+                    ref={inputRef}
+                    {...({contenteditable: true }) as any}
+                    onKeyPress$={on_key_press}
+                    onInput$={on_input}
+                ></div>
             </label>
             <button type="submit" class="next" ref={nextRef}>
                 Create the shortened link -&gt;
