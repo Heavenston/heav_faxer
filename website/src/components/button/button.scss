@@ -43,8 +43,10 @@ button {
         --offset: var(--button-selected-offset);
         outline: none;
     }
-    &:hover {
-        --offset: var(--button-hover-offset);
+    @media (hover: hover) {
+        &:hover {
+            --offset: var(--button-hover-offset);
+        }
     }
     &:active {
         --offset: var(--button-pressed-offset);
