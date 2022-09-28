@@ -6,6 +6,7 @@ export default component$<{ text: string }>((props) => {
     const state = useStore({
         display_length: 25,
         text_to_display: "!",
+        current_index: 0,
     });
     const ref = useRef<HTMLDivElement>();
 
@@ -14,12 +15,11 @@ export default component$<{ text: string }>((props) => {
         const display_length = track(state, "display_length");
 
         if (text.length > display_length) {
-            let current_index = 0;
             const i = setInterval(() => {
-                let offset = current_index % (text.length + 5);
+                let offset = state.current_index % (text.length + 5);
                 state.text_to_display = (text + "     " + text).substring(offset, offset + display_length);
 
-                current_index++;
+                state.current_index++;
             }, 150);
             return () => clearInterval(i);
         }
@@ -50,9 +50,9 @@ export default component$<{ text: string }>((props) => {
 
             state.display_length = n;
         };
-        window.addEventListener("resize", handlr);
-        handlr();
-        return () => window.removeEventListener("resize", handlr);
+        const observer = new ResizeObserver(handlr);
+        observer.observe(el);
+        return () => { observer.disconnect() };
     });
 
     return (
