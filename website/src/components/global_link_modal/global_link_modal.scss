@@ -1,5 +1,24 @@
+@import url('https://fonts.googleapis.com/css2?family=Indie+Flower&display=swap');
+
+@keyframes link-modal-background-appear {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+@keyframes link-modal-paper-appear {
+    from {
+        transform: translateY(-100px);
+    }
+    to {
+        transform: translateY(0);
+    }
+}
 
 .modal {
+    z-index: 9999;
     position: absolute;
     inset: 0;
 
@@ -13,11 +32,43 @@
 
     cursor: pointer;
 
+    animation: 300ms linear 0s 1 normal both link-modal-background-appear;
+
     .paper {
+        display: block;
         cursor: default;
         width: calc(min(400px, 100%));
         aspect-ratio: 1 / 1.4142;
 
         background: white;
+        transform: translateY(0px);
+        animation: 500ms ease-in-out 0s 1 normal none link-modal-paper-appear;
+
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        padding: 20px;
+
+        &>* {
+            display: block;
+            flex-grow: 1;
+        }
+
+        .label {
+            display: block;
+            font-family: Arial;
+        }
+        .input {
+            display: block;
+            cursor: text;
+
+            border: none;
+            max-width: 100%;
+            font-family: 'Indie Flower', cursive;
+            font-size: inherit;
+            font-weight: bold;
+
+            word-break: break-all;
+        }
     }
 }
