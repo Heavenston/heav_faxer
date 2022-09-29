@@ -52,15 +52,11 @@
             flex-grow: 1;
 
             display: flex;
-            justify-content: center;
-            align-items: end;
+            flex-direction: column;
+            justify-content: end;
+            align-items: stretch;
             gap: 12px;
             column-gap: 9px;
-
-            button {
-                flex-grow: 1;
-                --button-foreground-color: red;
-            }
         }
     }
 

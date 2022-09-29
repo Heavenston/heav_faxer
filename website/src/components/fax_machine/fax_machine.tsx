@@ -1,4 +1,4 @@
-import { $, mutable, component$, useRef, useOnWindow, useStylesScoped$, useClientEffect$, useStore, useCleanup$ } from "@builder.io/qwik";
+import { $, mutable, component$, useRef, useOnWindow, useStylesScoped$, useClientEffect$, useStore, useCleanup$, NoSerialize, noSerialize } from "@builder.io/qwik";
 import styles from "./fax_machine.scss?inline";
 
 import Display from "~/components/display/display";
@@ -13,6 +13,7 @@ export const num_pad_data: [number | string, string?][] = [
 
 interface State {
     state: "input" | "sending" | "showing",
+    cleanups: NoSerialize<(() => void)[]>,
 }
 
 export default component$(() => {
@@ -20,6 +21,10 @@ export default component$(() => {
 
     const state = useStore<State>({
         state: "input",
+        cleanups: noSerialize([]),
+    });
+    useCleanup$(() => {
+        state.cleanups?.forEach(c => c());
     });
 
     const on_send = $(() => {
@@ -29,7 +34,9 @@ export default component$(() => {
         const a = setTimeout(() => {
             state.state = "showing";
         }, 2000);
-        useCleanup$(() => { clearTimeout(a); });
+        if (state.cleanups == undefined)
+            state.cleanups = noSerialize([]);
+        state.cleanups?.push(() => clearTimeout(a));
     });
 
     let display_text: string = "ERROR";
@@ -70,8 +77,8 @@ export default component$(() => {
                     {num_pad_data.map(([n, a]) => <Button>{n} {a ?? <span>{a}</span>}</Button>)}
                 </div>
                 <div>
-                    <Button class="send-button" onClick$={on_send}>Send</Button>
                     <Button class="send-button">Print</Button>
+                    <Button class="send-button" onClick$={on_send}>Send</Button>
                 </div>
             </div>
         </div>
