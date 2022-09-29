@@ -83,11 +83,17 @@
         width: $paper-width;
         background: white;
         overflow: hidden;
+
+        color: black;
+        display: flex;
+        justify-content: flex-start;
+        align-items: flex-start;
     }
     .input-paper {
         top: 0;
         transform: translateZ(-5px) translateY(-100%);
         transition: height 500ms ease;
+        padding: 20px;
     }
     .output-paper {
         bottom: 0;
@@ -117,6 +123,7 @@
         transform: translateY(0);
         .input-paper {
             height: 0;
+            padding: 0;
         }
     }
     &.output-paper {

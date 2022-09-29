@@ -3,6 +3,7 @@ import styles from "./fax_machine.scss?inline";
 
 import Display from "~/components/display/display";
 import Button from "~/components/button/button";
+import {useLocation} from "@builder.io/qwik-city";
 
 export const num_pad_data: [number | string, string?][] = [
     [1],   [2, "ABC"], [3, "DEF"],
@@ -18,6 +19,7 @@ interface State {
 
 export default component$(() => {
     useStylesScoped$(styles);
+    const loc = useLocation();
 
     const state = useStore<State>({
         state: "input",
@@ -64,7 +66,9 @@ export default component$(() => {
 
     return (
         <div class={`machine ${eat_paper && "eat-paper"} ${output_paper && "output-paper"}`}>
-            <div class="paper input-paper" />
+            <div class="paper input-paper">
+                <div>{loc.query["link"]}</div>
+            </div>
             <div class="paper output-paper">
                 <div>
                     <div>Your shortened link is:</div>
