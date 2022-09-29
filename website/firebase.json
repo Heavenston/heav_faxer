@@ -7,11 +7,15 @@
             "**/node_modules/**"
         ],
 
-        "rewrites": [
+        "redirects": [
             {
                 "regex": "/l/([A-Za-z0-9_-]+)",
-                "destination": "/api/links/:1"
-            },
+                "destination": "/api/links/:1",
+                "type": 302
+            }
+        ],
+
+        "rewrites": [
             {
                 "source": "/api**",
                 "run": {
@@ -20,5 +24,13 @@
                 }
             }
         ]
+    },
+    "emulators": {
+        "hosting": {
+            "port": 5000
+        },
+        "ui": {
+            "enabled": true
+        }
     }
 }
