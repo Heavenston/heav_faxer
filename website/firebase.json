@@ -6,9 +6,14 @@
             "**/.*",
             "**/node_modules/**"
         ],
+
         "rewrites": [
             {
-                "source": "/api/**",
+                "regex": "/l/([A-Za-z0-9_-]+)",
+                "destination": "/api/links/:1"
+            },
+            {
+                "source": "/api**",
                 "run": {
                     "serviceId": "faxer-server",
                     "region": "europe-west1"
