@@ -17,7 +17,7 @@
 
         "rewrites": [
             {
-                "source": "/api**",
+                "regex": "/api.*",
                 "run": {
                     "serviceId": "faxer-server",
                     "region": "europe-west1"
