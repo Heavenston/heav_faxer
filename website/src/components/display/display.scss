@@ -13,14 +13,14 @@
     padding-right: 15px;
     border-radius: 5px;
 
-    &::before {
-        content: var(--placeholder);
-
-        opacity: 0.1;
-        position: absolute;
-        left: 15px;
-        top: 10px;
-        bottom: 10px;
-    }
 }
 
+:global(.display::before) {
+    content: var(--placeholder);
+
+    opacity: 0.1;
+    position: absolute;
+    left: 15px;
+    top: 10px;
+    bottom: 10px;
+}
