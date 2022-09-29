@@ -19,5 +19,6 @@ func main() {
     fmt.Println("Succesfully connected to database")
 
     http.HandleFunc("/link/", links.LinkHandlr)
+    http.HandleFunc("/api/link/", links.LinkHandlr)
     log.Fatal(http.ListenAndServe(":8080", nil))
 }

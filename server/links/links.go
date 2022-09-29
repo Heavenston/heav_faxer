@@ -7,7 +7,7 @@ import (
     "fr.faxer/apiserver/db"
 )
 
-var path_reg = regexp.MustCompile("^/(link)/([A-Za-z0-9]+)$")
+var path_reg = regexp.MustCompile("^(?:/api)?/(link)/([A-Za-z0-9]+)$")
 func LinkHandlr(w http.ResponseWriter, r *http.Request) {
     path := path_reg.FindStringSubmatch(r.URL.Path)
     if (path == nil) {
