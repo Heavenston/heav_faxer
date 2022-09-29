@@ -10,7 +10,6 @@ $animation_duration: 300ms;
 }
 
 .drawer {
-
     border: none;
     margin: 0;
     padding: 0;
@@ -19,9 +18,7 @@ $animation_duration: 300ms;
     position: relative;
     cursor: pointer;
 
-    flex-shrink: 1;
-    height: min(300px, calc(50vh - 40px));
-
+    flex-grow: 1;
     border-radius: 12px;
 
     &:nth-child(1) {
