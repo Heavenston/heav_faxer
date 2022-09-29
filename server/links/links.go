@@ -17,8 +17,13 @@ func LinkHandlr(w http.ResponseWriter, r *http.Request) {
 
     target := db.GetLinkTarget(path[2])
     if target == nil {
-        w.Header().Add("Content-Type", "application/json; charset=UTF-8")
-        w.WriteHeader(http.StatusNotFound)
+        if r.URL.Query().Has("or") {
+            w.Header().Add("Location", r.URL.Query().Get("or"))
+            w.WriteHeader(http.StatusTemporaryRedirect)
+        } else {
+            w.Header().Add("Content-Type", "application/json; charset=UTF-8")
+            w.WriteHeader(http.StatusNotFound)
+        }
         return
     }
 
