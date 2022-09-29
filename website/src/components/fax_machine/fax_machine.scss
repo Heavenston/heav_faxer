@@ -75,6 +75,61 @@
         align-content: end;
     }
 
+    $paper-width: 300px;
+    $paper-height: $paper-width * 1.4142;
+    .paper {
+        transform: translateZ(-5px); // Under machine but over input rack
+
+        position: absolute;
+        left: calc(50% - ($paper-width / 2));
+
+        height: $paper-height;
+        width: $paper-width;
+        background: white;
+        overflow: hidden;
+    }
+    .input-paper {
+        top: 0;
+        transform: translateZ(-5px) translateY(-100%);
+        transition: height 500ms ease;
+    }
+    .output-paper {
+        bottom: 0;
+        height: 0;
+        transform: translateZ(-5px) translateY(100%);
+        transition: height 500ms ease, padding 500ms ease;
+
+        color: black;
+        display: flex;
+        justify-content: flex-start;
+        align-items: flex-end;
+
+        input {
+            border: none;
+            font-size: inherit; font-family: inherit;
+            width: 100%;
+            padding: 0; margin: 0;
+
+            &:focus {
+                outline: none;
+            }
+        }
+    }
+    transform: translateY(calc($paper-height / 4));
+    transition: transform 1s ease-in-out;
+    &.eat-paper {
+        transform: translateY(0);
+        .input-paper {
+            height: 0;
+        }
+    }
+    &.output-paper {
+        .output-paper {
+            height: 100px;
+            padding: 20px;
+        }
+    }
+
     :global(button) {
         min-width: 50px;
         height: 30px;

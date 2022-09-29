@@ -1,14 +1,17 @@
-import { component$, useClientEffect$, useWatch$ } from "@builder.io/qwik";
+import { component$, useClientEffect$, useStylesScoped$, useWatch$ } from "@builder.io/qwik";
 import { DocumentHead, useLocation, useNavigate } from "@builder.io/qwik-city";
 
 import Machine from "~/components/fax_machine/fax_machine";
 
 export default component$(() => {
-    const loc = useLocation();
-    const n = useNavigate();
+    useStylesScoped$(`
+        .container {
+            padding: 10px;
+        }
+    `);
 
     return (
-        <div class="center">
+        <div class="center container">
             <Machine />
         </div>
     );
