@@ -26,6 +26,7 @@ func Disonnect() {
 }
 
 type LinkData struct {
+    CreatedAt time.Time `firestore:"created-at"`;
     Target string `firestore:"target"`;
 }
 
@@ -60,6 +61,7 @@ func TryInsertTarget(key string, target string) bool {
     collection := LinksCollection()
     doc := collection.Doc(key)
     _, err := doc.Create(ctx, LinkData {
+        CreatedAt: time.Now(),
         Target: target,
     })
 
