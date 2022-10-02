@@ -17,7 +17,7 @@ type linkPostRequest struct {
     Target string `json:"target"`
 }
 
-var path_reg = regexp.MustCompile("^(?:/api)?/(link)/([A-Za-z0-9]+)$")
+var path_reg = regexp.MustCompile("^(?:/api)?/(link)/([A-Za-z0-9]+)/?$")
 var successfulCreateTimeout = time.Minute
 var unsuccessfulCreateTimeout = time.Second * 2
 
