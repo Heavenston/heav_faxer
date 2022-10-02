@@ -10,7 +10,7 @@
         "redirects": [
             {
                 "regex": "/l/([A-Za-z0-9_-]+)",
-                "destination": "/api/link/:1\\?or=/link_not_found",
+                "destination": "/api/link/:1/?or=/link_not_found",
                 "type": 302
             }
         ],
