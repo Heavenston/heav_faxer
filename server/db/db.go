@@ -119,10 +119,13 @@ func ResolveUserRef(addr string, id *string) UserRef {
             if err != nil && idSnap == nil {
                 fmt.Errorf("Could not fetch doc:", err)
             }
+            if !idSnap.Exists() {
+                idSnap = nil
+            }
 
             if idSnap != nil {
                 if err := idSnap.DataTo(&idData); err != nil {
-                    log.Fatal()
+                    log.Fatal("a: ", err)
                 }
 
                 state, _ := idSnap.DataAt("state")
@@ -165,7 +168,7 @@ func ResolveUserRef(addr string, id *string) UserRef {
             } else { // The user doc is addrMatch
                 var data UserData
                 if err := addrMatch.DataTo(&data); err != nil {
-                    log.Fatal()
+                    log.Fatal("b: ", err)
                 }
                 return UserRef {
                     UsedAddr: addr,
