@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"regexp"
+	"strings"
 	"time"
 
 	"fr.faxer/apiserver/db"
@@ -27,7 +28,9 @@ func LinkHandlr(w http.ResponseWriter, r *http.Request) {
     identifierCookie, _ := r.Cookie("identifier")
     var identifier *string = nil
     if identifierCookie != nil { identifier = &identifierCookie.Value }
-    userRef := db.ResolveUserRef(r.RemoteAddr, identifier)
+    splitted := strings.Split(r.RemoteAddr, ":")
+    actualAddr := strings.Join(splitted[:len(splitted)-1], ":")
+    userRef := db.ResolveUserRef(actualAddr, identifier)
 
     if (r.Method == "GET") {
         target := db.GetLinkTarget(path[2])

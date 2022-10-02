@@ -273,7 +273,7 @@ func (user *UserRef) LastCreate() *UserInteraction {
     return &lastCreateData
 }
 func (user *UserRef) LastSuccessfulCreate() *UserInteraction {
-    if user.data.LastCreate == nil { return nil }
+    if user.data.LastSuccessfulCreate == nil { return nil }
     lastCreateSnap, err := user.data.LastSuccessfulCreate.Get(context.Background())
     if err != nil {
         log.Fatal("Could not fetch last create: ", err)
@@ -286,7 +286,7 @@ func (user *UserRef) LastSuccessfulCreate() *UserInteraction {
     return &lastCreateData
 }
 func (user *UserRef) LastRead() *UserInteraction {
-    if user.data.LastCreate == nil { return nil }
+    if user.data.LastRead == nil { return nil }
     lastReadSnap, err := user.data.LastRead.Get(context.Background())
     if err != nil {
         log.Fatal("Could not fetch last read: ", err)
@@ -299,7 +299,7 @@ func (user *UserRef) LastRead() *UserInteraction {
     return &lastReadData
 }
 func (user *UserRef) LastSuccessfulRead() *UserInteraction {
-    if user.data.LastCreate == nil { return nil }
+    if user.data.LastSuccessfulRead == nil { return nil }
     lastReadSnap, err := user.data.LastSuccessfulRead.Get(context.Background())
     if err != nil {
         log.Fatal("Could not fetch last read: ", err)
