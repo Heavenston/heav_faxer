@@ -28,12 +28,16 @@ func LinkHandlr(w http.ResponseWriter, r *http.Request) {
         return;
     }
 
+    var remoteAddr string = r.Header.Get("X-Forwarded-For")
+    if remoteAddr == "" {
+        splitted := strings.Split(r.RemoteAddr, ":")
+        remoteAddr = strings.Join(splitted[:len(splitted)-1], ":")
+    }
+
     identifierCookie, _ := r.Cookie("identifier")
     var identifier *string = nil
     if identifierCookie != nil { identifier = &identifierCookie.Value }
-    splitted := strings.Split(r.RemoteAddr, ":")
-    actualAddr := strings.Join(splitted[:len(splitted)-1], ":")
-    userRef := db.ResolveUserRef(actualAddr, identifier)
+    userRef := db.ResolveUserRef(remoteAddr, identifier)
 
     w.Header().Add("Set-Cookie", fmt.Sprintf("identifier=%s", url.QueryEscape(userRef.Id)))
 
