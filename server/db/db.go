@@ -93,9 +93,9 @@ type UserInteraction struct {
 }
 
 type UserRef struct {
-    usedAddr string
-    id string
-    data UserData
+    UsedAddr string
+    Id string
+    Data UserData
 }
 
 func UsersCollection() *firestore.CollectionRef {
@@ -132,9 +132,6 @@ func ResolveUserRef(addr string, id *string) UserRef {
         }
     }
 
-    // Note: Possible race condition leading to multiple documents for a single user
-    // shouldn't generate any vulnerabilites nor major bugs
-
     // If there is no id doc or it does not contain the given address
     // we need to merge (or create) the id doc
     if idSnap == nil || !slices.Contains(idData.Addrs, addr) {
@@ -159,9 +156,9 @@ func ResolveUserRef(addr string, id *string) UserRef {
                     log.Fatal("Could not create user doc", err)
                 }
                 return UserRef {
-                    usedAddr: addr,
-                    id: idRef.ID,
-                    data: data,
+                    UsedAddr: addr,
+                    Id: idRef.ID,
+                    Data: data,
                 }
             } else { // The user doc is addrMatch
                 var data UserData
@@ -169,9 +166,9 @@ func ResolveUserRef(addr string, id *string) UserRef {
                     log.Fatal()
                 }
                 return UserRef {
-                    usedAddr: addr,
-                    id: addrMatch.Ref.ID,
-                    data: data,
+                    UsedAddr: addr,
+                    Id: addrMatch.Ref.ID,
+                    Data: data,
                 }
             }
         } else { // There is an id match
@@ -188,9 +185,9 @@ func ResolveUserRef(addr string, id *string) UserRef {
                 data.Addrs = append(data.Addrs, addr) // Local copy isn't updated
 
                 return UserRef {
-                    usedAddr: addr,
-                    id: idSnap.Ref.ID,
-                    data: data,
+                    UsedAddr: addr,
+                    Id: idSnap.Ref.ID,
+                    Data: data,
                 }
             } else { // The two docs must be merged together
                 var addrMatchData UserData
@@ -199,7 +196,7 @@ func ResolveUserRef(addr string, id *string) UserRef {
                     log.Fatal("Could not update user doc", err)
                 }
 
-                otherAddrs := make([]any, 0, len(addrMatchData.Addrs))
+                otherAddrs := make([]any, len(addrMatchData.Addrs))
                 for i, v := range addrMatchData.Addrs {
                     otherAddrs[i] = v
                 }
@@ -224,12 +221,14 @@ func ResolveUserRef(addr string, id *string) UserRef {
                     }
                     batch.
                         Delete(doc.Ref).
-                        Create(idSnap.Ref.Collection("interactions").Doc(doc.Ref.ID), doc.Data)
+                        Create(idSnap.Ref.Collection("interactions").Doc(doc.Ref.ID), doc.Data())
                 }
 
                 interactionIter.Stop()
+
+                _, err = batch.Commit(context.Background())
                 if err != nil {
-                    log.Fatal("Iterator error")
+                    log.Fatal("Could not commit batch ", err)
                 }
 
                 var data UserData
@@ -241,9 +240,9 @@ func ResolveUserRef(addr string, id *string) UserRef {
                 }
 
                 return UserRef {
-                    usedAddr: addr,
-                    id: addrMatch.Ref.ID,
-                    data: data,
+                    UsedAddr: addr,
+                    Id: idSnap.Ref.ID,
+                    Data: data,
                 }
             }
         }
@@ -253,15 +252,15 @@ func ResolveUserRef(addr string, id *string) UserRef {
     idSnap.DataTo(&data)
 
     return UserRef {
-        usedAddr: addr,
-        id: idSnap.Ref.ID,
-        data: data,
+        UsedAddr: addr,
+        Id: idSnap.Ref.ID,
+        Data: data,
     }
 }
 
 func (user *UserRef) LastCreate() *UserInteraction {
-    if user.data.LastCreate == nil { return nil }
-    lastCreateSnap, err := user.data.LastCreate.Get(context.Background())
+    if user.Data.LastCreate == nil { return nil }
+    lastCreateSnap, err := user.Data.LastCreate.Get(context.Background())
     if err != nil {
         log.Fatal("Could not fetch last create: ", err)
     }
@@ -273,8 +272,8 @@ func (user *UserRef) LastCreate() *UserInteraction {
     return &lastCreateData
 }
 func (user *UserRef) LastSuccessfulCreate() *UserInteraction {
-    if user.data.LastSuccessfulCreate == nil { return nil }
-    lastCreateSnap, err := user.data.LastSuccessfulCreate.Get(context.Background())
+    if user.Data.LastSuccessfulCreate == nil { return nil }
+    lastCreateSnap, err := user.Data.LastSuccessfulCreate.Get(context.Background())
     if err != nil {
         log.Fatal("Could not fetch last create: ", err)
     }
@@ -286,8 +285,8 @@ func (user *UserRef) LastSuccessfulCreate() *UserInteraction {
     return &lastCreateData
 }
 func (user *UserRef) LastRead() *UserInteraction {
-    if user.data.LastRead == nil { return nil }
-    lastReadSnap, err := user.data.LastRead.Get(context.Background())
+    if user.Data.LastRead == nil { return nil }
+    lastReadSnap, err := user.Data.LastRead.Get(context.Background())
     if err != nil {
         log.Fatal("Could not fetch last read: ", err)
     }
@@ -299,8 +298,8 @@ func (user *UserRef) LastRead() *UserInteraction {
     return &lastReadData
 }
 func (user *UserRef) LastSuccessfulRead() *UserInteraction {
-    if user.data.LastSuccessfulRead == nil { return nil }
-    lastReadSnap, err := user.data.LastSuccessfulRead.Get(context.Background())
+    if user.Data.LastSuccessfulRead == nil { return nil }
+    lastReadSnap, err := user.Data.LastSuccessfulRead.Get(context.Background())
     if err != nil {
         log.Fatal("Could not fetch last read: ", err)
     }
@@ -313,7 +312,7 @@ func (user *UserRef) LastSuccessfulRead() *UserInteraction {
 }
 
 func (user *UserRef) addInteractionAsLast(newInt UserInteraction) {
-    userRef := UsersCollection().Doc(user.id)
+    userRef := UsersCollection().Doc(user.Id)
     interactions := userRef.Collection("interactions")
 
     var lastType string

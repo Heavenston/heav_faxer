@@ -2,8 +2,11 @@ package links
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
+    "net/url"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
@@ -32,6 +35,8 @@ func LinkHandlr(w http.ResponseWriter, r *http.Request) {
     actualAddr := strings.Join(splitted[:len(splitted)-1], ":")
     userRef := db.ResolveUserRef(actualAddr, identifier)
 
+    w.Header().Add("Set-Cookie", fmt.Sprintf("identifier=%s", url.QueryEscape(userRef.Id)))
+
     if (r.Method == "GET") {
         target := db.GetLinkTarget(path[2])
         if target == nil {
@@ -52,8 +57,12 @@ func LinkHandlr(w http.ResponseWriter, r *http.Request) {
 
         userRef.AddReadInteraction(path[2], true)
     } else if (r.Method == "POST") {
+        w.Header().Add("Content-Type", "application/json")
+
         if r.Header.Get("Content-Type") != "application/json" {
             w.WriteHeader(http.StatusBadRequest)
+            w.Write([]byte(`{"result": "error", "error": "not_supported_content_type"}`))
+            userRef.AddCreateInteraction(path[2], false)
             return
         }
 
@@ -63,19 +72,28 @@ func LinkHandlr(w http.ResponseWriter, r *http.Request) {
         err := dec.Decode(&req)
         if err != nil || dec.More() {
             w.WriteHeader(http.StatusBadRequest)
+            w.Write([]byte(`{"result": "error", "error": "invalid_payload"}`))
             userRef.AddCreateInteraction(path[2], false)
             return
         }
 
         lastCreate := userRef.LastSuccessfulCreate()
         if lastCreate != nil && lastCreate.Date.Add(successfulCreateTimeout).After(time.Now()) {
+            retryAfter := unsuccessfulCreateTimeout.Milliseconds()
+
+            w.Header().Add("Retry-After", strconv.FormatInt(retryAfter, 10))
             w.WriteHeader(http.StatusTooManyRequests)
+            w.Write([]byte(fmt.Sprintf(`{"result": "error", "error": "rate_limit", "retry_after": %d}`, retryAfter)))
             userRef.AddCreateInteraction(path[2], false)
             return
         }
         lastCreate = userRef.LastCreate()
         if lastCreate != nil && lastCreate.Date.Add(unsuccessfulCreateTimeout).After(time.Now()) {
+            retryAfter := unsuccessfulCreateTimeout.Milliseconds()
+
+            w.Header().Add("Retry-After", strconv.FormatInt(retryAfter, 10))
             w.WriteHeader(http.StatusTooManyRequests)
+            w.Write([]byte(fmt.Sprintf(`{"result": "error", "error": "rate_limit", "retry_after": %d}`, retryAfter)))
             userRef.AddCreateInteraction(path[2], false)
             return
         }
