@@ -23,14 +23,6 @@
                     "region": "europe-west1"
                 }
             }
-        ],
-        "headers": [
-            {
-                "regex": "/api.*",
-                "headers": [
-                    { "key": "Access-Control-Allow-Origin", "value": "*" }
-                ]
-            }
         ]
     },
     "emulators": {
