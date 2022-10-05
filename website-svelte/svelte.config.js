@@ -11,7 +11,12 @@ const config = {
             assets: 'dist',
             precompress: false
         }),
+
+        alias: {
+            "~/*": "src/*"
+        },
 	},
+
 };
 
 export default config;
