@@ -94,12 +94,12 @@
         transform: translateZ(-5px) translateY(-100%);
         transition: height 500ms ease;
         padding: 20px;
-        padding-top: 0;
     }
     .output-paper {
         bottom: 0;
         height: 0;
         transform: translateZ(-5px) translateY(100%);
+        padding-top: 0;
         transition: height 500ms ease, padding-bottom 500ms ease;
 
         color: black;
