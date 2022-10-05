@@ -34,7 +34,7 @@ button {
         justify-content: center;
         align-items: center;
 
-        &>span {
+        & > :global(span) {
             font-size: 0.7em;
         }
     }

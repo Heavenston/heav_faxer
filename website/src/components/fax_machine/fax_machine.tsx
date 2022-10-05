@@ -78,7 +78,7 @@ export default component$(() => {
             <Display text={mutable(display_text.toUpperCase())} />
             <div class="lower_part">
                 <div class="keyboard">
-                    {num_pad_data.map(([n, a]) => <Button>{n} {a ?? <span>{a}</span>}</Button>)}
+                    {num_pad_data.map(([n, a]) => <Button>{n} {a && <span>{a}</span>}</Button>)}
                 </div>
                 <div>
                     <Button class="send-button">Print</Button>
