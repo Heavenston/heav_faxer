@@ -1,4 +1,4 @@
-import { mutable, $, component$, createContext, Ref, useContext, useRef, useStylesScoped$ } from "@builder.io/qwik";
+import { mutable, $, component$, createContext, Ref, useContext, useRef, useStylesScoped$, useStore, useWatch$ } from "@builder.io/qwik";
 import { Link, useNavigate } from "@builder.io/qwik-city";
 import styles from "./global_link_modal.scss?inline";
 
@@ -9,12 +9,28 @@ export const link_modal_context = createContext<{
 export default component$(() => {
     useStylesScoped$(styles);
     const c = useContext(link_modal_context);
+    const state = useStore({
+        previous_enabled: c.enable,
+        animating: false,
+    });
     const nav = useNavigate();
 
     const inputRef = useRef<HTMLDivElement>();
     const previousRef = useRef<HTMLDivElement>();
     const paperRef = useRef<HTMLDivElement>();
     const nextRef = useRef<HTMLDivElement>();
+
+    useWatch$(({ track }) => {
+        const enabled = track(c, "enable");
+        if (enabled == state.previous_enabled)
+            return;
+        state.previous_enabled = enabled;
+        state.animating = true;
+        const i = setTimeout(() => {
+            state.animating = false;
+        }, 500);
+        return () => clearTimeout(i);
+    });
 
     const on_background_click = (e: MouseEvent) => {
         for (const a of [previousRef, paperRef, nextRef]) {
@@ -49,11 +65,17 @@ export default component$(() => {
         c.enable = false;
         nav.path = r;
     });
-    const modal_style = c.enable ? "" : "display: none;";
 
-    return <div class="modal" onClick$={on_background_click} style={modal_style}>
+    const on_previous = $(() => {
+        c.enable = false;
+    });
+
+    const modal_style = c.enable || state.animating ? "" : "display: none;";
+    const modal_class = `modal ${state.animating && (c.enable ? "show" : "hide")}`;
+
+    return <div class={modal_class} onClick$={on_background_click} style={modal_style}>
         <form class="paper" ref={paperRef} preventdefault:submit onSubmit$={on_submit}>
-            <button type="reset" class="previous" ref={previousRef}>
+            <button class="previous" ref={previousRef} preventdefault:click onClick$={on_previous}>
                 &lt;- Go back to previous screen
             </button>
             <label>

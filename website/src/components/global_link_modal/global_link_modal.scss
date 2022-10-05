@@ -32,8 +32,6 @@
 
     cursor: pointer;
 
-    animation: 300ms linear 0s 1 normal both link-modal-background-appear;
-
     .paper {
         position: relative;
         cursor: default;
@@ -42,7 +40,6 @@
 
         background: white;
         transform: translateY(0px);
-        animation: 500ms ease-in-out 0s 1 normal none link-modal-paper-appear;
 
         display: flex;
         justify-content: stretch;
@@ -118,6 +115,21 @@
             border: none;
             margin: 0;
             padding: 0;
+        }
+    }
+
+    &.show {
+        animation: 300ms linear 0s 1 normal both link-modal-background-appear;
+
+        .paper {
+            animation: 500ms ease-in-out 0s 1 normal none link-modal-paper-appear;
+        }
+    }
+    &.hide {
+        animation: 300ms linear 0s 1 reverse both link-modal-background-appear;
+
+        .paper {
+            animation: 500ms ease-in-out 0s 1 reverse none link-modal-paper-appear;
         }
     }
 }
