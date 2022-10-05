@@ -5,6 +5,8 @@ import Display from "~/components/display/display";
 import Button from "~/components/button/button";
 import {useLocation} from "@builder.io/qwik-city";
 
+import * as api from "~/api";
+
 export const num_pad_data: [number | string, string?][] = [
     [1],   [2, "ABC"], [3, "DEF"],
     [4],   [5, "ABC"], [6, "DEF"],
@@ -14,6 +16,7 @@ export const num_pad_data: [number | string, string?][] = [
 
 interface State {
     state: "input" | "sending" | "showing",
+    redirect_url: string,
     cleanups: NoSerialize<(() => void)[]>,
 }
 
@@ -23,22 +26,32 @@ export default component$(() => {
 
     const state = useStore<State>({
         state: "input",
+        redirect_url: "",
         cleanups: noSerialize([]),
     });
     useCleanup$(() => {
         state.cleanups?.forEach(c => c());
     });
 
-    const on_send = $(() => {
+    const on_send = $(async () => {
         if (state.state !== "input")
             return;
-        state.state = "sending";
-        const a = setTimeout(() => {
-            state.state = "showing";
-        }, 2000);
         if (state.cleanups == undefined)
             state.cleanups = noSerialize([]);
-        state.cleanups?.push(() => clearTimeout(a));
+        state.state = "sending";
+
+        const shrtn_lnk = api.create_random_link();
+        const controller = new AbortController();
+        state.cleanups?.push(() => controller.abort());
+        const res = await api.upload_link(shrtn_lnk, loc.query["link"], controller.signal);
+
+        if (res.success) {
+            state.redirect_url = res.shortened_to;
+            state.state = "showing";
+        }
+        else {
+            state.state = "input";
+        }
     });
 
     let display_text: string = "ERROR";
@@ -72,7 +85,7 @@ export default component$(() => {
             <div class="paper output-paper">
                 <div>
                     <div>Your shortened link is:</div>
-                    <input {...({ readonly: "" } as any)} onClick$={select_elem} value="bite" />
+                    <input {...({ readonly: "" } as any)} onClick$={select_elem} value={state.redirect_url} />
                 </div>
             </div>
             <Display text={mutable(display_text.toUpperCase())} />

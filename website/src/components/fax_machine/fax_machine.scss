@@ -107,6 +107,10 @@
         justify-content: flex-start;
         align-items: flex-end;
 
+        &>div {
+            width: 100%;
+        }
+
         input {
             border: none;
             font-size: inherit; font-family: inherit;
