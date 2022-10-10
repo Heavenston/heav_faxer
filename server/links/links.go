@@ -33,7 +33,7 @@ func LinkHandlr(w http.ResponseWriter, r *http.Request) {
         splitted := strings.Split(r.RemoteAddr, ":")
         remoteAddr = strings.Join(splitted[:len(splitted)-1], ":")
     } else {
-        remoteAddr = strings.SplitN(remoteAddr, ",", 1)[0]
+        remoteAddr = strings.Split(remoteAddr, ",")[0]
     }
 
     identifierCookie, _ := r.Cookie("identifier")
