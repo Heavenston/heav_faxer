@@ -25,7 +25,7 @@ export async function upload_link(key: string, target: string, signal?: AbortSig
     if (rsp.status == 200)
         return {
             success: true,
-            shortened_to: `https://faxer.heav.fr/l/${key}`
+            shortened_to: `https://hfax.fr/l/${key}`
         };
 
     if (signal?.aborted)
