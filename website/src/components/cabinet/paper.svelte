@@ -30,13 +30,22 @@
     const prevent_drawer_open = usePreventDrawerOpen();
 
     let opened = false;
-    let rotation = Math.random() * 1 - 0.5;
-    let move = Math.random() * 8 - 4;
+    const rotation = Math.random() * 1 - 0.5;
+    const move = Math.random() * 8 - 4;
+
+    const onMouseEnter = () => {
+        opened = true;
+        prevent_drawer_open.update(i => i+1);
+    };
+    const onMouseLeave = () => {
+        opened = false;
+        prevent_drawer_open.update(i => i-1);
+    };
 </script>
 
 <div
     class="paper"
-    on:mouseenter={() => prevent_drawer_open.update(i => i+1)}
-    on:mouseleave={() => prevent_drawer_open.update(i => i-1)}
+    on:mouseenter={onMouseEnter}
+    on:mouseleave={onMouseLeave}
     style={ `--rot: ${trunc(rotation)}deg; --move: ${trunc(move)}px;` }
 />
