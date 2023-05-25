@@ -14,7 +14,7 @@ export const RouterHead = component$(() => {
             <meta property="og:site_name" content="heav-faxer" />
             <meta name="twitter:title" content="heav-faxer" />
             <meta
-                name="viewport" 
+                name="viewport"
                 content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"
             />
 

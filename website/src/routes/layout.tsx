@@ -1,5 +1,13 @@
-import { component$, Slot, useContextProvider, useStore } from "@builder.io/qwik";
-import { default as GlobalModal, link_modal_context } from "~/components/global_link_modal/global_link_modal";
+import {
+    component$,
+    Slot,
+    useContextProvider,
+    useStore,
+} from "@builder.io/qwik";
+import {
+    default as GlobalModal,
+    link_modal_context,
+} from "~/components/global_link_modal/global_link_modal";
 
 export default component$(() => {
     const mc = useStore({ enable: false });
@@ -7,8 +15,8 @@ export default component$(() => {
 
     return (
         <>
-            <Slot/>
-            <GlobalModal/>
+            <Slot />
+            <GlobalModal />
         </>
     );
 });

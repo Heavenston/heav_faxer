@@ -1,4 +1,15 @@
-import { component$, $, createContext, useRef, useStylesScoped$, useClientEffect$, useStore, useWatch$, useContextProvider, useContext } from "@builder.io/qwik";
+import {
+    component$,
+    $,
+    createContext,
+    useRef,
+    useStylesScoped$,
+    useClientEffect$,
+    useStore,
+    useWatch$,
+    useContextProvider,
+    useContext,
+} from "@builder.io/qwik";
 import { useNavigate } from "@builder.io/qwik-city";
 import styles from "./cabinet.scss?inline";
 
@@ -15,8 +26,10 @@ export default component$(() => {
         lm.enable = true;
     });
 
-    return <div class="cabinet">
-        <Drawer label="Files" index={2} />
-        <Drawer label="Links" index={1} click_cb={link_click} />
-    </div>;
+    return (
+        <div class="cabinet">
+            <Drawer label="Files" index={2} />
+            <Drawer label="Links" index={1} click_cb={link_click} />
+        </div>
+    );
 });

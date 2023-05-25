@@ -1,7 +1,14 @@
-import { component$, useRef, useStylesScoped$, useClientEffect$, useStore, useWatch$ } from "@builder.io/qwik";
+import {
+    component$,
+    useRef,
+    useStylesScoped$,
+    useClientEffect$,
+    useStore,
+    useWatch$,
+} from "@builder.io/qwik";
 import styles from "./display.scss?inline";
 
-export default component$<{ text: string }>((props) => {
+export default component$<{ text: string }>(props => {
     useStylesScoped$(styles);
     const state = useStore({
         display_length: 25,
@@ -17,21 +24,22 @@ export default component$<{ text: string }>((props) => {
         if (text.length > display_length) {
             const i = setInterval(() => {
                 let offset = state.current_index % (text.length + 5);
-                state.text_to_display = (text + "     " + text).substring(offset, offset + display_length);
+                state.text_to_display = (text + "     " + text).substring(
+                    offset,
+                    offset + display_length
+                );
 
                 state.current_index++;
             }, 150);
             return () => clearInterval(i);
-        }
-        else {
+        } else {
             state.text_to_display = text;
         }
     });
 
     useClientEffect$(({ track }) => {
         const el = track(ref, "current");
-        if (el == undefined)
-            return;
+        if (el == undefined) return;
 
         const handlr = () => {
             const cl = getComputedStyle(el);
@@ -45,14 +53,19 @@ export default component$<{ text: string }>((props) => {
             ctx.font = `${cl.fontSize} ${cl.fontFamily}`;
             const text = ctx.measureText("~");
 
-            const actual_width = el.getBoundingClientRect().width - parseInt(cl.paddingLeft) - parseInt(cl.paddingRight); 
+            const actual_width =
+                el.getBoundingClientRect().width -
+                parseInt(cl.paddingLeft) -
+                parseInt(cl.paddingRight);
             const n = Math.floor(actual_width / text.width);
 
             state.display_length = n;
         };
         const observer = new ResizeObserver(handlr);
         observer.observe(el);
-        return () => { observer.disconnect() };
+        return () => {
+            observer.disconnect();
+        };
     });
 
     return (

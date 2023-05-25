@@ -1,4 +1,13 @@
-import { component$, useRef, useStyles$, useStylesScoped$, useClientEffect$, useStore, useWatch$, useContext } from "@builder.io/qwik";
+import {
+    component$,
+    useRef,
+    useStyles$,
+    useStylesScoped$,
+    useClientEffect$,
+    useStore,
+    useWatch$,
+    useContext,
+} from "@builder.io/qwik";
 import styles from "./paper.scss?inline";
 import globalStyles from "./paper_global.scss?inline";
 
@@ -25,12 +34,19 @@ export default component$(() => {
         const element = track(ref, "current");
         if (element === undefined) return;
 
-        const onMouseEnter = () => { state.opened = true; };
-        const onMouseLeave = () => { state.opened = false; };
+        const onMouseEnter = () => {
+            state.opened = true;
+        };
+        const onMouseLeave = () => {
+            state.opened = false;
+        };
         element.addEventListener("mouseenter", onMouseEnter);
         element.addEventListener("mouseleave", onMouseLeave);
 
-        return () => { element.removeEventListener("mouseenter", onMouseEnter); element.removeEventListener("mouseleave", onMouseLeave); };
+        return () => {
+            element.removeEventListener("mouseenter", onMouseEnter);
+            element.removeEventListener("mouseleave", onMouseLeave);
+        };
     });
 
     useClientEffect$(({ track }) => {
@@ -45,7 +61,10 @@ export default component$(() => {
         floating_paper.style.left = `${bcr.left}px`;
         floating_paper.style.top = `${bcr.top}px`;
         floating_paper.style.width = `${bcr.width}px`;
-        floating_paper.style.setProperty("--rot", el.style.getPropertyValue("--rot"))
+        floating_paper.style.setProperty(
+            "--rot",
+            el.style.getPropertyValue("--rot")
+        );
         floating_paper.style.zIndex = `${Math.trunc(bcr.y / 10)}`;
 
         prevent_drawer_close.count += 1;
@@ -59,9 +78,13 @@ export default component$(() => {
         };
     });
 
-    return <div
-        ref={ref}
-        class="paper"
-        style={ `--rot: ${trunc(state.rotation)}deg; --move: ${trunc(state.move)}px;` }
-    />
+    return (
+        <div
+            ref={ref}
+            class="paper"
+            style={`--rot: ${trunc(state.rotation)}deg; --move: ${trunc(
+                state.move
+            )}px;`}
+        />
+    );
 });

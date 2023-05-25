@@ -7,7 +7,8 @@
     }
 
     box-shadow: 0 0 3px 3px rgba(0, 0, 0, 0.3);
-    transform: rotateZ(var(--rot)) translateX(var(--move)) translateY(-50%) rotateX(-25deg) translateY(50%);
+    transform: rotateZ(var(--rot)) translateX(var(--move)) translateY(-50%)
+        rotateX(-25deg) translateY(50%);
 
     &::after {
         content: "";

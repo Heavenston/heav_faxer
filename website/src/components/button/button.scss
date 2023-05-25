@@ -1,4 +1,3 @@
-
 button {
     --offset: var(--button-default-offset);
 
@@ -12,10 +11,12 @@ button {
     cursor: pointer;
     background-color: var(--button-background-color);
 
-    box-shadow: 0px calc(var(--offset)) calc(var(--offset)) 0px var(--button-shadow-color);
-    transition: box-shadow var(--button-transition-duration) var(--button-transition-function);
+    box-shadow: 0px calc(var(--offset)) calc(var(--offset)) 0px
+        var(--button-shadow-color);
+    transition: box-shadow var(--button-transition-duration)
+        var(--button-transition-function);
 
-    &>span {
+    & > span {
         border-radius: 8px;
         background-color: var(--button-foreground-color);
 
@@ -27,7 +28,8 @@ button {
         height: 100%;
         transform: translateY(calc(var(--offset) * -1));
 
-        transition: transform var(--button-transition-duration) var(--button-transition-function);
+        transition: transform var(--button-transition-duration)
+            var(--button-transition-function);
 
         display: flex;
         flex-direction: column;

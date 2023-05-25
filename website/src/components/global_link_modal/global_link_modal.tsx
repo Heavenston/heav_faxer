@@ -1,9 +1,20 @@
-import { mutable, $, component$, createContext, Ref, useContext, useRef, useStylesScoped$, useStore, useWatch$ } from "@builder.io/qwik";
+import {
+    mutable,
+    $,
+    component$,
+    createContext,
+    Ref,
+    useContext,
+    useRef,
+    useStylesScoped$,
+    useStore,
+    useWatch$,
+} from "@builder.io/qwik";
 import { Link, useNavigate } from "@builder.io/qwik-city";
 import styles from "./global_link_modal.scss?inline";
 
 export const link_modal_context = createContext<{
-    enable: boolean,
+    enable: boolean;
 }>("link_modal_context");
 
 export default component$(() => {
@@ -22,8 +33,7 @@ export default component$(() => {
 
     useWatch$(({ track }) => {
         const enabled = track(c, "enable");
-        if (enabled == state.previous_enabled)
-            return;
+        if (enabled == state.previous_enabled) return;
         state.previous_enabled = enabled;
         state.animating = true;
         const i = setTimeout(() => {
@@ -35,9 +45,13 @@ export default component$(() => {
     const on_background_click = (e: MouseEvent) => {
         for (const a of [previousRef, paperRef, nextRef]) {
             const cbr = a.current?.getBoundingClientRect();
-            if (!cbr)
-                return;
-            if (e.clientX > cbr.x && e.clientX < (cbr.x + cbr.width) && e.clientY > cbr.y && e.clientY < (cbr.y + cbr.height))
+            if (!cbr) return;
+            if (
+                e.clientX > cbr.x &&
+                e.clientX < cbr.x + cbr.width &&
+                e.clientY > cbr.y &&
+                e.clientY < cbr.y + cbr.height
+            )
                 return;
         }
 
@@ -52,11 +66,9 @@ export default component$(() => {
     };
     const on_input = (e: KeyboardEvent) => {
         const t = e.target;
-        if (!(t instanceof HTMLDivElement))
-            return;
+        if (!(t instanceof HTMLDivElement)) return;
         const changed = t.innerText.replace(/\n/g, "");
-        if (changed != t.innerText)
-            t.innerText = changed;
+        if (changed != t.innerText) t.innerText = changed;
     };
 
     const on_submit = $(() => {
@@ -71,26 +83,44 @@ export default component$(() => {
     });
 
     const modal_style = c.enable || state.animating ? "" : "display: none;";
-    const modal_class = `modal ${state.animating && (c.enable ? "show" : "hide")}`;
+    const modal_class = `modal ${
+        state.animating && (c.enable ? "show" : "hide")
+    }`;
 
-    return <div class={modal_class} onClick$={on_background_click} style={modal_style}>
-        <form class="paper" ref={paperRef} preventdefault:submit onSubmit$={on_submit}>
-            <button class="previous" ref={previousRef} preventdefault:click onClick$={on_previous}>
-                &lt;- Go back to previous screen
-            </button>
-            <label>
-                <span class="label">Enter url here:</span>
-                <div 
-                    class="input"
-                    ref={inputRef}
-                    {...({contenteditable: true }) as any}
-                    onKeyPress$={on_key_press}
-                    onInput$={on_input}
-                ></div>
-            </label>
-            <button type="submit" class="next" ref={nextRef}>
-                Create the shortened link -&gt;
-            </button>
-        </form>
-    </div>;
+    return (
+        <div
+            class={modal_class}
+            onClick$={on_background_click}
+            style={modal_style}
+        >
+            <form
+                class="paper"
+                ref={paperRef}
+                preventdefault:submit
+                onSubmit$={on_submit}
+            >
+                <button
+                    class="previous"
+                    ref={previousRef}
+                    preventdefault:click
+                    onClick$={on_previous}
+                >
+                    &lt;- Go back to previous screen
+                </button>
+                <label>
+                    <span class="label">Enter url here:</span>
+                    <div
+                        class="input"
+                        ref={inputRef}
+                        {...({ contenteditable: true } as any)}
+                        onKeyPress$={on_key_press}
+                        onInput$={on_input}
+                    ></div>
+                </label>
+                <button type="submit" class="next" ref={nextRef}>
+                    Create the shortened link -&gt;
+                </button>
+            </form>
+        </div>
+    );
 });
