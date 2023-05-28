@@ -1,11 +1,10 @@
 import {
     component$,
-    useRef,
+    useSignal,
     useStyles$,
     useStylesScoped$,
-    useClientEffect$,
+    useVisibleTask$,
     useStore,
-    useWatch$,
     useContext,
 } from "@builder.io/qwik";
 import styles from "./paper.scss?inline";
@@ -26,12 +25,11 @@ export default component$(() => {
         rotation: Math.random() * 1 - 0.5,
         move: Math.random() * 8 - 4,
     });
-    const ref = useRef<HTMLDivElement>();
-
+    const ref = useSignal<HTMLDivElement>();
     const prevent_drawer_close = useContext(prevent_drawer_close_context);
 
-    useClientEffect$(({ track }) => {
-        const element = track(ref, "current");
+    useVisibleTask$(({ track }) => {
+        const element = track(() => ref.value);
         if (element === undefined) return;
 
         const onMouseEnter = () => {
@@ -49,9 +47,9 @@ export default component$(() => {
         };
     });
 
-    useClientEffect$(({ track }) => {
-        const el = track(ref, "current");
-        const opened = track(state, "opened");
+    useVisibleTask$(({ track }) => {
+        const el = track(() => ref.value);
+        const opened = track(() => state.opened);
         if (!opened || el === undefined) return;
 
         const bcr = el.getBoundingClientRect();

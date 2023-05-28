@@ -1,16 +1,11 @@
 import {
     component$,
     $,
-    createContext,
-    useRef,
     useStylesScoped$,
-    useClientEffect$,
     useStore,
-    useWatch$,
     useContextProvider,
     useContext,
 } from "@builder.io/qwik";
-import { useNavigate } from "@builder.io/qwik-city";
 import styles from "./cabinet.scss?inline";
 
 import { default as Drawer, prevent_drawer_open_context } from "./drawer";
@@ -22,9 +17,7 @@ export default component$(() => {
     useContextProvider(prevent_drawer_open_context, prevent_drawer_open);
 
     const lm = useContext(link_modal_context);
-    const link_click = $(() => {
-        lm.enable = true;
-    });
+    const link_click = $(() => { lm.enable = true; });
 
     return (
         <div class="cabinet">

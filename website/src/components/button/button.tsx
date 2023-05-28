@@ -2,7 +2,6 @@ import {
     component$,
     useStylesScoped$,
     Slot,
-    PropsOf,
     DOMAttributes,
 } from "@builder.io/qwik";
 import styles from "./button.scss?inline";

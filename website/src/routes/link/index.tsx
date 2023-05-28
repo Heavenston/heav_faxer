@@ -1,10 +1,8 @@
 import {
     component$,
-    useClientEffect$,
     useStylesScoped$,
-    useWatch$,
 } from "@builder.io/qwik";
-import { DocumentHead, useLocation, useNavigate } from "@builder.io/qwik-city";
+import { DocumentHead } from "@builder.io/qwik-city";
 
 import Machine from "~/components/fax_machine/fax_machine";
 

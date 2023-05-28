@@ -1,15 +1,11 @@
 import {
     $,
-    mutable,
     component$,
-    useRef,
-    useOnWindow,
     useStylesScoped$,
-    useClientEffect$,
     useStore,
-    useCleanup$,
     NoSerialize,
     noSerialize,
+    useTask$,
 } from "@builder.io/qwik";
 import styles from "./fax_machine.scss?inline";
 
@@ -49,9 +45,9 @@ export default component$(() => {
         redirect_url: "",
         cleanups: noSerialize([]),
     });
-    useCleanup$(() => {
+    useTask$(({cleanup}) => cleanup(() => {
         state.cleanups?.forEach(c => c());
-    });
+    }));
 
     const on_send = $(async () => {
         if (state.state !== "input") return;
@@ -63,7 +59,7 @@ export default component$(() => {
         state.cleanups?.push(() => controller.abort());
         const res = await api.upload_link(
             shrtn_lnk,
-            loc.query["link"],
+            loc.params["link"],
             controller.signal
         );
 
@@ -89,11 +85,11 @@ export default component$(() => {
         output_paper = true;
     }
 
-    const select_elem = (e: MouseEvent) => {
+    const select_elem = $((e: MouseEvent) => {
         const t = e.target;
         if (!(t instanceof HTMLInputElement)) return;
         t.select();
-    };
+    });
 
     return (
         <div
@@ -102,7 +98,7 @@ export default component$(() => {
             }`}
         >
             <div class="paper input-paper">
-                <div>{loc.query["link"]}</div>
+                <div>{loc.params["link"]}</div>
             </div>
             <div class="paper output-paper">
                 <div>
@@ -114,11 +110,11 @@ export default component$(() => {
                     />
                 </div>
             </div>
-            <Display text={mutable(display_text.toUpperCase())} />
+            <Display text={display_text.toUpperCase()} />
             <div class="lower_part">
                 <div class="keyboard">
-                    {num_pad_data.map(([n, a]) => (
-                        <Button>
+                    {num_pad_data.map(([n, a], i) => (
+                        <Button key={i}>
                             {n} {a && <span>{a}</span>}
                         </Button>
                     ))}

@@ -1,10 +1,10 @@
 import {
     component$,
-    useRef,
+    useSignal,
     useStylesScoped$,
-    useClientEffect$,
+    useVisibleTask$,
     useStore,
-    useWatch$,
+    useTask$,
 } from "@builder.io/qwik";
 import styles from "./display.scss?inline";
 
@@ -15,15 +15,15 @@ export default component$<{ text: string }>(props => {
         text_to_display: "!",
         current_index: 0,
     });
-    const ref = useRef<HTMLDivElement>();
+    const ref = useSignal<HTMLDivElement>();
 
-    useWatch$(({ track }) => {
-        const text = track(props, "text");
-        const display_length = track(state, "display_length");
+    useTask$(({ track, cleanup }) => {
+        const text = track(() => props.text);
+        const display_length = track(() => state.display_length);
 
         if (text.length > display_length) {
             const i = setInterval(() => {
-                let offset = state.current_index % (text.length + 5);
+                const offset = state.current_index % (text.length + 5);
                 state.text_to_display = (text + "     " + text).substring(
                     offset,
                     offset + display_length
@@ -31,14 +31,14 @@ export default component$<{ text: string }>(props => {
 
                 state.current_index++;
             }, 150);
-            return () => clearInterval(i);
+            cleanup(() => clearInterval(i));
         } else {
             state.text_to_display = text;
         }
     });
 
-    useClientEffect$(({ track }) => {
-        const el = track(ref, "current");
+    useVisibleTask$(({ track, cleanup }) => {
+        const el = track(() => ref.value);
         if (el == undefined) return;
 
         const handlr = () => {
@@ -63,9 +63,7 @@ export default component$<{ text: string }>(props => {
         };
         const observer = new ResizeObserver(handlr);
         observer.observe(el);
-        return () => {
-            observer.disconnect();
-        };
+        cleanup(() => observer.disconnect());
     });
 
     return (

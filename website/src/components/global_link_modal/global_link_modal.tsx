@@ -1,19 +1,18 @@
 import {
-    mutable,
     $,
     component$,
-    createContext,
-    Ref,
+    createContextId,
     useContext,
-    useRef,
     useStylesScoped$,
     useStore,
-    useWatch$,
+    useSignal,
+    QwikMouseEvent,
+    useTask$,
 } from "@builder.io/qwik";
-import { Link, useNavigate } from "@builder.io/qwik-city";
+import { useNavigate } from "@builder.io/qwik-city";
 import styles from "./global_link_modal.scss?inline";
 
-export const link_modal_context = createContext<{
+export const link_modal_context = createContextId<{
     enable: boolean;
 }>("link_modal_context");
 
@@ -26,25 +25,25 @@ export default component$(() => {
     });
     const nav = useNavigate();
 
-    const inputRef = useRef<HTMLDivElement>();
-    const previousRef = useRef<HTMLDivElement>();
-    const paperRef = useRef<HTMLDivElement>();
-    const nextRef = useRef<HTMLDivElement>();
+    const inputRef = useSignal<HTMLDivElement>();
+    const previousRef = useSignal<HTMLDivElement>();
+    const paperRef = useSignal<HTMLDivElement>();
+    const nextRef = useSignal<HTMLDivElement>();
 
-    useWatch$(({ track }) => {
-        const enabled = track(c, "enable");
-        if (enabled == state.previous_enabled) return;
-        state.previous_enabled = enabled;
+    useTask$(({ track, cleanup }) => {
+        track(() => c);
+        if (c.enable == state.previous_enabled) return;
+        state.previous_enabled = c.enable;
         state.animating = true;
         const i = setTimeout(() => {
             state.animating = false;
         }, 500);
-        return () => clearTimeout(i);
+        cleanup(() => clearTimeout(i));
     });
 
-    const on_background_click = (e: MouseEvent) => {
+    const on_background_click = $((e: QwikMouseEvent) => {
         for (const a of [previousRef, paperRef, nextRef]) {
-            const cbr = a.current?.getBoundingClientRect();
+            const cbr = a.value?.getBoundingClientRect();
             if (!cbr) return;
             if (
                 e.clientX > cbr.x &&
@@ -56,26 +55,26 @@ export default component$(() => {
         }
 
         c.enable = false;
-    };
+    });
 
-    const on_key_press = (e: KeyboardEvent) => {
+    const on_key_press = $((e: KeyboardEvent) => {
         if (e.code == "Enter") {
             e.preventDefault();
             return;
         }
-    };
-    const on_input = (e: KeyboardEvent) => {
+    });
+    const on_input = $((e: KeyboardEvent) => {
         const t = e.target;
         if (!(t instanceof HTMLDivElement)) return;
         const changed = t.innerText.replace(/\n/g, "");
         if (changed != t.innerText) t.innerText = changed;
-    };
+    });
 
     const on_submit = $(() => {
-        const v = inputRef.current?.innerText ?? "https://example.com";
+        const v = inputRef.value?.innerText ?? "https://example.com";
         const r = `/link?link=${encodeURIComponent(v)}`;
         c.enable = false;
-        nav.path = r;
+        nav(r);
     });
 
     const on_previous = $(() => {

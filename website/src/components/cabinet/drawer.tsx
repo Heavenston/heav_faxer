@@ -2,26 +2,27 @@ import {
     component$,
     useStylesScoped$,
     useStore,
-    useWatch$,
+    useTask$,
     useContext,
-    createContext,
+    createContextId,
     useContextProvider,
+    QwikMouseEvent,
 } from "@builder.io/qwik";
 import styles from "./drawer.scss?inline";
 
 import Paper from "./paper";
 
-export const prevent_drawer_open_context = createContext<{ index: number }>(
+export const prevent_drawer_open_context = createContextId<{ index: number }>(
     "prevent_drawer_open_context"
 );
-export const prevent_drawer_close_context = createContext<{ count: number }>(
+export const prevent_drawer_close_context = createContextId<{ count: number }>(
     "prevent_drawer_close_context"
 );
 
 interface Props {
     index: number;
     label: string;
-    click_cb?: (el: MouseEvent) => void;
+    click_cb?: (el: QwikMouseEvent) => void;
 }
 
 export default component$<Props>(({ index, label, click_cb }) => {
@@ -31,9 +32,9 @@ export default component$<Props>(({ index, label, click_cb }) => {
     useContextProvider(prevent_drawer_close_context, prevent_drawer_close);
 
     const prevent_drawer_open = useContext(prevent_drawer_open_context);
-    useWatch$(({ track }) => {
-        const drc = track(prevent_drawer_close, "count");
-        const dro = track(prevent_drawer_open, "index");
+    useTask$(({ track }) => {
+        const drc = track(() => prevent_drawer_close.count);
+        const dro = track(() => prevent_drawer_open.index);
         if (dro === -1 && drc > 0) {
             prevent_drawer_open.index = index;
         } else if (prevent_drawer_open.index === index && drc == 0) {
@@ -56,8 +57,8 @@ export default component$<Props>(({ index, label, click_cb }) => {
             <div class="background">
                 {Array(13)
                     .fill(null)
-                    .map(_ => (
-                        <Paper />
+                    .map((_value, index) => (
+                        <Paper key={index} />
                     ))}
             </div>
             <div class="foreground">
