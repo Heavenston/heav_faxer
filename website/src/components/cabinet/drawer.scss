@@ -53,6 +53,8 @@ $animation_duration: 300ms;
         padding-bottom: 50px;
 
         & > span {
+            transition: transform 50ms linear;
+
             color: black;
             font-family: "Indie Flower", cursive;
             font-size: 2.4em;

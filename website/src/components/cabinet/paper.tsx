@@ -28,7 +28,7 @@ export default component$(() => {
     const ref = useSignal<HTMLDivElement>();
     const prevent_drawer_close = useContext(prevent_drawer_close_context);
 
-    useVisibleTask$(({ track }) => {
+    useVisibleTask$(({ track, cleanup }) => {
         const element = track(() => ref.value);
         if (element === undefined) return;
 
@@ -41,13 +41,13 @@ export default component$(() => {
         element.addEventListener("mouseenter", onMouseEnter);
         element.addEventListener("mouseleave", onMouseLeave);
 
-        return () => {
+        cleanup(() => {
             element.removeEventListener("mouseenter", onMouseEnter);
             element.removeEventListener("mouseleave", onMouseLeave);
-        };
+        });
     });
 
-    useVisibleTask$(({ track }) => {
+    useVisibleTask$(({ track, cleanup }) => {
         const el = track(() => ref.value);
         const opened = track(() => state.opened);
         if (!opened || el === undefined) return;
@@ -67,13 +67,13 @@ export default component$(() => {
 
         prevent_drawer_close.count += 1;
 
-        return () => {
+        cleanup(() => {
             floating_paper.classList.add("hide");
             setTimeout(() => {
                 document.body.removeChild(floating_paper);
                 prevent_drawer_close.count -= 1;
-            }, 500);
-        };
+            }, 350);
+        });
     });
 
     return (
