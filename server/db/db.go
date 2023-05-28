@@ -41,7 +41,7 @@ func GetLinkTarget(key string) *string {
     docSnap, err := doc.Get(ctx)
 
     if docSnap == nil {
-        fmt.Errorf("Could not fetch a document:", err)
+        fmt.Println("Could not fetch a document:", err)
         return nil
     }
     if !docSnap.Exists() {
@@ -50,12 +50,12 @@ func GetLinkTarget(key string) *string {
 
     var link LinkData
     if err := docSnap.DataTo(&link); err != nil {
-        fmt.Errorf("Invalid document in link collection:", err)
+        fmt.Println("Invalid document in link collection:", err)
         return nil
     }
     return &link.Target
 }
-func TryInsertTarget(key string, target string) bool {
+func TryInsertLink(key string, target string) bool {
     ctx := context.Background()
 
     collection := LinksCollection()
@@ -66,7 +66,7 @@ func TryInsertTarget(key string, target string) bool {
     })
 
     if err != nil {
-        fmt.Errorf("No:", err)
+        fmt.Println("No:", err)
         return false
     }
 
@@ -117,7 +117,7 @@ func ResolveUserRef(addr string, id *string) UserRef {
             var err error = nil
             idSnap, err = idRef.Get(ctx)
             if err != nil && idSnap == nil {
-                fmt.Errorf("Could not fetch doc:", err)
+                fmt.Println("Could not fetch doc:", err)
             }
             if !idSnap.Exists() {
                 idSnap = nil
@@ -144,7 +144,7 @@ func ResolveUserRef(addr string, id *string) UserRef {
         addrMatch, err := docs.Next()
 
         if err != nil && err != iterator.Done {
-            fmt.Errorf("Could not fetch doc:", err)
+            fmt.Println("Could not fetch doc:", err)
         }
 
         if idSnap == nil { // No id match

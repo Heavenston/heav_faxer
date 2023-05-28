@@ -17,9 +17,9 @@ type linkPostRequest struct {
     Target string `json:"target"`
 }
 
-var path_reg = regexp.MustCompile("^(?:/api)?/(link)/([A-Za-z0-9]+)/?$")
+var path_reg = regexp.MustCompile("^(?:/api)?/link/([A-Za-z0-9]+)/?$")
 var successfulCreateTimeout = time.Minute
-var unsuccessfulCreateTimeout = time.Second * 2
+var unsuccessfulCreateTimeout = time.Second * 5
 
 func LinkHandlr(w http.ResponseWriter, r *http.Request) {
     path := path_reg.FindStringSubmatch(r.URL.Path)
@@ -27,12 +27,17 @@ func LinkHandlr(w http.ResponseWriter, r *http.Request) {
         w.WriteHeader(http.StatusNotFound)
         return;
     }
+    link_id := path[1]
 
+    // Get proxied remote addr ip if the standard header for it is set
     var remoteAddr string = r.Header.Get("X-Forwarded-For")
     if remoteAddr == "" {
         splitted := strings.Split(r.RemoteAddr, ":")
+        // Removes the port of the r.RemoteAddr field
         remoteAddr = strings.Join(splitted[:len(splitted)-1], ":")
     } else {
+        // X-Forwarded-For is a comma separated list of all proxies,
+        // the firs is the client's ip
         remoteAddr = strings.Split(remoteAddr, ",")[0]
     }
 
@@ -41,10 +46,13 @@ func LinkHandlr(w http.ResponseWriter, r *http.Request) {
     if identifierCookie != nil { identifier = &identifierCookie.Value }
     userRef := db.ResolveUserRef(remoteAddr, identifier)
 
-    w.Header().Add("Set-Cookie", fmt.Sprintf("identifier=%s", url.QueryEscape(userRef.Id)))
+    w.Header().Add(
+        "Set-Cookie",
+        fmt.Sprintf("identifier=%s", url.QueryEscape(userRef.Id)),
+    )
 
     if (r.Method == "GET") {
-        target := db.GetLinkTarget(path[2])
+        target := db.GetLinkTarget(link_id)
         if target == nil {
             if r.URL.Query().Has("or") {
                 w.Header().Add("Location", r.URL.Query().Get("or"))
@@ -54,21 +62,21 @@ func LinkHandlr(w http.ResponseWriter, r *http.Request) {
                 w.WriteHeader(http.StatusNotFound)
             }
 
-            userRef.AddReadInteraction(path[2], false)
+            userRef.AddReadInteraction(link_id, false)
             return
         }
 
         w.Header().Add("Location", *target)
         w.WriteHeader(http.StatusTemporaryRedirect)
 
-        userRef.AddReadInteraction(path[2], true)
+        userRef.AddReadInteraction(link_id, true)
     } else if (r.Method == "POST") {
         w.Header().Add("Content-Type", "application/json")
 
         if r.Header.Get("Content-Type") != "application/json" {
-            w.WriteHeader(http.StatusBadRequest)
+            w.WriteHeader(http.StatusUnsupportedMediaType)
             w.Write([]byte(`{"result": "error", "error": "not_supported_content_type"}`))
-            userRef.AddCreateInteraction(path[2], false)
+            userRef.AddCreateInteraction(link_id, false)
             return
         }
 
@@ -79,7 +87,14 @@ func LinkHandlr(w http.ResponseWriter, r *http.Request) {
         if err != nil || dec.More() {
             w.WriteHeader(http.StatusBadRequest)
             w.Write([]byte(`{"result": "error", "error": "invalid_payload"}`))
-            userRef.AddCreateInteraction(path[2], false)
+            userRef.AddCreateInteraction(link_id, false)
+            return
+        }
+        parsed_target, err := url.Parse(req.Target)
+        if err != nil || parsed_target.Host == "" {
+            w.WriteHeader(http.StatusBadRequest)
+            w.Write([]byte(`{"result": "error", "error": "invalid_link_target"}`))
+            userRef.AddCreateInteraction(link_id, false)
             return
         }
 
@@ -90,7 +105,7 @@ func LinkHandlr(w http.ResponseWriter, r *http.Request) {
             w.Header().Add("Retry-After", strconv.FormatInt(retryAfter, 10))
             w.WriteHeader(http.StatusTooManyRequests)
             w.Write([]byte(fmt.Sprintf(`{"result": "error", "error": "rate_limit", "retry_after": %d}`, retryAfter)))
-            userRef.AddCreateInteraction(path[2], false)
+            userRef.AddCreateInteraction(link_id, false)
             return
         }
         lastCreate = userRef.LastCreate()
@@ -100,17 +115,17 @@ func LinkHandlr(w http.ResponseWriter, r *http.Request) {
             w.Header().Add("Retry-After", strconv.FormatInt(retryAfter, 10))
             w.WriteHeader(http.StatusTooManyRequests)
             w.Write([]byte(fmt.Sprintf(`{"result": "error", "error": "rate_limit", "retry_after": %d}`, retryAfter)))
-            userRef.AddCreateInteraction(path[2], false)
+            userRef.AddCreateInteraction(link_id, false)
             return
         }
 
-        couldInsert := db.TryInsertTarget(path[2], req.Target)
+        couldInsert := db.TryInsertLink(link_id, req.Target)
         if couldInsert {
             w.WriteHeader(http.StatusOK)
         } else {
             w.WriteHeader(http.StatusConflict)
         }
-        userRef.AddCreateInteraction(path[2], couldInsert)
+        userRef.AddCreateInteraction(link_id, couldInsert)
     } else {
         w.WriteHeader(http.StatusMethodNotAllowed)
     }
