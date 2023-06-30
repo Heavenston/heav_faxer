@@ -6,11 +6,19 @@ import {
     NoSerialize,
     noSerialize,
     useTask$,
+    Slot,
+    QRL,
 } from "@builder.io/qwik";
 import styles from "./fax_machine.scss?inline";
 
 import Display from "~/components/display/display";
 import Button from "~/components/button/button";
+
+export type Props = {
+    send_function: QRL<() => Promise<string>>;
+
+    on_reset?: QRL<() => void>;
+};
 
 type State = {
     cleanups: NoSerialize<(() => void)[]>;
@@ -27,7 +35,7 @@ type State = {
     })
 };
 
-export default component$(() => {
+export default component$<Props>(props => {
     useStylesScoped$(styles);
 
     const store = useStore<State>({
@@ -39,16 +47,24 @@ export default component$(() => {
     }));
 
     const on_send = $(async () => {
-        if (store.state.name != "input")
-            return;
         store.state = { name: "sending" };
-        setTimeout(() => {
-            store.state = { name: "showing", shortened_url: "bite" };
-        }, 1000);
+        try {
+            const link = await props.send_function();
+            store.state = { name: "showing", shortened_url: link };
+        }
+        catch(e) {
+            if (typeof e === "string" || e instanceof Object) {
+                store.state = {
+                    name: "error",
+                    error_message: e.toString(),
+                };
+            }
+        }
     });
 
     const on_reset = $(async () => {
         store.state = { name: "input" };
+        props.on_reset?.();
     });
 
     let display_text: string = "ERROR";
@@ -82,11 +98,11 @@ export default component$(() => {
             }}
         >
             <div class="paper input-paper">
-                <div>Bite</div>
+                <Slot/>
             </div>
             <div class="paper output-paper">
                 <div>
-                    <div>Your shortened link is:</div>
+                    <div>Your link is:</div>
                     <input
                         {...({ readonly: "" } as any)}
                         onClick$={select_elem}
@@ -95,7 +111,11 @@ export default component$(() => {
                     />
                 </div>
             </div>
-            <Display text={display_text.toUpperCase()} />
+            <Display text={display_text.toUpperCase()} state={
+                store.state.name === "error" ? "error" :
+                store.state.name === "showing" ? "success" :
+                "normal"
+            } />
             <div class="lower-part">
                 <Button class="send-button" onClick$={on_send} disabled={store.state.name != "input" && store.state.name != "error"}>
                     Send

@@ -11,6 +11,20 @@
     padding-left: 15px;
     padding-right: 15px;
     border-radius: 5px;
+
+    transition: color 150ms ease-in-out;
+}
+
+.display.state-normal {
+    color: white;
+}
+
+.display.state-error {
+    color: red;
+}
+
+.display.state-success {
+    color: lime;
 }
 
 :global(.display::before) {

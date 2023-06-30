@@ -8,7 +8,12 @@ import {
 } from "@builder.io/qwik";
 import styles from "./display.scss?inline";
 
-export default component$<{ text: string }>(props => {
+export type Props = {
+    text: string,
+    state?: "normal" | "error" | "success",
+};
+
+export default component$<Props>(props => {
     useStylesScoped$(styles);
     const state = useStore({
         display_length: 25,
@@ -16,6 +21,11 @@ export default component$<{ text: string }>(props => {
         current_index: 0,
     });
     const ref = useSignal<HTMLDivElement>();
+
+    useTask$(({ track }) => {
+        track(() => props.text);
+        state.current_index = 0;
+    });
 
     useVisibleTask$(({ track, cleanup }) => {
         const text = track(() => props.text);
@@ -69,10 +79,17 @@ export default component$<{ text: string }>(props => {
     return (
         <div
             ref={ref}
-            class="display"
-            style={`--placeholder: '${"~".repeat(state.display_length ?? 0)}';`}
+            class={{
+                "display": true,
+                "state-normal": props.state === undefined || props.state === "normal",
+                "state-error": props.state === "error",
+                "state-success": props.state === "success",
+            }}
+            style={`
+                --placeholder: '${"~".repeat(state.display_length ?? 0)}';
+            `}
         >
-            {state.text_to_display.replace(/ /g, "!")}
+            {state.text_to_display.replace(/ /g, "!").replace(/:/g, "!")}
         </div>
     );
 });
