@@ -1,17 +1,18 @@
+mod db;
 #[macro_use] extern crate rocket;
 
-use std::net::{IpAddr, SocketAddr};
+use std::net::SocketAddr;
 
+use db::{DBAccess, LinkRedirectDocument, LinkSpecialDocument, LinkDocument};
 use either::{
     Either,
     Either::*,
 };
 use rocket::{
-    response::{ Redirect, status::NotFound },
+    response::Redirect,
     Config,
-    http::{Header, Status}, State, serde::json::Json, Request, Response,
+    http::{Header, Status}, State, serde::json::Json, Request,
 };
-use mongodb::{ Client, options::ClientOptions, Collection };
 
 #[catch(404)]
 fn catch_404() -> serde_json::Value {
@@ -32,24 +33,9 @@ fn catch_all(status: Status, _request: &Request) -> serde_json::Value {
     })
 }
 
-#[derive(serde::Serialize, serde::Deserialize)]
-pub struct Link {
-    #[serde(skip_serializing_if="Option::is_none")]
-    pub created_at: Option<bson::Timestamp>,
-    #[serde(skip_serializing_if="Option::is_none")]
-    pub created_by_ip: Option<IpAddr>,
-
-    pub name: String,
-    pub target: String,
-}
-
-pub struct DBConfig {
-    pub links_collection: Collection<Link>
-}
-
-#[get("/link/<link>?<or>")]
+#[get("/<link>?<or>")]
 async fn get_link(
-    db: &State<DBConfig>,
+    db: &State<DBAccess>,
     link: String, or: Option<String>
 ) -> Either<Redirect, (Status, serde_json::Value)> {
     let Some(link) = db.links_collection.find_one(Some(bson::doc!{
@@ -64,8 +50,22 @@ async fn get_link(
             }))),
         };
     };
-    
-    Left(Redirect::temporary(link.target))
+
+    match link.special {
+        LinkSpecialDocument::Reservation(_) => {
+            match or {
+                Some(x) => Left(Redirect::temporary(x)),
+                None => Right((Status::NotFound, serde_json::json!({
+                    "success": false,
+                    "error": "reserved",
+                    "message": format!("Link {} is reserved but not assigned", link.name),
+                }))),
+            }
+        }
+        LinkSpecialDocument::Redirection(red) => {
+            Left(Redirect::temporary(red.target))
+        }
+    }
 }
 
 #[derive(serde::Serialize, serde::Deserialize)]
@@ -73,10 +73,10 @@ struct LinkPostBody {
     target: url::Url,
 }
 
-#[post("/link/<link>", format = "application/json", data = "<body>")]
+#[post("/<link>", format = "application/json", data = "<body>")]
 async fn post_link(
     addr: SocketAddr,
-    db: &State<DBConfig>,
+    db: &State<DBAccess>,
     link: String,
     body: Json<LinkPostBody>,
 ) -> (Status, serde_json::Value) {
@@ -96,15 +96,18 @@ async fn post_link(
     }
 
     db.links_collection.insert_one(
-        Link {
+        LinkDocument {
             name: link.clone(),
-            target: body.target.to_string(),
 
             created_at: Some(bson::Timestamp {
                 time: 0,
                 increment: 0,
             }),
             created_by_ip: Some(addr.ip()),
+
+            special: LinkSpecialDocument::Redirection(LinkRedirectDocument {
+                target: body.target.to_string(),
+            }),
         },
         None
     ).await.unwrap();
@@ -124,21 +127,11 @@ async fn post_link_error(_link: String) -> (Status, serde_json::Value) {
 
 #[launch]
 async fn rocket() -> _ {
-    let mut client_options = ClientOptions::parse(
-        std::env::var("MONGODB_CONNECTION").unwrap()
-    ).await.expect("failed to parse db connection string");
-    client_options.default_database = Some("dev".to_string());
-    client_options.app_name = Some("head-faxer".to_string());
-
-    let client = mongodb::Client::with_options(client_options)    
-        .expect("Could not create db client");
-    let db = client.default_database()
-        .expect("No default database specified");
+    let db_access =
+        DBAccess::connect(&std::env::var("MONGODB_CONNECTION").unwrap()).await;
 
     rocket::build()
-        .manage(DBConfig {
-            links_collection: db.collection("links"),
-        })
+        .manage(db_access)
         .configure(Config {
             port: 1234,
             ..Default::default()
@@ -159,9 +152,11 @@ async fn rocket() -> _ {
                 ));
             })
         }))
-        .mount("/", routes![
-            get_link,
-            post_link, post_link_error
+        .mount("/link", routes![
+            get_link, post_link, post_link_error
+        ])
+        .mount("/l", routes![
+            get_link, post_link, post_link_error
         ])
         .register("/", catchers![
             catch_404, catch_all
