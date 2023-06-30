@@ -2,11 +2,13 @@ import {
     component$,
     useStylesScoped$,
     Slot,
-    DOMAttributes,
+    type QwikIntrinsicElements,
 } from "@builder.io/qwik";
 import styles from "./button.scss?inline";
 
-export default component$<DOMAttributes<HTMLButtonElement>>(props => {
+export type Props = QwikIntrinsicElements["button"];
+
+export default component$<Props>(props => {
     useStylesScoped$(styles);
     return (
         <button {...props}>

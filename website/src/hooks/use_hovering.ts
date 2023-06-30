@@ -1,18 +1,18 @@
-import { $, useOn, useStore } from "@builder.io/qwik";
+import { $, Signal, useOn, useSignal } from "@builder.io/qwik";
 
-export default function use_hovering(): { hovering: boolean } {
-    const s = useStore({ hovering: false });
+export default function use_hovering(): Signal<Boolean> {
+    const s = useSignal(false);
 
     useOn(
         "mouseenter",
         $(() => {
-            s.hovering = true;
+            s.value = true;
         })
     );
     useOn(
         "mouseleave",
         $(() => {
-            s.hovering = false;
+            s.value = false;
         })
     );
 

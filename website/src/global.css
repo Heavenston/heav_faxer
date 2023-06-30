@@ -44,6 +44,9 @@ body {
     background-color: var(--main-8);
     min-width: 100vw;
     min-height: 100vh;
+
+    font-family: arial, arial black, helvetica, verdana,
+        tahoma, trebuchet MS, impact, gill sans, sans-serif;
 }
 
 .center {

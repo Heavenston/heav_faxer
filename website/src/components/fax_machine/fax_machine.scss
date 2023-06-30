@@ -43,21 +43,16 @@
         box-shadow: 0px 5px 20px 3px rgba(0, 0, 0, 0.3);
     }
 
-    .lower_part {
+    .lower-part {
         display: flex;
         flex-direction: row;
-        flex-grow: 1;
-        gap: inherit;
+        gap: 20px;
 
-        & > div:nth-child(2) {
-            flex-grow: 1;
-
-            display: flex;
-            flex-direction: column;
-            justify-content: end;
-            align-items: stretch;
-            gap: 12px;
-            column-gap: 9px;
+        &>:global(button) {
+            width: 100%;
+            height: 100px;
+            font-size: 1.2em;
+            font-weight: bold;
         }
     }
 
@@ -93,7 +88,7 @@
     .input-paper {
         top: 0;
         transform: translateZ(-5px) translateY(-100%);
-        transition: height 500ms ease;
+        transition: height 500ms ease, padding 500ms ease-in-out;
         padding: 20px;
     }
     .output-paper {

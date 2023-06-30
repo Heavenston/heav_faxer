@@ -17,7 +17,7 @@ export default component$<{ text: string }>(props => {
     });
     const ref = useSignal<HTMLDivElement>();
 
-    useTask$(({ track, cleanup }) => {
+    useVisibleTask$(({ track, cleanup }) => {
         const text = track(() => props.text);
         const display_length = track(() => state.display_length);
 
