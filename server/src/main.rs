@@ -1,6 +1,6 @@
 #[macro_use] extern crate rocket;
 
-use std::net::IpAddr;
+use std::net::{IpAddr, SocketAddr};
 
 use either::{
     Either,
@@ -9,9 +9,28 @@ use either::{
 use rocket::{
     response::{ Redirect, status::NotFound },
     Config,
-    http::Header, State,
+    http::{Header, Status}, State, serde::json::Json, Request,
 };
-use mongodb::{ options::ClientOptions, Collection };
+use mongodb::{ Client, options::ClientOptions, Collection };
+
+#[catch(404)]
+fn catch_404() -> serde_json::Value {
+    serde_json::json!({
+        "success": false,
+        "http_code": 404,
+        "error": "Not Found",
+        "message": "Uknown Endpoint",
+    })
+}
+
+#[catch(default)]
+fn catch_all(status: Status, _request: &Request) -> serde_json::Value {
+    serde_json::json!({
+        "success": false,
+        "http_code": status.code,
+        "error": status.reason().map(String::from).unwrap_or("Uknown".to_string())
+    })
+}
 
 #[derive(serde::Serialize, serde::Deserialize)]
 pub struct Link {
@@ -43,6 +62,60 @@ async fn get_link(
     };
     
     Left(Redirect::temporary(link.target))
+}
+
+#[derive(serde::Serialize, serde::Deserialize)]
+struct LinkPostBody {
+    target: String,
+}
+
+#[post("/link/<link>", format = "application/json", data = "<body>")]
+async fn post_link(
+    addr: SocketAddr,
+    db: &State<DBConfig>,
+    link: String,
+    body: Json<LinkPostBody>,
+) -> (Status, serde_json::Value) {
+    let existing = db.links_collection.find_one(bson::doc!{
+        "name": link.as_str(),
+    }, None).await.unwrap();
+
+    if existing.is_some() {
+        return (
+            Status::Conflict,
+            serde_json::json!({
+                "success": false,
+                "error": "link_already_exist",
+                "message": "A link with the same name already exists."
+            })
+        );
+    }
+
+    db.links_collection.insert_one(
+        Link {
+            name: link.clone(),
+            target: body.target.clone(),
+
+            created_at: Some(bson::Timestamp {
+                time: 0,
+                increment: 0,
+            }),
+            created_by_ip: Some(addr.ip()),
+        },
+        None
+    ).await.unwrap();
+
+    (Status::Ok, serde_json::json!({
+        "success": true
+    }))
+}
+
+#[post("/link/<_link>", rank = 2)]
+async fn post_link_error(_link: String) -> (Status, serde_json::Value) {
+    (Status::BadRequest, serde_json::json!({
+        "success": false,
+        "error": "bad_request",
+    }))
 }
 
 #[launch]
@@ -83,6 +156,10 @@ async fn rocket() -> _ {
             })
         }))
         .mount("/", routes![
-            get_link
+            get_link,
+            post_link, post_link_error
+        ])
+        .register("/", catchers![
+            catch_404, catch_all
         ])
 }

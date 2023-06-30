@@ -1380,6 +1380,7 @@ dependencies = [
  "rocket_codegen",
  "rocket_http",
  "serde",
+ "serde_json",
  "state",
  "tempfile",
  "time",
@@ -1653,6 +1654,8 @@ dependencies = [
  "mongodb",
  "rocket",
  "serde",
+ "serde_json",
+ "url",
 ]
 
 [[package]]
