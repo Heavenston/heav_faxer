@@ -9,7 +9,7 @@ use either::{
 use rocket::{
     response::{ Redirect, status::NotFound },
     Config,
-    http::{Header, Status}, State, serde::json::Json, Request,
+    http::{Header, Status}, State, serde::json::Json, Request, Response,
 };
 use mongodb::{ Client, options::ClientOptions, Collection };
 
@@ -51,14 +51,18 @@ pub struct DBConfig {
 async fn get_link(
     db: &State<DBConfig>,
     link: String, or: Option<String>
-) -> Either<Redirect, NotFound<Either<String, Redirect>>> {
+) -> Either<Redirect, (Status, serde_json::Value)> {
     let Some(link) = db.links_collection.find_one(Some(bson::doc!{
         "name": link.as_str()
     }), None).await.unwrap() else {
-        return Right(NotFound(match or {
-            None => Left("Could not find link".into()),
-            Some(x) => Right(Redirect::temporary(x)),
-        }));
+        return match or {
+            Some(x) => Left(Redirect::temporary(x)),
+            None => Right((Status::NotFound, serde_json::json!({
+                "success": false,
+                "error": "not_found",
+                "message": format!("Link with name {link} not found"),
+            }))),
+        };
     };
     
     Left(Redirect::temporary(link.target))
@@ -66,7 +70,7 @@ async fn get_link(
 
 #[derive(serde::Serialize, serde::Deserialize)]
 struct LinkPostBody {
-    target: String,
+    target: url::Url,
 }
 
 #[post("/link/<link>", format = "application/json", data = "<body>")]
@@ -94,7 +98,7 @@ async fn post_link(
     db.links_collection.insert_one(
         Link {
             name: link.clone(),
-            target: body.target.clone(),
+            target: body.target.to_string(),
 
             created_at: Some(bson::Timestamp {
                 time: 0,
