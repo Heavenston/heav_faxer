@@ -1,5 +1,4 @@
-export const API_PATH = "https://faxer.heav.fr/api";
-// export const API_PATH = "http://localhost:8080";
+export const API_PATH = import.meta.env.API_BASE_URL ?? "https://faxer.heav.fr/api";
 
 export type UploadLinkErrorReason =
     "aborted" | "ratelimited" | "conflict" | "invalid" | "other";

@@ -5,6 +5,7 @@ import {
     useSignal,
 } from "@builder.io/qwik";
 import { DocumentHead } from "@builder.io/qwik-city";
+import * as api from "~/api";
 
 import Machine from "~/components/fax_machine/fax_machine";
 
@@ -44,7 +45,13 @@ export default component$(() => {
             throw "Invalid url";
         }
 
-        return link_input.value;
+        const link = api.create_random_link();
+        const result = await api.upload_link(link_input.value, link);
+        if (!result.success) {
+            throw result.message ?? result.reason;
+        }
+
+        return result.shortened_to;
     });
 
     const reset = $(() => {
