@@ -1,0 +1,38 @@
+name: Deploy to Cloud Run on merge
+'on':
+  push:
+    branches:
+      - main
+    paths:
+      - server/**/*.*
+jobs:
+  build_and_deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: 'actions/checkout@v3'
+      - run: cd server
+
+      - name: Google Auth
+        uses: 'google-github-actions/auth@v1'
+        with:
+          credentials_json: '${{ secrets.GOOGLE_SERVICE_ACCOUNT }}'
+
+      - name: Docker Auth
+        id: docker-auth
+        uses: 'docker/login-action@v1'
+        with:
+          username: 'oauth2accesstoken'
+          password: '${{ steps.auth.outputs.access_token }}'
+          registry: '${{ vars.GAR_LOCATION }}-docker.pkg.dev'
+
+      - name: Build and Push Container
+        run: |-
+          docker build -t "${{ vars.GAR_LOCATION }}-docker.pkg.dev/${{ vars.GOOGLE_PROJECT_ID }}/${{ vars.GAR_ID }}/${{ vars.CLOUD_RUN_SERVICE }}:${{ github.sha }}" ./
+          docker push "${{ vars.GAR_LOCATION }}-docker.pkg.dev/${{ vars.GOOGLE_PROJECT_ID }}/${{ vars.GAR_ID }}/${{ vars.CLOUD_RUN_SERVICE }}:${{ github.sha }}"
+          
+      - uses: 'google-github-actions/deploy-cloudrun@v1'
+        with:
+          service: '${{ vars.CLOUD_RUN_SERVICE }}'
+          region: '${{ vars.CLOUD_RUN_REGION }}'
+          image: '${{ vars.GAR_LOCATION }}-docker.pkg.dev/${{ vars.GOOGLE_PROJECT_ID }}/${{ vars.GAR_ID }}/${{ vars.CLOUD_RUN_SERVICE }}:${{ github.sha }}'
