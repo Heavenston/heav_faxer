@@ -6,7 +6,7 @@ mod db;
 mod rate_limiter;
 #[macro_use] extern crate rocket;
 
-use std::net::SocketAddr;
+use std::{net::SocketAddr, time::Instant};
 
 use db::{DBAccess, LinkRedirectDocument, LinkSpecialDocument, LinkDocument};
 use either::{
@@ -27,6 +27,35 @@ fn catch_404() -> serde_json::Value {
         "error": "Not Found",
         "message": "Uknown Endpoint",
     })
+}
+
+#[catch(429)]
+fn catch_429(request: &Request) -> serde_json::Value {
+    let rate_limited_state: &Option<rate_limiter::RateLimitedLocalCache> =
+        request.local_cache(|| None);
+
+    match rate_limited_state {
+        Some(x) => {
+            let secs = x.until
+                .saturating_duration_since(Instant::now()).as_secs();
+            serde_json::json!({
+                "success": false,
+                "http_code": 429,
+                "error": "Too Many Requests",
+                "message": format!("Too many requests, retry in {secs} seconds"),
+                "retry_in": secs,
+            })
+        }
+        None => {
+            serde_json::json!({
+                "success": false,
+                "http_code": 429,
+                "error": "Too Many Requests",
+                "message": format!("Too many requests, please retry later"),
+            })
+        }
+    }
+
 }
 
 #[catch(default)]
@@ -167,6 +196,6 @@ async fn rocket() -> _ {
             get_link, post_link, post_link_error
         ])
         .register("/", catchers![
-            catch_404, catch_all
+            catch_404, catch_429, catch_all
         ])
 }

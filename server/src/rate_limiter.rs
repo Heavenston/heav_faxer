@@ -2,6 +2,10 @@ use std::{net::IpAddr, time::{Instant, Duration}, collections::HashMap, sync::{R
 
 use rocket::{request::{FromRequest, self}, http::Status};
 
+pub struct RateLimitedLocalCache {
+    pub until: Instant,
+}
+
 enum HostState {
     Monitoring {
         last_requests: Vec<Instant>,
@@ -134,7 +138,7 @@ impl<
                 last_ten_minutes.push(Instant::now());
                 if last_ten_minutes.len() > MAX_REQ_PER_TEN_MINS {
                     HostState::Blocked {
-                        until: Instant::now() + Duration::from_secs(10)
+                        until: Instant::now() + Duration::from_secs(60 * 10)
                     }
                 }
                 else {
@@ -149,7 +153,10 @@ impl<
         };
 
         let rs =
-            if let HostState::Blocked { .. } = new_state {
+            if let HostState::Blocked { until } = new_state {
+                request.local_cache(|| Some(RateLimitedLocalCache {
+                    until
+                }));
                 request::Outcome::Failure((
                     Status::TooManyRequests,
                     ()
