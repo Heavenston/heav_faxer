@@ -68,7 +68,7 @@
     }
 
     $paper-width: 300px;
-    $paper-height: $paper-width * 1.4142;
+    $paper-height: 300px;
     .paper {
         transform: translateZ(-5px); // Under machine but over input rack
 
