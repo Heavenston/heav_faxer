@@ -194,6 +194,16 @@ async fn rocket() -> _ {
                 ));
             })
         }))
+        .attach(rocket::fairing::AdHoc::on_request("cors", |req, _| {
+            Box::pin(async move {
+                let uri = req.uri();
+                let mut new_uri = uri.map_path(
+                    |p| p.strip_prefix("/api").unwrap_or(p)
+                ).unwrap_or(uri.clone());
+                new_uri.normalize();
+                req.set_uri(new_uri);
+            })
+        }))
         .mount("/link", routes![
             get_link, post_link, post_link_error
         ])
