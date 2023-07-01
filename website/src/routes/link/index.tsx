@@ -45,10 +45,12 @@ export default component$(() => {
             throw "Invalid url";
         }
 
-        const link = api.create_random_link();
-        const result = await api.upload_link(link, link_input.value);
+        const result = Object.freeze(await api.upload_link("random", link_input.value));
         if (!result.success) {
-            throw result.message ?? result.reason;
+            if (result.error === "Too Many Requests" && typeof result.retry_in === "number") {
+                throw `Rate limited, retry after ${Math.floor(result.retry_in / 60)} mn ${result.retry_in % 60} s`;
+            }
+            throw result.message ?? result.error;
         }
 
         return result.shortened_to;

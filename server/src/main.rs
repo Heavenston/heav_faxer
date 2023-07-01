@@ -8,6 +8,7 @@ mod rate_limiter;
 
 use std::{net::SocketAddr, time::Instant, path::{Path, PathBuf}};
 
+use rand::prelude::*;
 use db::{DBAccess, LinkRedirectDocument, LinkSpecialDocument, LinkDocument};
 use either::{
     Either,
@@ -110,46 +111,92 @@ struct LinkPostBody {
 
 #[post("/<link>", format = "application/json", data = "<body>")]
 async fn post_link(
-    _rate_limiter: rate_limiter::RateLimited<"POST_LINK", 5>,
+    _rate_limiter: rate_limiter::RateLimited<"POST_LINK", 10>,
     addr: SocketAddr,
     db: &State<DBAccess>,
     link: String,
     body: Json<LinkPostBody>,
 ) -> (Status, serde_json::Value) {
-    let existing = db.links_collection.find_one(bson::doc!{
-        "name": link.as_str(),
-    }, None).await.unwrap();
+    let str_target = body.target.to_string();
 
-    if existing.is_some() {
-        return (
-            Status::Conflict,
-            serde_json::json!({
-                "success": false,
-                "error": "link_already_exist",
-                "message": "A link with the same name already exists."
-            })
-        );
+    let final_name;
+    let is_random_name;
+    let should_create;
+
+    if link == "random" {
+        let with_same_target = db.links_collection.find_one(bson::doc!{
+            "target": str_target.as_str(),
+            "random_name": true,
+        }, None).await.unwrap();
+
+        is_random_name = true;
+        if let Some(already) = with_same_target {
+            final_name = already.name;
+            should_create = false;
+        }
+        else {
+            const ALPHABET: &str = "ABCDEFGHJKMNOPQRSTUVWXYZabcdefghjkmnopqrsuvwxyz";
+
+            let mut random_name_length = 4;
+            let mut random_name = "".to_string();
+            let mut exist = true;
+            while exist {
+                random_name = ALPHABET.chars()
+                    .choose_multiple(&mut thread_rng(), random_name_length)
+                    .into_iter().collect::<String>();
+                exist = db.links_collection.find_one(bson::doc!{
+                    "name": random_name.as_str(),
+                }, None).await.unwrap().is_some();
+                random_name_length += 1;
+            }
+            final_name = random_name;
+            should_create = true;
+        }
+    }
+    else {
+        let existing = db.links_collection.find_one(bson::doc!{
+            "name": link.as_str(),
+        }, None).await.unwrap();
+
+        if existing.is_some() {
+            return (
+                Status::Conflict,
+                serde_json::json!({
+                    "success": false,
+                    "error": "link_already_exist",
+                    "message": "A link with the same name already exists."
+                })
+            );
+        }
+
+        final_name = link.clone();
+        is_random_name = false;
+        should_create = true;
     }
 
-    db.links_collection.insert_one(
-        LinkDocument {
-            name: link.clone(),
+    if should_create {
+        db.links_collection.insert_one(
+            LinkDocument {
+                name: final_name.clone(),
+                random_name: is_random_name,
 
-            created_at: Some(bson::Timestamp {
-                time: 0,
-                increment: 0,
-            }),
-            created_by_ip: Some(addr.ip()),
+                created_at: Some(bson::Timestamp {
+                    time: 0,
+                    increment: 0,
+                }),
+                created_by_ip: Some(addr.ip()),
 
-            special: LinkSpecialDocument::Redirection(LinkRedirectDocument {
-                target: body.target.to_string(),
-            }),
-        },
-        None
-    ).await.unwrap();
+                special: LinkSpecialDocument::Redirection(LinkRedirectDocument {
+                    target: body.target.to_string(),
+                }),
+            },
+            None
+        ).await.unwrap();
+    }
 
     (Status::Ok, serde_json::json!({
-        "success": true
+        "success": true,
+        "link_name": final_name
     }))
 }
 

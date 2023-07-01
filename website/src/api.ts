@@ -1,18 +1,15 @@
 export const API_PATH = import.meta.env.VITE_API_BASE_URL;
 export const LINKS_BASE_URL = import.meta.env.VITE_LINKS_BASE_URL;
 
-export type UploadLinkErrorReason =
-    "aborted" | "ratelimited" | "conflict" | "invalid" | "other";
-export type UploadLinkResult =
-    | {
-          success: true;
-          shortened_to: string;
-      }
-    | {
-          success: false;
-          reason: UploadLinkErrorReason;
-          message?: string;
-    };
+export type UploadLinkResult = {
+    success: true;
+    shortened_to: string;
+} | {
+    success: false;
+    error: string;
+    message?: string;
+    retry_in?: number;
+};
 
 export async function upload_link(
     key: string,
@@ -34,37 +31,18 @@ export async function upload_link(
     }
     catch (e) {
         if (e instanceof TypeError) {
-            return { success: false, reason: "other", message: e.message };
+            return { success: false, error: "other", message: e.message };
         }
         throw e;
     }
+    const body = await rsp.json();
 
     if (rsp.status == 200)
         return {
             success: true,
-            shortened_to: `${LINKS_BASE_URL}${key}`,
+            shortened_to: `${LINKS_BASE_URL}${body.link_name}`,
         };
 
-    if (signal?.aborted) return { success: false, reason: "aborted" };
-
-    if (rsp.status == 429) return { success: false, reason: "ratelimited" };
-
-    if (rsp.status == 409) return { success: false, reason: "conflict" };
-
-    if (rsp.status == 400) return { success: false, reason: "invalid" };
-
-    return { success: false, reason: "other" };
-}
-
-export function create_random_link(): string {
-    const alphabet = (
-        "abcdefghijklmnopqrstuvwxyz0123456789" +
-        "ABCDEFGHIJKLMNOPQRSTUVWXYZ          "
-    ).replace(/ /g, "");
-    const length = 5;
-
-    let r = "";
-    for (let i = 0; i < length; i++)
-        r += alphabet[Math.floor(Math.random() * alphabet.length)];
-    return r;
+    if (signal?.aborted) return { success: false, error: "aborted" };
+    return body;
 }

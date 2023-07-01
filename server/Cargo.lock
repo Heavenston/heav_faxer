@@ -1652,6 +1652,7 @@ dependencies = [
  "bson",
  "either",
  "mongodb",
+ "rand",
  "rocket",
  "serde",
  "serde_json",

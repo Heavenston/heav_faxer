@@ -22,6 +22,8 @@ pub enum LinkSpecialDocument {
 #[derive(serde::Serialize, serde::Deserialize)]
 pub struct LinkDocument {
     pub name: String,
+    #[serde(skip_serializing_if="std::ops::Not::not",default)]
+    pub random_name: bool,
 
     #[serde(skip_serializing_if="Option::is_none")]
     pub created_at: Option<bson::Timestamp>,
