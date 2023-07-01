@@ -6,7 +6,7 @@ name: Deploy to Firebase Hosting on merge
     paths:
       - website/**/*.*
 jobs:
-  build_and_deploy:
+  website_deploy:
     runs-on: ubuntu-latest
     environment: production
     steps:

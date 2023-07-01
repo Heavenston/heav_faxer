@@ -6,7 +6,7 @@ name: Deploy to Cloud Run on merge
     paths:
       - server/**/*.*
 jobs:
-  build_and_deploy:
+  server_deploy:
     runs-on: ubuntu-latest
     environment: production
     steps:
