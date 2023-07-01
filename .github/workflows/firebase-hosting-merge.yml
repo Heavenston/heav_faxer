@@ -12,10 +12,13 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - run: cd website && npm install && npm run build.server
+        env:
+          VITE_API_BASE_URL: ${{ vars.API_BASE_URL }}
+          VITE_LINKS_BASE_URL: ${{ vars.LINKS_BASE_URL }}
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: '${{ secrets.GITHUB_TOKEN }}'
           firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}'
-          channelId: live
-          projectId: heav-faxer-311216
+          channelId: ${{ vars.FIREBASE_CHANNEL_ID }}
+          projectId: ${{ vars.FIREBASE_PROJECT_ID }}
           entryPoint: website
