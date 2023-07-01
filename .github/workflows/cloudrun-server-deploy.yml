@@ -14,6 +14,7 @@ jobs:
       - run: cd server
 
       - name: Google Auth
+        id: auth
         uses: 'google-github-actions/auth@v1'
         with:
           credentials_json: '${{ secrets.GOOGLE_SERVICE_ACCOUNT }}'
