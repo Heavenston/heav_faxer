@@ -9,8 +9,8 @@ import {
 import styles from "./display.scss?inline";
 
 export type Props = {
-    text: string,
-    state?: "normal" | "error" | "success",
+    text: string;
+    state?: "normal" | "error" | "success";
 };
 
 export default component$<Props>(props => {
@@ -80,8 +80,9 @@ export default component$<Props>(props => {
         <div
             ref={ref}
             class={{
-                "display": true,
-                "state-normal": props.state === undefined || props.state === "normal",
+                display: true,
+                "state-normal":
+                    props.state === undefined || props.state === "normal",
                 "state-error": props.state === "error",
                 "state-success": props.state === "success",
             }}

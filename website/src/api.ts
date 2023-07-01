@@ -1,15 +1,17 @@
 export const API_PATH = import.meta.env.VITE_API_BASE_URL;
 export const LINKS_BASE_URL = import.meta.env.VITE_LINKS_BASE_URL;
 
-export type UploadLinkResult = {
-    success: true;
-    shortened_to: string;
-} | {
-    success: false;
-    error: string;
-    message?: string;
-    retry_in?: number;
-};
+export type UploadLinkResult =
+    | {
+          success: true;
+          shortened_to: string;
+      }
+    | {
+          success: false;
+          error: string;
+          message?: string;
+          retry_in?: number;
+      };
 
 export async function upload_link(
     key: string,
@@ -28,8 +30,7 @@ export async function upload_link(
             }),
             signal,
         });
-    }
-    catch (e) {
+    } catch (e) {
         if (e instanceof TypeError) {
             return { success: false, error: "other", message: e.message };
         }

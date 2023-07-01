@@ -22,17 +22,21 @@ export type Props = {
 
 type State = {
     cleanups: NoSerialize<(() => void)[]>;
-    state: ({
-        name: "input",
-    } | {
-        name: "sending",
-    } | {
-        name: "error",
-        error_message: string,
-    } | {
-        name: "showing",
-        shortened_url: string,
-    })
+    state:
+        | {
+              name: "input";
+          }
+        | {
+              name: "sending";
+          }
+        | {
+              name: "error";
+              error_message: string;
+          }
+        | {
+              name: "showing";
+              shortened_url: string;
+          };
 };
 
 export default component$<Props>(props => {
@@ -42,17 +46,18 @@ export default component$<Props>(props => {
         state: { name: "input" },
         cleanups: noSerialize([]),
     });
-    useTask$(({cleanup}) => cleanup(() => {
-        store.cleanups?.forEach(c => c());
-    }));
+    useTask$(({ cleanup }) =>
+        cleanup(() => {
+            store.cleanups?.forEach(c => c());
+        })
+    );
 
     const on_send = $(async () => {
         store.state = { name: "sending" };
         try {
             const link = await props.send_function();
             store.state = { name: "showing", shortened_url: link };
-        }
-        catch(e) {
+        } catch (e) {
             if (typeof e === "string" || e instanceof Object) {
                 store.state = {
                     name: "error",
@@ -92,13 +97,13 @@ export default component$<Props>(props => {
     return (
         <div
             class={{
-                "machine": true,
+                machine: true,
                 "eat-paper": eat_paper,
-                "output-paper": output_paper
+                "output-paper": output_paper,
             }}
         >
             <div class="paper input-paper">
-                <Slot/>
+                <Slot />
             </div>
             <div class="paper output-paper">
                 <div>
@@ -106,22 +111,40 @@ export default component$<Props>(props => {
                     <input
                         {...({ readonly: "" } as any)}
                         onClick$={select_elem}
-                        value={store.state.name === "showing" &&
-                               store.state.shortened_url}
+                        value={
+                            store.state.name === "showing" &&
+                            store.state.shortened_url
+                        }
                     />
                 </div>
             </div>
-            <Display text={display_text.toUpperCase()} state={
-                store.state.name === "error" ? "error" :
-                store.state.name === "showing" ? "success" :
-                "normal"
-            } />
+            <Display
+                text={display_text.toUpperCase()}
+                state={
+                    store.state.name === "error"
+                        ? "error"
+                        : store.state.name === "showing"
+                        ? "success"
+                        : "normal"
+                }
+            />
             <div class="lower-part">
-                <Button class="send-button" onClick$={on_send} disabled={store.state.name != "input" && store.state.name != "error"}>
+                <Button
+                    class="send-button"
+                    onClick$={on_send}
+                    disabled={
+                        store.state.name != "input" &&
+                        store.state.name != "error"
+                    }
+                >
                     Send
                     <span>Compress Link</span>
                 </Button>
-                <Button class="send-button" onClick$={on_reset} disabled={store.state.name != "showing"}>
+                <Button
+                    class="send-button"
+                    onClick$={on_reset}
+                    disabled={store.state.name != "showing"}
+                >
                     Reset
                     <span>New link</span>
                 </Button>

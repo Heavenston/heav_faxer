@@ -1,39 +1,39 @@
 {
-  "name": "my-qwik-basic-starter",
-  "description": "Recommended for your first Qwik app",
-  "engines": {
-    "node": ">=15.0.0"
-  },
-  "private": true,
-  "scripts": {
-    "build": "qwik build",
-    "build.client": "vite build",
-    "build.preview": "vite build --ssr src/entry.preview.tsx",
-    "build.server": "vite build -c adapters/static/vite.config.ts",
-    "build.types": "tsc --incremental --noEmit",
-    "dev": "vite --mode ssr --port 1234",
-    "dev.debug": "node --inspect-brk ./node_modules/vite/bin/vite.js --mode ssr --force",
-    "fmt": "prettier --write .",
-    "fmt.check": "prettier --check .",
-    "lint": "eslint \"src/**/*.ts*\"",
-    "preview": "qwik build preview && vite preview --port 1234",
-    "start": "vite --open --mode ssr",
-    "qwik": "qwik"
-  },
-  "devDependencies": {
-    "@builder.io/qwik": "1.1.4",
-    "@builder.io/qwik-city": "1.1.4",
-    "@types/eslint": "8.40.0",
-    "@types/node": "latest",
-    "@typescript-eslint/eslint-plugin": "5.59.7",
-    "@typescript-eslint/parser": "5.59.7",
-    "eslint": "8.41.0",
-    "eslint-plugin-qwik": "1.1.4",
-    "node-fetch": "3.3.1",
-    "prettier": "2.8.8",
-    "sass": "^1.62.1",
-    "typescript": "5.0.4",
-    "vite": "4.3.8",
-    "vite-tsconfig-paths": "4.2.0"
-  }
+    "name": "my-qwik-basic-starter",
+    "description": "Recommended for your first Qwik app",
+    "engines": {
+        "node": ">=15.0.0"
+    },
+    "private": true,
+    "scripts": {
+        "build": "qwik build",
+        "build.client": "vite build",
+        "build.preview": "vite build --ssr src/entry.preview.tsx",
+        "build.server": "vite build -c adapters/static/vite.config.ts",
+        "build.types": "tsc --incremental --noEmit",
+        "dev": "vite --mode ssr --port 1234",
+        "dev.debug": "node --inspect-brk ./node_modules/vite/bin/vite.js --mode ssr --force",
+        "fmt": "prettier --write .",
+        "fmt.check": "prettier --check .",
+        "lint": "eslint \"src/**/*.ts*\"",
+        "preview": "qwik build preview && vite preview --port 1234",
+        "start": "vite --open --mode ssr",
+        "qwik": "qwik"
+    },
+    "devDependencies": {
+        "@builder.io/qwik": "1.1.4",
+        "@builder.io/qwik-city": "1.1.4",
+        "@types/eslint": "8.40.0",
+        "@types/node": "latest",
+        "@typescript-eslint/eslint-plugin": "5.59.7",
+        "@typescript-eslint/parser": "5.59.7",
+        "eslint": "8.41.0",
+        "eslint-plugin-qwik": "1.1.4",
+        "node-fetch": "3.3.1",
+        "prettier": "2.8.8",
+        "sass": "^1.62.1",
+        "typescript": "5.0.4",
+        "vite": "4.3.8",
+        "vite-tsconfig-paths": "4.2.0"
+    }
 }
