@@ -13,4 +13,5 @@ mongodb = "2.6.0"
 rocket = { version = "0.5.0-rc.3", features = ["json"] }
 serde = { version = "1.0.164", features = ["derive"] }
 serde_json = "1.0.99"
+tokio = { version = "1.29.1", features = ["full"] }
 url = { version = "2.4.0", features = ["serde"] }

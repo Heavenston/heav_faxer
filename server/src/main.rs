@@ -1,4 +1,9 @@
+#![allow(incomplete_features)]
+#![feature(adt_const_params)]
+#![feature(hash_drain_filter)]
+
 mod db;
+mod rate_limiter;
 #[macro_use] extern crate rocket;
 
 use std::net::SocketAddr;
@@ -35,6 +40,7 @@ fn catch_all(status: Status, _request: &Request) -> serde_json::Value {
 
 #[get("/<link>?<or>")]
 async fn get_link(
+    _rate_limiter: rate_limiter::RateLimited<"GET_LINK", 300>,
     db: &State<DBAccess>,
     link: String, or: Option<String>
 ) -> Either<Redirect, (Status, serde_json::Value)> {
@@ -75,6 +81,7 @@ struct LinkPostBody {
 
 #[post("/<link>", format = "application/json", data = "<body>")]
 async fn post_link(
+    _rate_limiter: rate_limiter::RateLimited<"POST_LINK", 5>,
     addr: SocketAddr,
     db: &State<DBAccess>,
     link: String,
@@ -132,6 +139,7 @@ async fn rocket() -> _ {
 
     rocket::build()
         .manage(db_access)
+        .manage(rate_limiter::RateLimitState::new())
         .configure(Config {
             port: 1234,
             ..Default::default()
