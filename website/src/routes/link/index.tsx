@@ -46,7 +46,7 @@ export default component$(() => {
         }
 
         const link = api.create_random_link();
-        const result = await api.upload_link(link_input.value, link);
+        const result = await api.upload_link(link, link_input.value);
         if (!result.success) {
             throw result.message ?? result.reason;
         }

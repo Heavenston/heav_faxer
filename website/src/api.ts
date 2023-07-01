@@ -1,4 +1,5 @@
-export const API_PATH = import.meta.env.API_BASE_URL ?? "https://faxer.heav.fr/api";
+export const API_PATH = import.meta.env.VITE_API_BASE_URL;
+export const LINKS_BASE_URL = import.meta.env.VITE_LINKS_BASE_URL;
 
 export type UploadLinkErrorReason =
     "aborted" | "ratelimited" | "conflict" | "invalid" | "other";
@@ -41,7 +42,7 @@ export async function upload_link(
     if (rsp.status == 200)
         return {
             success: true,
-            shortened_to: `https://hfax.fr/l/${key}`,
+            shortened_to: `${LINKS_BASE_URL}${key}`,
         };
 
     if (signal?.aborted) return { success: false, reason: "aborted" };

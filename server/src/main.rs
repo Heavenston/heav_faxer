@@ -6,7 +6,7 @@ mod db;
 mod rate_limiter;
 #[macro_use] extern crate rocket;
 
-use std::{net::SocketAddr, time::Instant};
+use std::{net::SocketAddr, time::Instant, path::{Path, PathBuf}};
 
 use db::{DBAccess, LinkRedirectDocument, LinkSpecialDocument, LinkDocument};
 use either::{
@@ -161,6 +161,11 @@ async fn post_link_error(_link: String) -> (Status, serde_json::Value) {
     }))
 }
 
+#[options("/<_route..>")]
+fn preflight_response(_route: PathBuf) -> Status {
+    Status::Ok
+}
+
 #[launch]
 async fn rocket() -> _ {
     let db_access =
@@ -209,6 +214,9 @@ async fn rocket() -> _ {
         ])
         .mount("/l", routes![
             get_link, post_link, post_link_error
+        ])
+        .mount("/", routes![
+            preflight_response
         ])
         .register("/", catchers![
             catch_404, catch_429, catch_all
