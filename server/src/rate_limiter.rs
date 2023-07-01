@@ -41,7 +41,7 @@ impl RateLimitState {
                 let endpoints = h.write().unwrap();
                 for endpoint in endpoints.values() {
                     let mut ed = endpoint.write().unwrap();
-                    ed.drain_filter(|_, v| {
+                    ed.extract_if(|_, v| {
                         let mut p = v.lock().unwrap();
                         let e = p.take().unwrap_or_default();
                         let ne = match e {

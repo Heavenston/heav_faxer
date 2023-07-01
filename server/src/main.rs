@@ -1,6 +1,6 @@
 #![allow(incomplete_features)]
 #![feature(adt_const_params)]
-#![feature(hash_drain_filter)]
+#![feature(hash_extract_if)]
 
 mod db;
 mod rate_limiter;

@@ -1,15 +1,14 @@
-FROM golang:1.19-alpine AS build
+FROM rust:latest AS build
 
-WORKDIR /build/sources
+RUN rustup default nightly
 
-COPY go.mod go.sum ./
-RUN go mod download && go mod verify
+WORKDIR /build
 
-COPY . ./
-RUN go build -v -o /build/apiserver ./
+COPY . .
+RUN cargo build --release
 
-FROM alpine:3.16 AS prod
+FROM alpine:3.18 AS prod
 
 WORKDIR /workdir
-COPY --from=build /build/apiserver ./apiserver
-CMD ["/workdir/apiserver"]
+COPY --from=build /build/target/release/server ./server
+CMD ["/workdir/server"]
