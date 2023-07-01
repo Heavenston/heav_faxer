@@ -164,13 +164,18 @@ async fn post_link_error(_link: String) -> (Status, serde_json::Value) {
 #[launch]
 async fn rocket() -> _ {
     let db_access =
-        DBAccess::connect(&std::env::var("MONGODB_CONNECTION").unwrap()).await;
+        DBAccess::connect(
+            &std::env::var("MONGODB_CONNECTION")
+                .expect("Not mongodb connection string specified")
+        ).await;
 
     rocket::build()
         .manage(db_access)
         .manage(rate_limiter::RateLimitState::new())
         .configure(Config {
-            port: 1234,
+            port: std::env::var("PORT").expect("No port specified")
+                .parse().expect("Invalid port"),
+            address: "0.0.0.0".parse().unwrap(),
             ..Default::default()
         })
         .attach(rocket::fairing::AdHoc::on_response("cors", |_, res| {
