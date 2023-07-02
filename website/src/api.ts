@@ -20,7 +20,7 @@ export async function upload_link(
 ): Promise<UploadLinkResult> {
     let rsp: Response;
     try {
-        rsp = await fetch(`${API_PATH}/link/${encodeURIComponent(key)}`, {
+        rsp = await fetch(`${API_PATH}link/${encodeURIComponent(key)}`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
