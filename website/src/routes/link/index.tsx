@@ -69,6 +69,9 @@ export default component$(() => {
                     class="area"
                     bind:value={link_input}
                     placeholder="Your link here"
+                    autoCorrect="off"
+                    spellcheck={false}
+                    wrap="hard"
                 />
             </Machine>
         </div>
