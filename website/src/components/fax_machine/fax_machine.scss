@@ -121,7 +121,7 @@
         }
     }
     transform: translateY(calc($paper-height / 4));
-    transition: transform 1s ease-in-out;
+    transition: transform 700ms ease-in-out;
     &.eat-paper {
         transform: translateY(0);
         .input-paper {

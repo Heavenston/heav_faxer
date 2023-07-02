@@ -16,7 +16,7 @@ export type Props = {
 export default component$<Props>(props => {
     useStylesScoped$(styles);
     const state = useStore({
-        display_length: 25,
+        display_length: 0,
         text_to_display: "!",
         current_index: 0,
     });
