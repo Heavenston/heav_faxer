@@ -5,11 +5,7 @@
     padding: 15px;
 
     justify-content: space-evenly;
-    align-items: flex-start;
-
-    @media (min-height: 880px) {
-        align-items: center;
-    }
+    align-items: center;
 
     height: 100vh;
 }
