@@ -1,5 +1,6 @@
-FROM rust:latest AS build
+FROM rust:alpine AS build
 
+RUN apk add build-base
 RUN rustup default nightly
 
 WORKDIR /build
