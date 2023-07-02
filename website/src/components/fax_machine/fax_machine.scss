@@ -120,7 +120,16 @@
             }
         }
     }
-    transform: translateY(calc($paper-height / 4));
+    // Paper is the center on very low height window
+    transform: translateY(calc($paper-height));
+    // Machine and peper get centered
+    @media (min-height: 490px) {
+        transform: translateY(calc($paper-height / 2));
+    }
+    // Put the machine higher on bigger screens
+    @media (min-height: 740px) {
+        transform: translateY(calc($paper-height / 4));
+    }
     transition: transform 700ms ease-in-out;
     &.eat-paper {
         transform: translateY(0);
