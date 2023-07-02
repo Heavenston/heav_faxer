@@ -53,6 +53,8 @@ export default component$<Props>(props => {
     );
 
     const on_send = $(async () => {
+        if (store.state.name !== "input" && store.state.name !== "error")
+            return;
         store.state = { name: "sending" };
         try {
             const link = await props.send_function();
@@ -68,6 +70,8 @@ export default component$<Props>(props => {
     });
 
     const on_reset = $(async () => {
+        if (store.state.name !== "showing")
+            return;
         store.state = { name: "input" };
         props.on_reset?.();
     });
