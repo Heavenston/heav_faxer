@@ -2,6 +2,7 @@ import { component$, useStylesScoped$, $, useSignal } from "@builder.io/qwik";
 import { DocumentHead } from "@builder.io/qwik-city";
 import * as api from "~/api";
 
+import BackButton from "~/components/back_button/back_button"
 import Machine from "~/components/fax_machine/fax_machine";
 
 export default component$(() => {
@@ -61,8 +62,9 @@ export default component$(() => {
         link_input.value = "";
     });
 
-    return (
+    return <>
         <div class="center container">
+            <BackButton/>
             <Machine send_function={send} on_reset={reset}>
                 <textarea
                     autoFocus
@@ -75,7 +77,7 @@ export default component$(() => {
                 />
             </Machine>
         </div>
-    );
+    </>
 });
 
 export const head: DocumentHead = {
