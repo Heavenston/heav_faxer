@@ -1,6 +1,7 @@
 
 use std::net::IpAddr;
 use mongodb::{ options::ClientOptions, Collection };
+use serde_with::{ serde_as, PickFirst, DisplayFromStr };
 
 #[derive(serde::Serialize, serde::Deserialize)]
 pub struct LinkReservationDocument {
@@ -19,15 +20,19 @@ pub enum LinkSpecialDocument {
     Redirection(LinkRedirectDocument),
 }
 
+#[serde_as]
 #[derive(serde::Serialize, serde::Deserialize)]
 pub struct LinkDocument {
     pub name: String,
     #[serde(skip_serializing_if="std::ops::Not::not",default)]
     pub random_name: bool,
 
-    #[serde(skip_serializing_if="Option::is_none")]
+    #[serde(default, skip_serializing_if="Option::is_none")]
+    pub write_password_hash: Option<Vec<u8>>,
+    #[serde(default, skip_serializing_if="Option::is_none")]
     pub created_at: Option<bson::Timestamp>,
-    #[serde(skip_serializing_if="Option::is_none")]
+    #[serde_as(as="Option<PickFirst<(DisplayFromStr, _)>>")]
+    #[serde(default, skip_serializing_if="Option::is_none")]
     pub created_by_ip: Option<IpAddr>,
 
     #[serde(flatten)]

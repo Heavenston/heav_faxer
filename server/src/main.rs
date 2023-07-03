@@ -8,6 +8,8 @@ mod rate_limiter;
 
 use std::{net::SocketAddr, time::Instant, path::{Path, PathBuf}};
 
+use argon2::Argon2;
+use base64::Engine;
 use rand::prelude::*;
 use db::{DBAccess, LinkRedirectDocument, LinkSpecialDocument, LinkDocument};
 use either::{
@@ -19,6 +21,8 @@ use rocket::{
     Config,
     http::{Header, Status}, State, serde::json::Json, Request,
 };
+
+const ARGON2_SALT: &[u8] = b"very useful salt";
 
 #[catch(404)]
 fn catch_404() -> serde_json::Value {
@@ -106,6 +110,8 @@ async fn get_link(
 
 #[derive(serde::Serialize, serde::Deserialize)]
 struct LinkPostBody {
+    #[serde(default)]
+    write_password: Option<String>,
     target: url::Url,
 }
 
@@ -114,14 +120,23 @@ async fn post_link(
     _rate_limiter: rate_limiter::RateLimited<"POST_LINK", 10>,
     addr: SocketAddr,
     db: &State<DBAccess>,
+    argon2: &State<Argon2<'static>>,
     link: String,
     body: Json<LinkPostBody>,
 ) -> (Status, serde_json::Value) {
+    let hashed_pass = body.write_password.as_ref().map(|pass| {
+        let mut v = vec![0u8; argon2.params().output_len().unwrap()];
+        argon2.hash_password_into(pass.as_bytes(), ARGON2_SALT, &mut v)
+            .unwrap();
+        v
+    });
+
     let str_target = body.target.to_string();
 
     let final_name;
     let is_random_name;
     let should_create;
+    let mut should_replace = false;
 
     if link == "random" {
         let with_same_target = db.links_collection.find_one(bson::doc!{
@@ -158,15 +173,21 @@ async fn post_link(
             "name": link.as_str(),
         }, None).await.unwrap();
 
-        if existing.is_some() {
-            return (
+        match existing {
+            Some(LinkDocument { write_password_hash: Some(ref hash), .. })
+                if Some(hash) == hashed_pass.as_ref()
+            => {
+                should_replace = true;
+            },
+            None => (),
+            Some(_) => return (
                 Status::Conflict,
                 serde_json::json!({
                     "success": false,
                     "error": "link_already_exist",
                     "message": "A link with the same name already exists."
                 })
-            );
+            ),
         }
 
         final_name = link.clone();
@@ -175,23 +196,30 @@ async fn post_link(
     }
 
     if should_create {
-        db.links_collection.insert_one(
-            LinkDocument {
-                name: final_name.clone(),
-                random_name: is_random_name,
+        let doc = LinkDocument {
+            name: final_name.clone(),
+            random_name: is_random_name,
 
-                created_at: Some(bson::Timestamp {
-                    time: 0,
-                    increment: 0,
-                }),
-                created_by_ip: Some(addr.ip()),
+            write_password_hash: hashed_pass,
+            created_at: Some(bson::Timestamp {
+                time: 0,
+                increment: 0,
+            }),
+            created_by_ip: Some(addr.ip()),
 
-                special: LinkSpecialDocument::Redirection(LinkRedirectDocument {
-                    target: body.target.to_string(),
-                }),
-            },
-            None
-        ).await.unwrap();
+            special: LinkSpecialDocument::Redirection(LinkRedirectDocument {
+                target: body.target.to_string(),
+            }),
+        };
+        if should_replace {
+            db.links_collection.replace_one(
+                bson::doc! { "name": final_name.clone() },
+                doc, None
+            ).await.unwrap();
+        }
+        else {
+            db.links_collection.insert_one(doc, None).await.unwrap();
+        }
     }
 
     (Status::Ok, serde_json::json!({
@@ -200,12 +228,59 @@ async fn post_link(
     }))
 }
 
-#[post("/link/<_link>", rank = 2)]
+#[post("/<_link>", rank = 2)]
 async fn post_link_error(_link: String) -> (Status, serde_json::Value) {
     (Status::BadRequest, serde_json::json!({
         "success": false,
-        "error": "bad_request",
+        "error": "Bad Request",
     }))
+}
+
+#[derive(serde::Serialize, serde::Deserialize)]
+struct LinkDeleteBody {
+    write_password: String,
+}
+
+#[delete("/<link>", format = "application/json", data = "<body>")]
+async fn delete_link(
+    _rate_limiter: rate_limiter::RateLimited<"POST_LINK", 10>,
+    db: &State<DBAccess>,
+    argon2: &State<Argon2<'static>>,
+    link: String,
+    body: Json<LinkDeleteBody>,
+) -> (Status, serde_json::Value) {
+    let hashed_pass = {
+        let mut v = vec![0u8; argon2.params().output_len().unwrap()];
+        argon2.hash_password_into(
+            body.write_password.as_bytes(), ARGON2_SALT, &mut v
+        ).unwrap();
+        v
+    };
+
+    let Some(found) = db.links_collection.find_one(
+        bson::doc!{ "name": link.as_str(), }, None
+    ).await.unwrap() else {
+        return (Status::NotFound, serde_json::json!({
+            "success": false,
+            "error": "Not Found",
+            "message": format!("A link with the name {link}"),
+        }));
+    };
+
+    if found.write_password_hash.map(|x| x == hashed_pass).unwrap_or(false) {
+        db.links_collection.delete_one(bson::doc!{ "name": link.as_str() }, None)
+            .await.unwrap();
+        (Status::Ok, serde_json::json!({
+            "success": true,
+        }))
+    }
+    else {
+        (Status::Forbidden, serde_json::json!({
+            "success": false,
+            "error": "Forbidden",
+            "message": "Link could not be deleted because the provided password does not match"
+        }))
+    }
 }
 
 #[options("/<_route..>")]
@@ -224,6 +299,15 @@ async fn rocket() -> _ {
     rocket::build()
         .manage(db_access)
         .manage(rate_limiter::RateLimitState::new())
+        .manage(Argon2::<'static>::new(
+            argon2::Algorithm::Argon2id,
+            argon2::Version::V0x13,
+            argon2::ParamsBuilder::new()
+                .output_len(16)
+                .t_cost(1)
+                .p_cost(1)
+                .build().unwrap()
+        ))
         .configure(Config {
             port: std::env::var("PORT").expect("No port specified")
                 .parse().expect("Invalid port"),
@@ -257,10 +341,10 @@ async fn rocket() -> _ {
             })
         }))
         .mount("/link", routes![
-            get_link, post_link, post_link_error
+            get_link, post_link, post_link_error, delete_link
         ])
         .mount("/l", routes![
-            get_link, post_link, post_link_error
+            get_link, post_link, post_link_error, delete_link
         ])
         .mount("/", routes![
             preflight_response
