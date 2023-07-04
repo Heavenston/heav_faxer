@@ -1,6 +1,5 @@
 import { component$, useStylesScoped$, $, useSignal } from "@builder.io/qwik";
 import { DocumentHead } from "@builder.io/qwik-city";
-import * as api from "~/api";
 
 import BackButton from "~/components/back_button/back_button"
 import Machine from "~/components/fax_machine/fax_machine";
@@ -32,16 +31,63 @@ export default component$(() => {
     const link_input = useSignal("");
 
     const send = $(async () => {
-        try {
-            new URL(link_input.value);
-        } catch {
-            if (!link_input.value.startsWith("http://"))
+        const api = await import("~/api");
+
+        const as_url = () => {
+            try {
+                const url = new URL(link_input.value);
+                if (url.host.length === 0)
+                    return false;
+                if (url.hostname.length === 0)
+                    return false;
+                return url;
+            } catch {
+                return false;
+            }
+        };
+        const as_yaml = async () => {
+            try {
+                const yaml = await import("yaml");
+                const parsed = yaml.parse(link_input.value) as unknown;
+                if (!(parsed instanceof Object))
+                    return false;
+                if (!("target" in parsed) || typeof parsed.target !== "string")
+                    return false;
+                if (("pass" in parsed) && typeof parsed.pass !== "string")
+                    return false;
+                if (("name" in parsed) && typeof parsed.name !== "string")
+                    return false;
+                return parsed as { target: string, pass?: string, name?: string };
+            } catch {
+                return false;
+            }
+        };
+        const url = as_url();
+        const yaml = url === false ? await as_yaml() : true;
+        console.log({ url, yaml });
+
+        let final_name = "random";
+        let final_target = link_input.value;
+        let final_password = null;
+
+        if (url === false && typeof yaml !== "boolean") {
+            if (yaml.name !== undefined)
+                final_name = yaml.name;
+            if (yaml.pass !== undefined)
+                final_password = yaml.name;
+            final_target = yaml.target;
+        }
+
+        if (url === false && yaml === false) {
+            if (!final_target.startsWith("http://"))
                 throw "Invalid url, must include http(s)://";
             throw "Invalid url";
         }
 
         const result = Object.freeze(
-            await api.upload_link("random", link_input.value)
+            await api.upload_link(
+                final_name, final_target, final_password ?? undefined
+            )
         );
         if (!result.success) {
             if (

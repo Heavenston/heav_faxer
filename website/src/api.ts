@@ -16,6 +16,7 @@ export type UploadLinkResult =
 export async function upload_link(
     key: string,
     target: string,
+    password?: string,
     signal?: AbortSignal
 ): Promise<UploadLinkResult> {
     let rsp: Response;
@@ -27,6 +28,7 @@ export async function upload_link(
             },
             body: JSON.stringify({
                 target,
+                write_password: password,
             }),
             signal,
         });
