@@ -26,11 +26,15 @@ jobs:
           password: ${{ secrets.GOOGLE_SERVICE_ACCOUNT }}
           registry: '${{ vars.GAR_LOCATION }}-docker.pkg.dev'
 
-      - name: Build and Push Container
-        run: |-
-          docker build -t "${{ vars.GAR_LOCATION }}-docker.pkg.dev/${{ vars.GOOGLE_PROJECT_ID }}/${{ vars.GAR_ID }}/${{ vars.CLOUD_RUN_SERVICE }}:${{ github.sha }}" ./
-          docker push "${{ vars.GAR_LOCATION }}-docker.pkg.dev/${{ vars.GOOGLE_PROJECT_ID }}/${{ vars.GAR_ID }}/${{ vars.CLOUD_RUN_SERVICE }}:${{ github.sha }}"
-        working-directory: server
+      - name: Build and push
+        uses: docker/build-push-action@v4
+        with:
+          context: ./server
+          push: true
+          tags: "${{ vars.GAR_LOCATION }}-docker.pkg.dev/${{ vars.GOOGLE_PROJECT_ID }}/${{ vars.GAR_ID }}/${{ vars.CLOUD_RUN_SERVICE }}:${{ github.sha }}"
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
       - uses: 'google-github-actions/deploy-cloudrun@v1'
         with:
           service: '${{ vars.CLOUD_RUN_SERVICE }}'

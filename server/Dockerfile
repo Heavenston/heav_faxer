@@ -5,6 +5,10 @@ RUN rustup default nightly
 
 WORKDIR /build
 
+RUN cargo init --name other
+COPY Cargo.* .
+RUN cargo build --release
+RUN rm -rf target/release/server*
 COPY . .
 RUN cargo build --release
 
