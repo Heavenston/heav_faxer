@@ -26,6 +26,9 @@ jobs:
           password: ${{ secrets.GOOGLE_SERVICE_ACCOUNT }}
           registry: '${{ vars.GAR_LOCATION }}-docker.pkg.dev'
 
+      - name: Use buildx driver
+        run: docker buildx create --use
+
       - name: Build and push
         uses: docker/build-push-action@v4
         with:
