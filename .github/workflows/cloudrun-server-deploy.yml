@@ -37,4 +37,4 @@ jobs:
           region: '${{ vars.CLOUD_RUN_REGION }}'
           image: '${{ vars.GAR_LOCATION }}-docker.pkg.dev/${{ vars.GOOGLE_PROJECT_ID }}/${{ vars.GAR_ID }}/${{ vars.CLOUD_RUN_SERVICE }}:${{ github.sha }}'
           env_vars: |
-            MONGODB_CONNECTION="${{ vars.MONGODB_CONNECTION_STRING }}"
+            MONGODB_CONNECTION="${{ secrets.MONGODB_CONNECTION_STRING }}"
