@@ -19,6 +19,7 @@ export default component$(() => {
         <QwikCityProvider>
             <head>
                 <meta charSet="utf-8" />
+                <link rel="icon" type="image/png" href="/faxer_logo.png" />
                 <RouterHead />
             </head>
             <body lang="en">
