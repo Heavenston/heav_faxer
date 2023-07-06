@@ -17,9 +17,9 @@
 </style>
 
 <script lang="ts">
-    import Cabinet from "~/components/cabinet/cabinet.svelte";
+    import Fax from "~/components/fax/fax.svelte";
 </script>
 
 <div class="container">
-    <Cabinet />
+    <Fax />
 </div>
