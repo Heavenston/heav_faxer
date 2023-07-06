@@ -3,13 +3,13 @@ on:
   push:
     branches:
       - main
+      - dev
     paths:
       - website/**/*.*
   workflow_dispatch:
 jobs:
   website_deploy:
     runs-on: ubuntu-latest
-    environment: production
     steps:
       - uses: actions/checkout@v3
       - run: cd website && npm install && npm run build
