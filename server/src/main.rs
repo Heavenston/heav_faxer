@@ -4,12 +4,12 @@
 
 mod db;
 mod rate_limiter;
+mod utils;
 #[macro_use] extern crate rocket;
 
-use std::{net::SocketAddr, time::Instant, path::{Path, PathBuf}};
+use std::{time::Instant, path::PathBuf};
 
 use argon2::Argon2;
-use base64::Engine;
 use rand::prelude::*;
 use db::{DBAccess, LinkRedirectDocument, LinkSpecialDocument, LinkDocument};
 use either::{
@@ -118,7 +118,7 @@ struct LinkPostBody {
 #[post("/<link>", format = "application/json", data = "<body>")]
 async fn post_link(
     _rate_limiter: rate_limiter::RateLimited<"POST_LINK", 10>,
-    addr: SocketAddr,
+    addr: utils::RealIp,
     db: &State<DBAccess>,
     argon2: &State<Argon2<'static>>,
     link: String,
@@ -205,7 +205,7 @@ async fn post_link(
                 time: 0,
                 increment: 0,
             }),
-            created_by_ip: Some(addr.ip()),
+            created_by_ip: addr.0,
 
             special: LinkSpecialDocument::Redirection(LinkRedirectDocument {
                 target: body.target.to_string(),
