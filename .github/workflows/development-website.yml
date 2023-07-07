@@ -8,6 +8,6 @@ on:
       - website/**/*.*
 jobs:
   run:
-    uses: ./.github/workflows/firebase-hosting-website-deploy.yml@dev
+    uses: ./.github/workflows/firebase-hosting-website-deploy.yml
     with:
       github_env: development
