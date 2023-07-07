@@ -14,10 +14,15 @@ jobs:
     environment: ${{ inputs.github_env }}
     steps:
       - uses: actions/checkout@v3
+
       - run: cd website && npm install && npm run build
         env:
           VITE_API_BASE_URL: ${{ vars.API_BASE_URL }}
           VITE_LINKS_BASE_URL: ${{ vars.LINKS_BASE_URL }}
+
+      - name: Replace firebase config
+        run: sed -i -e 's/#CLOUD_RUN_SERVICE_ID#/${{ vars.CLOUD_RUN_SERVICE }}/g' -e "s/#CLOUD_RUN_REGION#/${{ vars.CLOUD_RUN_REGION }}/g" website/firebase.json
+
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: '${{ secrets.GITHUB_TOKEN }}'

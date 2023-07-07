@@ -7,15 +7,15 @@
             {
                 "regex": "/api.*",
                 "run": {
-                    "serviceId": "faxer-server",
-                    "region": "europe-west1"
+                    "serviceId": "#CLOUD_RUN_SERVICE_ID#",
+                    "region": "#CLOUD_RUN_REGION#"
                 }
             },
             {
                 "regex": "/l/([A-Za-z0-9_-]+)",
                 "run": {
-                    "serviceId": "faxer-server",
-                    "region": "europe-west1"
+                    "serviceId": "#CLOUD_RUN_SERVICE_ID#",
+                    "region": "#CLOUD_RUN_REGION#"
                 }
             }
         ]
