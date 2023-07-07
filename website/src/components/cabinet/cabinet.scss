@@ -1,21 +1,21 @@
 .cabinet {
     * {
         transform-style: flat;
-        perspective: 1000px;
-        perspective-origin: center -1000px;
+        perspective: 62.5rem;
+        perspective-origin: center -62.5rem;
     }
 
     display: flex;
     flex-direction: column-reverse;
-    width: 350px;
+    width: 21.875rem;
 
     background-color: var(--main-9);
-    padding: 10px;
-    /*padding: 25px;
-    padding-top: 30px;
-    padding-bottom: 30px;*/
-    gap: 30px;
+    padding: 0.625rem;
+    /*padding: 1.5625rem;
+    padding-top: 1.875rem;
+    padding-bottom: 1.875rem;*/
+    gap: 1.875rem;
 
-    border-radius: 10px;
-    height: calc(min(100%, 670px));
+    border-radius: 0.625rem;
+    height: calc(min(100%, 41.875rem));
 }

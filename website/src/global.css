@@ -18,10 +18,10 @@
     --main-8: #262626;
     --main-9: #171717;
 
-    --button-default-offset: 6px;
-    --button-hover-offset: 3px;
-    --button-selected-offset: 4px;
-    --button-pressed-offset: 0px;
+    --button-default-offset: 0.375rem;
+    --button-hover-offset: 0.1875rem;
+    --button-selected-offset: 0.25rem;
+    --button-pressed-offset: 0.0rem;
 
     --button-shadow-color: rgba(0, 0, 0, 0.3);
     --button-background-color: var(--main-8);
@@ -39,6 +39,10 @@ html {
     height: 100%;
     padding: 0;
     margin: 0;
+
+    @media (max-width: 400px) {
+        font-size: 0.85rem;
+    }
 }
 
 body {

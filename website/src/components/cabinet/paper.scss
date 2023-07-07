@@ -1,12 +1,12 @@
 .paper {
     width: 100%;
-    height: 2px;
+    height: 0.125rem;
 
     &:not(:last-child) {
-        margin-bottom: 5px;
+        margin-bottom: 0.3125rem;
     }
 
-    box-shadow: 0 0 3px 3px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 0 0.1875rem 0.1875rem rgba(0, 0, 0, 0.3);
     transform: rotateZ(var(--rot)) translateX(var(--move)) translateY(-50%)
         rotateX(-25deg) translateY(50%);
 
@@ -16,6 +16,6 @@
 
         background: white;
         width: 100%;
-        height: 100px;
+        height: 6.25rem;
     }
 }

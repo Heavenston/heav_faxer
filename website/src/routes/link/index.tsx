@@ -7,7 +7,7 @@ import Machine from "~/components/fax_machine/fax_machine";
 export default component$(() => {
     useStylesScoped$(`
         .container {
-            padding: 10px;
+            padding: 0.625rem;
         }
         .area {
             position: relative;
