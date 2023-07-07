@@ -8,5 +8,6 @@ on:
       - server/**/*.*
 jobs:
   run:
-    environment: development
     uses: ./.github/workflows/cloudrun-server-deploy.yml
+    with:
+      github_env: development
