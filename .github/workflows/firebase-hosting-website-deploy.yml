@@ -21,7 +21,11 @@ jobs:
           VITE_LINKS_BASE_URL: ${{ vars.LINKS_BASE_URL }}
 
       - name: Replace firebase config
-        run: sed -i -e 's/#CLOUD_RUN_SERVICE_ID#/${{ vars.CLOUD_RUN_SERVICE }}/g' -e "s/#CLOUD_RUN_REGION#/${{ vars.CLOUD_RUN_REGION }}/g" website/firebase.json
+        run: sed -i
+             -e 's/#HOSTING_TARGET#/${{ vars.FIREBASE_HOSTING_TARGET }}/g'
+             -e 's/#CLOUD_RUN_SERVICE_ID#/${{ vars.CLOUD_RUN_SERVICE }}/g'
+             -e "s/#CLOUD_RUN_REGION#/${{ vars.CLOUD_RUN_REGION }}/g"
+             website/firebase.json
 
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
