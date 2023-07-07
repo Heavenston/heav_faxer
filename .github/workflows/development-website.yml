@@ -1,0 +1,12 @@
+name: Run development website deploy on dev merge
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - dev
+    paths:
+      - website/**/*.*
+jobs:
+  run:
+    environment: development
+    uses: Heavenston/heav_faxer/.github/workflows/firebase-hosting-website-deploy.yml@dev

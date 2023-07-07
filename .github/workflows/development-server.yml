@@ -1,0 +1,12 @@
+name: Run development server deploy on dev merge
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - dev
+    paths:
+      - server/**/*.*
+jobs:
+  run:
+    environment: development
+    uses: Heavenston/heav_faxer/.github/workflows/cloudrun-server-deploy.yml@dev

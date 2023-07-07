@@ -1,0 +1,12 @@
+name: Run production website deploy on main merge
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - website/**/*.*
+jobs:
+  run:
+    environment: production
+    uses: Heavenston/heav_faxer/.github/workflows/firebase-hosting-website-deploy.yml@main

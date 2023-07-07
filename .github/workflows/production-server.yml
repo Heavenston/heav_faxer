@@ -1,0 +1,12 @@
+name: Run production server deploy on main merge
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - server/**/*.*
+jobs:
+  run:
+    environment: production
+    uses: Heavenston/heav_faxer/.github/workflows/cloudrun-server-deploy.yml@main

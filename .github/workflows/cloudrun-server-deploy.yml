@@ -1,12 +1,6 @@
-name: Deploy to Cloud Run on merge
+name: Deploy server to Cloud Run
 on:
-  push:
-    branches:
-      - main
-      - dev
-    paths:
-      - server/**/*.*
-  workflow_dispatch:
+  workflow_call:
 jobs:
   server_deploy:
     runs-on: ubuntu-latest

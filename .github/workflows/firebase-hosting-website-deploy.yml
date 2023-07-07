@@ -1,12 +1,6 @@
-name: Deploy to Firebase Hosting on merge
+name: Deploy Websites to firebase hosting
 on:
-  push:
-    branches:
-      - main
-      - dev
-    paths:
-      - website/**/*.*
-  workflow_dispatch:
+  workflow_call:
 jobs:
   website_deploy:
     runs-on: ubuntu-latest
