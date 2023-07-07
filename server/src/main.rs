@@ -22,7 +22,7 @@ use rocket::{
     http::{Header, Status}, State, serde::json::Json, Request,
 };
 
-const ARGON2_SALT: &[u8] = b"very useful salt";
+const ARGON2_SALT: &[u8] = b"very unuseful salt";
 
 #[catch(404)]
 fn catch_404() -> serde_json::Value {
