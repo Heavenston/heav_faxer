@@ -9,4 +9,4 @@ on:
 jobs:
   run:
     environment: development
-    uses: ./.github/workflows/cloudrun-server-deploy.yml@dev
+    uses: ./.github/workflows/cloudrun-server-deploy.yml

@@ -9,4 +9,4 @@ on:
 jobs:
   run:
     environment: production
-    uses: ./.github/workflows/firebase-hosting-website-deploy.yml@main
+    uses: ./.github/workflows/firebase-hosting-website-deploy.yml
