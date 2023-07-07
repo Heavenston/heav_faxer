@@ -25,9 +25,9 @@ jobs:
 
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
-          repoToken: '${{ secrets.GITHUB_TOKEN }}'
-          firebaseServiceAccount: '${{ secrets.GOOGLE_SERVICE_ACCOUNT }}'
-          channelId: '${{ vars.FIREBASE_CHANNEL_ID }}'
-          projectId: '${{ vars.GOOGLE_PROJECT_ID }}'
-          target: '${{ vars.FIREBASE_HOSTING_TARGET }}'
+          repoToken: ${{ secrets.GITHUB_TOKEN }}
+          firebaseServiceAccount: ${{ secrets.GOOGLE_SERVICE_ACCOUNT }}
+          channelId: ${{ vars.FIREBASE_CHANNEL_ID }}
+          projectId: ${{ vars.GOOGLE_PROJECT_ID }}
+          target: ${{ vars.FIREBASE_HOSTING_TARGET }}
           entryPoint: website
