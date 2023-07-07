@@ -1,0 +1,16 @@
+{
+  "projects": {},
+  "targets": {
+    "heav-faxer-311216": {
+      "hosting": {
+        "faxer-dev": [
+          "faxer-dev"
+        ],
+        "heav-faxer-311216": [
+          "heav-faxer-311216"
+        ]
+      }
+    }
+  },
+  "etags": {}
+}
