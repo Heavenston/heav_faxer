@@ -5,6 +5,11 @@ on:
       github_env:
         required: true
         type: string
+    secrets:
+      GOOGLE_SERVICE_ACCOUNT:
+        required: true
+      MONGODB_CONNECTION_STRING:
+        required: true
 jobs:
   server_deploy:
     runs-on: ubuntu-latest

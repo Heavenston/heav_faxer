@@ -11,3 +11,6 @@ jobs:
     uses: ./.github/workflows/cloudrun-server-deploy.yml
     with:
       github_env: production
+    secrets:
+      GOOGLE_SERVICE_ACCOUNT: ${{ secrets.GOOGLE_SERVICE_ACCOUNT }}
+      MONGODB_CONNECTION_STRING: ${{ secrets.MONGODB_CONNECTION_STRING }}

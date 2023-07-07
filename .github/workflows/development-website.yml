@@ -11,3 +11,5 @@ jobs:
     uses: ./.github/workflows/firebase-hosting-website-deploy.yml
     with:
       github_env: development
+    secrets:
+      GOOGLE_SERVICE_ACCOUNT: ${{ secrets.GOOGLE_SERVICE_ACCOUNT }}

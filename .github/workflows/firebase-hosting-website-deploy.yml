@@ -5,6 +5,9 @@ on:
       github_env:
         required: true
         type: string
+    secrets:
+      GOOGLE_SERVICE_ACCOUNT:
+        required: true
 jobs:
   website_deploy:
     runs-on: ubuntu-latest
