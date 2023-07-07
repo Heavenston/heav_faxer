@@ -9,4 +9,4 @@ on:
 jobs:
   run:
     environment: production
-    uses: Heavenston/heav_faxer/.github/workflows/cloudrun-server-deploy.yml@main
+    uses: ./.github/workflows/cloudrun-server-deploy.yml@main
