@@ -13,7 +13,7 @@ export default component$(() => {
         <QwikCityProvider>
             <head>
                 <meta charSet="utf-8" />
-                <meta name="title" content="Heav Faxer Dev - Link and file shortening" />
+                <meta name="title" content="Heav Faxer - Link and file shortening" />
                 <meta name="description" content="Create short versions of your links or upload files all for free." />
                 <meta property="og:type" content="website" />
                 <meta property="og:url" content="https://faxer.heav.fr" />
