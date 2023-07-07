@@ -29,4 +29,5 @@ jobs:
           firebaseServiceAccount: '${{ secrets.GOOGLE_SERVICE_ACCOUNT }}'
           channelId: '${{ vars.FIREBASE_CHANNEL_ID }}'
           projectId: '${{ vars.GOOGLE_PROJECT_ID }}'
+          target: '${{ vars.FIREBASE_HOSTING_TARGET }}'
           entryPoint: website
