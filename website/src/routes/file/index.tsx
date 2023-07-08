@@ -1,30 +1,64 @@
-import { component$, useStylesScoped$, $, useSignal } from "@builder.io/qwik";
+import { component$, useStylesScoped$, $, useSignal, useTask$ } from "@builder.io/qwik";
 import { DocumentHead } from "@builder.io/qwik-city";
 
 import BackButton from "~/components/back_button/back_button"
 import Machine from "~/components/fax_machine/fax_machine";
 
-export default component$(() => {
-    // useStylesScoped$(styles);
+import styles from "./index.scss?inline";
 
-    let is = useSignal(false);
+export default component$(() => {
+    useStylesScoped$(styles);
+
+    const file_value = useSignal<string | undefined>();
+    const file_input = useSignal<HTMLInputElement | undefined>();
+    const img_preview = useSignal<string | undefined>();
+
+    useTask$(({ track }) => {
+        track(() => file_value.value);
+
+        let file = file_input.value?.files?.item(0);
+        if (file)
+            img_preview.value = URL.createObjectURL(file);
+    });
 
     const send = $(async () => {
-        is.value = !is.value;
+        if (file_input.value == undefined)
+            throw "Unexpected error, try refreshing";
+        if (file_value.value === undefined)
+            throw "No paper detected";
+        let file = file_input.value.files?.item(0);
+        if (!(file instanceof File))
+            throw "Expected file";
+
         throw "no";
     });
-    const reset = $(() => {});
+    const reset = $(() => {
+        file_value.value = undefined;
+    });
 
     return <>
         <div class="center container">
             <BackButton/>
             <Machine
-                show_input_paper={is.value}
-                input_msg="Please insert a file"
+                allow_reset={file_value.value !== undefined}
+                show_input_paper={file_value.value !== undefined}
+                input_msg="Provider a paper and press send"
                 send_function={send}
                 on_reset={reset}
             >
-                <div q:slot="input-paper-container">Todo</div>
+                <img q:slot="input-paper" src={img_preview.value} style="max-width: 100%;" />
+
+                <form
+                    q:slot="input-paper-container" class="paper-loader"
+                    style={{
+                        display: file_value.value === undefined ? undefined : "none",
+                    }}
+                >
+                    <div>
+                        <img src="/file-upload-outline.svg" />
+                    </div>
+                    <input ref={file_input} type="file" bind:value={file_value} />
+                </form>
             </Machine>
         </div>
     </>

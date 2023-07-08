@@ -87,12 +87,15 @@
         justify-content: flex-start;
         align-items: flex-start;
     }
+    .input-paper-container {
+        transform: translateZ(-0.3125rem) translateY(-100%);
+    }
     .input-paper {
         --additional-height: 4rem;
         --padding: 1.25rem;
 
         top: 0;
-        transform: translateZ(-0.3125rem) translateY(-200%);
+        transform: translateZ(-0.3125rem) translateY(-100%);
         transition: height 500ms ease, padding 500ms ease-in-out, transform 500ms ease-in-out, opacity 500ms ease-in-out;
         padding: var(--padding);
         opacity: 0;
@@ -143,7 +146,7 @@
         .input-paper {
             transform:
                 translateZ(-0.3125rem)
-                translateY(calc(-100% - var(--padding) + var(--additional-height)));
+                translateY(calc(0 - var(--padding) + var(--additional-height)));
             opacity: 1;
         }
     }

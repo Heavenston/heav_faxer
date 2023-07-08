@@ -1,0 +1,63 @@
+@keyframes ghost-up-down {
+    0% {
+        transform: translateY(0.2rem);
+    }
+    100% {
+        transform: translateY(-0.2rem);
+    }
+}
+
+.paper-loader {
+    position: relative;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    
+    width: 100%;
+    height: 100%;
+
+    div {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+
+        width: 9rem;
+        height: 9rem;
+
+        border: 7px dashed white;
+        border-radius: 0.4rem;
+
+        img {
+            transition: transform 500ms ease-in-out;
+            width: 4rem;
+            height: 4rem;
+        }
+    }
+
+    input {
+        display: block;
+        opacity: 0;
+        cursor: pointer;
+
+        position: absolute;
+        inset: 0;
+    }
+
+    &:hover {
+        background-color: rgba(0, 0, 0, 0.3);
+        border-radius: 0.4rem 0.4rem 0 0;
+        backdrop-filter: blur(10px);
+
+        img {
+            transform: translateY(0.2rem);
+            animation-duration: 1s;
+            animation-iteration-count: infinite;
+            animation-fill-mode: none;
+            animation-direction: alternate;
+            animation-timing-function: ease-in-out;
+            animation-delay: 500ms;
+            animation-name: ghost-up-down;
+        }
+    }
+}

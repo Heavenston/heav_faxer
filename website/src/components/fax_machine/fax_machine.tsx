@@ -9,6 +9,7 @@ import {
     Slot,
     QRL,
     useVisibleTask$,
+    useComputed$,
 } from "@builder.io/qwik";
 import styles from "./fax_machine.scss?inline";
 
@@ -17,6 +18,7 @@ import Button from "~/components/button/button";
 
 export type Props = {
     show_input_paper?: boolean,
+    allow_reset?: boolean,
     input_msg: string,
     send_function: QRL<() => Promise<string>>;
 
@@ -62,6 +64,14 @@ export default component$<Props>(props => {
         store.started = true;
     });
 
+    const can_reset = useComputed$(() => {
+        if (store.state.name === "showing")
+            return true;
+        if (store.state.name !== "sending")
+            return props.allow_reset ?? false;
+        return false;
+    });
+
     const on_send = $(async () => {
         if (store.state.name !== "input" && store.state.name !== "error")
             return;
@@ -80,7 +90,7 @@ export default component$<Props>(props => {
     });
 
     const on_reset = $(async () => {
-        if (store.state.name !== "showing")
+        if (!can_reset.value)
             return;
         store.state = { name: "input" };
         props.on_reset?.();
@@ -162,7 +172,7 @@ export default component$<Props>(props => {
                 <Button
                     class="send-button"
                     onClick$={on_reset}
-                    disabled={store.state.name != "showing"}
+                    disabled={!can_reset.value}
                 >
                     Reset
                     <span>New Input</span>
