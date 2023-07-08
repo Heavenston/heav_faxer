@@ -111,7 +111,11 @@ export default component$(() => {
     return <>
         <div class="center container">
             <BackButton/>
-            <Machine send_function={send} on_reset={reset}>
+            <Machine
+                input_msg="Insert a link on the paper"
+                send_function={send}
+                on_reset={reset}
+            >
                 <textarea
                     autoFocus
                     class="area"

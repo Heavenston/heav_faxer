@@ -15,6 +15,7 @@ import Display from "~/components/display/display";
 import Button from "~/components/button/button";
 
 export type Props = {
+    input_msg: string,
     send_function: QRL<() => Promise<string>>;
 
     on_reset?: QRL<() => void>;
@@ -80,7 +81,7 @@ export default component$<Props>(props => {
     let eat_paper: boolean = false;
     let output_paper: boolean = false;
     if (store.state.name === "input") {
-        display_text = "Please write a link on the paper";
+        display_text = props.input_msg;
     } else if (store.state.name === "error") {
         display_text = `Error, ${store.state.error_message}`;
     } else if (store.state.name === "sending") {
@@ -142,7 +143,7 @@ export default component$<Props>(props => {
                     }
                 >
                     Send
-                    <span>Compress Link</span>
+                    <span>Create Shortcut</span>
                 </Button>
                 <Button
                     class="send-button"
@@ -150,7 +151,7 @@ export default component$<Props>(props => {
                     disabled={store.state.name != "showing"}
                 >
                     Reset
-                    <span>New link</span>
+                    <span>New Input</span>
                 </Button>
             </div>
         </div>
