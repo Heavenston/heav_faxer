@@ -69,7 +69,7 @@
 
     $paper-width: 18.75rem;
     $paper-height: 18.75rem;
-    .paper {
+    .paper, .input-paper-container {
         transform: translateZ(-0.3125rem); // Under machine but over input rack
 
         position: absolute;
@@ -77,6 +77,8 @@
 
         height: $paper-height;
         width: $paper-width;
+    }
+    .paper {
         background: white;
         overflow: hidden;
 
@@ -86,10 +88,16 @@
         align-items: flex-start;
     }
     .input-paper {
+        --additional-height: 4rem;
+        --padding: 1.25rem;
+
         top: 0;
-        transform: translateZ(-0.3125rem) translateY(-100%);
-        transition: height 500ms ease, padding 500ms ease-in-out;
-        padding: 1.25rem;
+        transform: translateZ(-0.3125rem) translateY(-200%);
+        transition: height 500ms ease, padding 500ms ease-in-out, transform 500ms ease-in-out, opacity 500ms ease-in-out;
+        padding: var(--padding);
+        opacity: 0;
+
+        height: calc($paper-height + var(--additional-height));
     }
     .output-paper {
         bottom: 0;
@@ -131,6 +139,14 @@
         transform: translateY(calc($paper-height / 4));
     }
     transition: transform 700ms ease-in-out;
+    &.show-input {
+        .input-paper {
+            transform:
+                translateZ(-0.3125rem)
+                translateY(calc(-100% - var(--padding) + var(--additional-height)));
+            opacity: 1;
+        }
+    }
     &.eat-paper {
         transform: translateY(0);
         .input-paper {

@@ -97,6 +97,8 @@ export default component$(() => {
                 on_reset={reset}
             >
                 <textarea
+                    q:slot="input-paper"
+
                     autoFocus
                     class="area"
                     bind:value={link_input}

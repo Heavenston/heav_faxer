@@ -16,8 +16,8 @@ export type Props = {
 export default component$<Props>(props => {
     useStylesScoped$(styles);
     const state = useStore({
-        display_length: 0,
-        text_to_display: "!",
+        display_length: 13,
+        text_to_display: "LOADING!PAPER",
         current_index: 0,
     });
     const ref = useSignal<HTMLDivElement>();

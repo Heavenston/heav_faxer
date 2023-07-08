@@ -8,6 +8,7 @@ import {
     useTask$,
     Slot,
     QRL,
+    useVisibleTask$,
 } from "@builder.io/qwik";
 import styles from "./fax_machine.scss?inline";
 
@@ -15,6 +16,7 @@ import Display from "~/components/display/display";
 import Button from "~/components/button/button";
 
 export type Props = {
+    show_input_paper?: boolean,
     input_msg: string,
     send_function: QRL<() => Promise<string>>;
 
@@ -22,6 +24,8 @@ export type Props = {
 };
 
 type State = {
+    // Set to true at the first render
+    started: boolean,
     cleanups: NoSerialize<(() => void)[]>;
     state:
         | {
@@ -44,6 +48,7 @@ export default component$<Props>(props => {
     useStylesScoped$(styles);
 
     const store = useStore<State>({
+        started: false,
         state: { name: "input" },
         cleanups: noSerialize([]),
     });
@@ -52,6 +57,10 @@ export default component$<Props>(props => {
             store.cleanups?.forEach(c => c());
         })
     );
+
+    useVisibleTask$(() => {
+        store.started = true;
+    });
 
     const on_send = $(async () => {
         if (store.state.name !== "input" && store.state.name !== "error")
@@ -103,12 +112,17 @@ export default component$<Props>(props => {
         <div
             class={{
                 machine: true,
+                "show-input": store.started &&
+                    (eat_paper || (props.show_input_paper ?? true)),
                 "eat-paper": eat_paper,
                 "output-paper": output_paper,
             }}
         >
-            <div class="paper input-paper">
-                <Slot />
+            <div class="input-paper-container">
+                <Slot name="input-paper-container" />
+                <div class="paper input-paper">
+                    <Slot name="input-paper" />
+                </div>
             </div>
             <div class="paper output-paper">
                 <div>

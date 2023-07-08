@@ -7,8 +7,11 @@ import Machine from "~/components/fax_machine/fax_machine";
 export default component$(() => {
     // useStylesScoped$(styles);
 
+    let is = useSignal(false);
+
     const send = $(async () => {
-        return "";
+        is.value = !is.value;
+        throw "no";
     });
     const reset = $(() => {});
 
@@ -16,11 +19,12 @@ export default component$(() => {
         <div class="center container">
             <BackButton/>
             <Machine
+                show_input_paper={is.value}
                 input_msg="Please insert a file"
                 send_function={send}
                 on_reset={reset}
             >
-                <div>Todo</div>
+                <div q:slot="input-paper-container">Todo</div>
             </Machine>
         </div>
     </>
