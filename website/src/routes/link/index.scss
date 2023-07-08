@@ -1,0 +1,21 @@
+.container {
+    padding: 0.625rem;
+}
+.area {
+    position: relative;
+
+    border: none;
+    overflow: auto;
+    outline: none;
+    font-family: inherit;
+    font-size: inherit;
+
+    -webkit-box-shadow: none;
+    -moz-box-shadow: none;
+    box-shadow: none;
+
+    resize: none;
+
+    width: 100%;
+    height: 100%;
+}

@@ -18,10 +18,11 @@ export default component$(() => {
     useContextProvider(prevent_drawer_open_context, prevent_drawer_open);
 
     const goto_links = $(() => navigate("/link"));
+    const goto_files = $(() => navigate("/file"));
 
     return (
         <div class="cabinet">
-            <Drawer label="Files" index={2} />
+            <Drawer label="Files" index={2} click_cb={goto_files} />
             <Drawer label="Links" index={1} click_cb={goto_links} />
         </div>
     );

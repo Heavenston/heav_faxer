@@ -4,30 +4,10 @@ import { DocumentHead } from "@builder.io/qwik-city";
 import BackButton from "~/components/back_button/back_button"
 import Machine from "~/components/fax_machine/fax_machine";
 
+import styles from "./index.scss?inline";
+
 export default component$(() => {
-    useStylesScoped$(`
-        .container {
-            padding: 0.625rem;
-        }
-        .area {
-            position: relative;
-
-            border: none;
-            overflow: auto;
-            outline: none;
-            font-family: inherit;
-            font-size: inherit;
-
-            -webkit-box-shadow: none;
-            -moz-box-shadow: none;
-            box-shadow: none;
-
-            resize: none;
-
-            width: 100%;
-            height: 100%;
-        }
-    `);
+    useStylesScoped$(styles);
     const link_input = useSignal("");
 
     const send = $(async () => {
