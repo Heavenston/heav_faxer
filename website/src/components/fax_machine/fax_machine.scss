@@ -94,7 +94,9 @@
         --additional-height: 4rem;
         --padding: 1.25rem;
 
-        top: 0;
+        position: absolute;
+        bottom: 0;
+
         transform: translateZ(-0.3125rem) translateY(-100%);
         transition: height 500ms ease, padding 500ms ease-in-out, transform 500ms ease-in-out, opacity 500ms ease-in-out;
         padding: var(--padding);
@@ -106,7 +108,8 @@
         bottom: 0;
         height: 0;
         transform: translateZ(-0.3125rem) translateY(100%);
-        padding-top: 0;
+        padding-left: 1.25rem;
+        padding-right: 1.25rem;
         transition: height 500ms ease, padding-bottom 500ms ease;
 
         color: black;
@@ -154,7 +157,8 @@
         transform: translateY(0);
         .input-paper {
             height: 0;
-            padding: 0;
+            padding-top: 0;
+            padding-bottom: 0;
         }
     }
     &.output-paper {
