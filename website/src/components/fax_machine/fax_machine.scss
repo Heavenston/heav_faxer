@@ -138,15 +138,15 @@
         }
     }
     // Paper is the center on very low height window
-    transform: translateY(calc($paper-height * (1 - var(--eat-progres))));
+    transform: translateY(calc($paper-height * (1 - var(--eat-progress))));
 
     // Machine and peper get centered
     @media (min-height: 30.625rem) {
-        transform: translateY(calc($paper-height / 2));
+        transform: translateY(calc(($paper-height / 2) * (1 - var(--eat-progress))));
     }
     // Put the machine higher on bigger screens
     @media (min-height: 46.25rem) {
-        transform: translateY(calc($paper-height / 4));
+        transform: translateY(calc(($paper-height / 4) * (1 - var(--eat-progress))));
     }
     transition: transform 700ms ease-in-out;
     &.show-input {
