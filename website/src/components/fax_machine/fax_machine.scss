@@ -100,9 +100,12 @@
         transform: translateZ(-0.3125rem) translateY(-100%);
         transition: height 500ms ease, padding 500ms ease-in-out, transform 500ms ease-in-out, opacity 500ms ease-in-out;
         padding: var(--padding);
+        --mpadding: calc(var(--padding) * (1 - var(--eat-is-finished)));
+        padding-top: var(--mpadding);
+        padding-bottom: var(--mpadding);
         opacity: 0;
 
-        height: calc($paper-height + var(--additional-height));
+        height: calc(($paper-height + var(--additional-height)) * (1 - var(--eat-progress)));
     }
     .output-paper {
         bottom: 0;
@@ -135,7 +138,8 @@
         }
     }
     // Paper is the center on very low height window
-    transform: translateY(calc($paper-height));
+    transform: translateY(calc($paper-height * (1 - var(--eat-progres))));
+
     // Machine and peper get centered
     @media (min-height: 30.625rem) {
         transform: translateY(calc($paper-height / 2));
@@ -151,14 +155,6 @@
                 translateZ(-0.3125rem)
                 translateY(calc(0 - var(--padding) + var(--additional-height)));
             opacity: 1;
-        }
-    }
-    &.eat-paper {
-        transform: translateY(0);
-        .input-paper {
-            height: 0;
-            padding-top: 0;
-            padding-bottom: 0;
         }
     }
     &.output-paper {

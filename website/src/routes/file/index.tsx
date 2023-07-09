@@ -1,8 +1,8 @@
-import { component$, useStylesScoped$, $, useSignal, useTask$ } from "@builder.io/qwik";
+import { component$, useStylesScoped$, $, useSignal, useTask$, QRL } from "@builder.io/qwik";
 import { DocumentHead } from "@builder.io/qwik-city";
 
 import BackButton from "~/components/back_button/back_button"
-import Machine from "~/components/fax_machine/fax_machine";
+import Machine, { SendFunction } from "~/components/fax_machine/fax_machine";
 
 import styles from "./index.scss?inline";
 
@@ -19,13 +19,16 @@ export default component$(() => {
         track(() => file_value.value);
 
         let file = file_input.value?.files?.item(0);
-        if (file) {
-            img_preview.value = URL.createObjectURL(file);
-            file_name.value = file.name;
-        }
+        if (!file)
+            return;
+
+        img_preview.value = file.type.startsWith("image/")
+            ? URL.createObjectURL(file)
+            : undefined;
+        file_name.value = file.name;
     });
 
-    const send = $(async () => {
+    const send: QRL<SendFunction> = $(async (set_status) => {
         if (file_input.value == undefined)
             throw "Unexpected error, try refreshing";
         if (file_value.value === undefined)
@@ -33,6 +36,15 @@ export default component$(() => {
         let file = file_input.value.files?.item(0);
         if (!(file instanceof File))
             throw "Expected file";
+
+        let w = 100;
+        for (let i = 0; i <= 30; i++) {
+            const j = i;
+            setTimeout(() => {
+                set_status((1 / 30) * j);
+            }, w * j);
+        }
+        await new Promise(resolve => setTimeout(() => resolve(null), w * 35));
 
         throw "no";
     });

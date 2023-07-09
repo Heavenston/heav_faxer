@@ -16,11 +16,15 @@ import styles from "./fax_machine.scss?inline";
 import Display from "~/components/display/display";
 import Button from "~/components/button/button";
 
+export type SendFunction =
+    | (() => Promise<string>)
+    | ((set_progress: (status: number) => void) => Promise<string>);
+
 export type Props = {
     show_input_paper?: boolean,
     allow_reset?: boolean,
     input_msg: string,
-    send_function: QRL<() => Promise<string>>;
+    send_function: QRL<SendFunction>;
 
     on_reset?: QRL<() => void>;
 };
@@ -35,6 +39,8 @@ type State = {
           }
         | {
               name: "sending";
+              progress: number;
+              show_progress: boolean;
           }
         | {
               name: "error";
@@ -75,9 +81,15 @@ export default component$<Props>(props => {
     const on_send = $(async () => {
         if (store.state.name !== "input" && store.state.name !== "error")
             return;
-        store.state = { name: "sending" };
+        store.state = { name: "sending", progress: 1, show_progress: false };
         try {
-            const link = await props.send_function();
+            const link = await props.send_function(n => {
+                console.log(`Status = ${n}`);
+                if (store.state.name === "sending") {
+                    store.state.progress = n;
+                    store.state.show_progress = true;
+                }
+            });
             store.state = { name: "showing", shortened_url: link };
         } catch (e) {
             if (typeof e === "string" || e instanceof Object) {
@@ -97,18 +109,25 @@ export default component$<Props>(props => {
     });
 
     let display_text: string = "ERROR";
-    let eat_paper: boolean = false;
     let output_paper: boolean = false;
+    let eat_progress: number = 0;
     if (store.state.name === "input") {
         display_text = props.input_msg;
     } else if (store.state.name === "error") {
         display_text = `Error, ${store.state.error_message}`;
     } else if (store.state.name === "sending") {
-        display_text = "Contacting server";
-        eat_paper = true;
+        if (store.state.show_progress) {
+            let progress_text = (store.state.progress * 100).toFixed(1);
+            while (progress_text.length < 5)
+                progress_text = "0" + progress_text;
+            display_text = `Progress ${progress_text}%`;
+        }
+        else
+            display_text = "Contacting server";
+        eat_progress = store.state.progress;
     } else if (store.state.name === "showing") {
         display_text = "Have a nice day";
-        eat_paper = true;
+        eat_progress = 1;
         output_paper = true;
     }
 
@@ -123,9 +142,12 @@ export default component$<Props>(props => {
             class={{
                 machine: true,
                 "show-input": store.started &&
-                    (eat_paper || (props.show_input_paper ?? true)),
-                "eat-paper": eat_paper,
+                    ((eat_progress > 0) || (props.show_input_paper ?? true)),
                 "output-paper": output_paper,
+            }}
+            style={{
+                "--eat-progress": eat_progress,
+                "--eat-is-finished": eat_progress === 1 ? 1 : 0,
             }}
         >
             <div class="input-paper-container">
