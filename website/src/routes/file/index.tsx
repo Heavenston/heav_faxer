@@ -18,7 +18,7 @@ export default component$(() => {
     useTask$(({ track }) => {
         track(() => file_value.value);
 
-        let file = file_input.value?.files?.item(0);
+        const file = file_input.value?.files?.item(0);
         if (!file)
             return;
 
@@ -33,11 +33,11 @@ export default component$(() => {
             throw "Unexpected error, try refreshing";
         if (file_value.value === undefined)
             throw "No paper detected";
-        let file = file_input.value.files?.item(0);
+        const file = file_input.value.files?.item(0);
         if (!(file instanceof File))
             throw "Expected file";
 
-        let w = 100;
+        const w = 100;
         for (let i = 0; i <= 30; i++) {
             const j = i;
             setTimeout(() => {
