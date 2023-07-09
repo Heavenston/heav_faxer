@@ -11,14 +11,18 @@ export default component$(() => {
 
     const file_value = useSignal<string | undefined>();
     const file_input = useSignal<HTMLInputElement | undefined>();
+
+    const file_name = useSignal<string | undefined>();
     const img_preview = useSignal<string | undefined>();
 
     useTask$(({ track }) => {
         track(() => file_value.value);
 
         let file = file_input.value?.files?.item(0);
-        if (file)
+        if (file) {
             img_preview.value = URL.createObjectURL(file);
+            file_name.value = file.name;
+        }
     });
 
     const send = $(async () => {
@@ -46,7 +50,10 @@ export default component$(() => {
                 send_function={send}
                 on_reset={reset}
             >
-                <img q:slot="input-paper" src={img_preview.value} style="max-width: 100%;" />
+                <div q:slot="input-paper" class="input-paper-container">
+                    <div class="file-name">{file_name.value}</div>
+                    <img src={img_preview.value} style="max-width: 100%;" />
+                </div>
 
                 <form
                     q:slot="input-paper-container" class="paper-loader"
