@@ -4,6 +4,14 @@
         "public": "dist",
         "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
 
+        "redirects": [
+            {
+                "regex": "/f/(?P<uri>.*)",
+                "destination": "https://files.hfax.fr/:uri",
+                "type": 301
+            }
+        ],
+
         "rewrites": [
             {
                 "regex": "/api.*",

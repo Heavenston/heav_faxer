@@ -5,6 +5,7 @@
 mod db;
 mod rate_limiter;
 mod utils;
+mod files;
 #[macro_use] extern crate rocket;
 
 use std::{time::Instant, path::PathBuf};
@@ -19,7 +20,7 @@ use either::{
 use rocket::{
     response::Redirect,
     Config,
-    http::{Header, Status}, State, serde::json::Json, Request,
+    http::{Header, Status}, State, serde::json::Json, Request, form::{DataField, Form}, data::DataStream, fs::TempFile,
 };
 
 const ARGON2_SALT: &[u8] = b"very useful salt";
@@ -237,8 +238,8 @@ async fn post_link_error(_link: String) -> (Status, serde_json::Value) {
 }
 
 #[derive(serde::Serialize, serde::Deserialize)]
-struct LinkDeleteBody {
-    write_password: String,
+struct LinkDeleteBody<'r> {
+    write_password: &'r str,
 }
 
 #[delete("/<link>", format = "application/json", data = "<body>")]
@@ -246,8 +247,8 @@ async fn delete_link(
     _rate_limiter: rate_limiter::RateLimited<"POST_LINK", 10>,
     db: &State<DBAccess>,
     argon2: &State<Argon2<'static>>,
-    link: String,
-    body: Json<LinkDeleteBody>,
+    link: &str,
+    body: Json<LinkDeleteBody<'_>>,
 ) -> (Status, serde_json::Value) {
     let hashed_pass = {
         let mut v = vec![0u8; argon2.params().output_len().unwrap()];
@@ -258,7 +259,7 @@ async fn delete_link(
     };
 
     let Some(found) = db.links_collection.find_one(
-        bson::doc!{ "name": link.as_str(), }, None
+        bson::doc!{ "name": link, }, None
     ).await.unwrap() else {
         return (Status::NotFound, serde_json::json!({
             "success": false,
@@ -268,7 +269,7 @@ async fn delete_link(
     };
 
     if found.write_password_hash.map(|x| x == hashed_pass).unwrap_or(false) {
-        db.links_collection.delete_one(bson::doc!{ "name": link.as_str() }, None)
+        db.links_collection.delete_one(bson::doc!{ "name": link }, None)
             .await.unwrap();
         (Status::Ok, serde_json::json!({
             "success": true,
@@ -283,6 +284,148 @@ async fn delete_link(
     }
 }
 
+#[derive(FromForm)]
+struct LinkFilePostData<'r> {
+    file_hash: &'r str,
+    mime_type: &'r str,
+}
+
+// FIXME: Disgusting code, sorry
+#[post("/<name>", format = "multipart/form-data", data = "<body>")]
+async fn post_file(
+    _rate_limiter: rate_limiter::RateLimited<"POST_LINK", 10>,
+    addr: utils::RealIp,
+    db: &State<DBAccess>,
+    files: &State<files::FilesManager>,
+    body: Form<LinkFilePostData<'_>>,
+    name: &str,
+) -> (Status, serde_json::Value) {
+    let final_name;
+    let final_location;
+
+    let is_random_name;
+    let should_create;
+
+    if name == "random" {
+        let with_same_hash = db.files_collection.find_one(bson::doc!{
+            "user_provided_hash": body.file_hash,
+            "random_name": true,
+        }, None).await.unwrap();
+
+        let reuse = if let Some(already) = with_same_hash {
+            match files.read_file(already.location.clone()).await {
+                Some(files::FileInfo {
+                    real_hash: Some(rh), mime_type: Some(mt), ..
+                }) if
+                    rh == body.file_hash &&
+                    mt == body.mime_type
+                  => Some(already),
+                _ => None,
+            }
+        } else { None };
+
+        is_random_name = true;
+        if let Some(existing) = reuse {
+            final_name = existing.name;
+            final_location = existing.location;
+            should_create = false;
+        }
+        else {
+            const ALPHABET: &str = "ABCDEFGHJKMNOPQRSTUVWXYZabcdefghjkmnopqrsuvwxyz";
+
+            let mut random_name_length = 4;
+            let mut random_name = "".to_string();
+            let mut exist = true;
+            while exist {
+                random_name = ALPHABET.chars()
+                    .choose_multiple(&mut thread_rng(), random_name_length)
+                    .into_iter().collect::<String>();
+                exist = db.links_collection.find_one(bson::doc!{
+                    "name": random_name.as_str(),
+                }, None).await.unwrap().is_some();
+                random_name_length += 1;
+            }
+            final_name = random_name;
+            final_location = files.new_location(&final_name);
+            should_create = true;
+        }
+    }
+    else {
+        let existing = db.links_collection.find_one(bson::doc!{
+            "name": name,
+        }, None).await.unwrap();
+
+        match existing {
+            None => (),
+            Some(_) => return (
+                Status::Conflict,
+                serde_json::json!({
+                    "success": false,
+                    "error": "file_already_exist",
+                    "message": "A file with the same name already exists."
+                })
+            ),
+        }
+
+        final_name = name.to_string();
+        final_location = files.new_location(&final_name);
+        is_random_name = false;
+        should_create = true;
+    }
+
+    // FIXME: Very ugly here
+    let upload_url =
+        if should_create { 'should: {
+            let create_rstlt = files.create_file(
+                body.file_hash,
+                &final_name,
+                body.mime_type
+            ).await;
+            let ur = match create_rstlt {
+                files::FileCreateResult::AlreadyUploaded {} =>  {
+                    break 'should None;
+                }
+                files::FileCreateResult::NameInUse { .. } =>
+                    panic!("Database has wrong file type"),
+                files::FileCreateResult::Success { upload_url }
+                    => upload_url,
+            };
+
+            let doc = db::FileDocument {
+                location: final_location,
+                name: final_name.clone(),
+                random_name: is_random_name,
+
+                user_provided_hash: Some(body.file_hash.to_string()),
+                created_at: Some(bson::Timestamp {
+                    time: 0,
+                    increment: 0,
+                }),
+                created_by_ip: addr.0,
+            };
+            db.files_collection.insert_one(doc, None).await.unwrap();
+
+            Some(ur)
+        } }
+        else {
+            None
+        };
+
+    match upload_url {
+        None =>
+            (Status::Ok, serde_json::json!({
+                "success": true,
+                "result": "already_known"
+            })),
+        Some(u) =>
+            (Status::Ok, serde_json::json!({
+                "success": true,
+                "result": "must_upload",
+                "upload_url": u,
+            })),
+    }
+}
+
 #[options("/<_route..>")]
 fn preflight_response(_route: PathBuf) -> Status {
     Status::Ok
@@ -290,11 +433,17 @@ fn preflight_response(_route: PathBuf) -> Status {
 
 #[launch]
 async fn rocket() -> _ {
-    let db_access =
-        DBAccess::connect(
-            &std::env::var("MONGODB_CONNECTION")
-                .expect("Not mongodb connection string specified")
-        ).await;
+    let mongodb_connection = std::env::var("MONGODB_CONNECTION")
+        .expect("Not mongodb connection string specified");
+    let port = std::env::var("PORT")
+        .expect("Not mongodb connection string specified")
+        .parse().expect("Invalid port");
+    let storage_bucket_name = std::env::var("CLOUD_STORAGE_BUCKET")
+        .expect("No storage bucket specified");
+    let storage_bucket_subpath = std::env::var("CLOUD_STORAGE_SUBPATH")
+        .expect("No storage bucket subpath specified");
+
+    let db_access = DBAccess::connect(&mongodb_connection).await;
 
     rocket::build()
         .manage(db_access)
@@ -308,9 +457,11 @@ async fn rocket() -> _ {
                 .p_cost(1)
                 .build().unwrap()
         ))
+        .manage(files::FilesManager::new(
+            storage_bucket_name, storage_bucket_subpath
+        ).await)
         .configure(Config {
-            port: std::env::var("PORT").expect("No port specified")
-                .parse().expect("Invalid port"),
+            port,
             address: "0.0.0.0".parse().unwrap(),
             ..Default::default()
         })
@@ -343,11 +494,10 @@ async fn rocket() -> _ {
         .mount("/link", routes![
             get_link, post_link, post_link_error, delete_link
         ])
-        .mount("/l", routes![
-            get_link, post_link, post_link_error, delete_link
-        ])
+        .mount("/l", routes![ get_link ])
+        .mount("/file", routes![ post_file ])
         .mount("/", routes![
-            preflight_response
+            preflight_response, post_file
         ])
         .register("/", catchers![
             catch_404, catch_429, catch_all
