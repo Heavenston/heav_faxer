@@ -317,6 +317,7 @@ async fn post_file(
             "user_provided_hash": body.file_hash,
             "extension": input_file_ext,
             "random_name": true,
+            "mime_type": body.mime_type,
         }, None).await.unwrap();
 
         is_random_name = true;
@@ -401,6 +402,7 @@ async fn post_file(
             let doc = db::FileDocument {
                 location: final_location,
                 random_name: is_random_name,
+                mime_type: Some(body.mime_type.to_string()),
 
                 name: final_name.clone(),
                 extension: input_file_ext.to_string(),

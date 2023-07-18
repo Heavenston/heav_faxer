@@ -58,6 +58,8 @@ pub struct FileDocument {
     pub location: FileLocation,
     #[serde(default, skip_serializing_if="Option::is_none")]
     pub user_provided_hash: Option<String>,
+    #[serde(default, skip_serializing_if="Option::is_none")]
+    pub mime_type: Option<String>,
 
     pub name: String,
     pub extension: String,
