@@ -291,42 +291,38 @@ struct LinkFilePostData<'r> {
 }
 
 // FIXME: Disgusting code, sorry
-#[post("/<name>", format = "application/json", data = "<body>")]
+#[post("/<input_full_name>", format = "application/json", data = "<body>")]
 async fn post_file(
     _rate_limiter: rate_limiter::RateLimited<"POST_LINK", 10>,
     addr: utils::RealIp,
     db: &State<DBAccess>,
     files: &State<files::FilesManager>,
     body: Json<LinkFilePostData<'_>>,
-    name: &str,
+    input_full_name: &str,
 ) -> (Status, serde_json::Value) {
     let final_name;
+    let final_ext;
     let final_location;
 
     let is_random_name;
     let should_create;
 
-    if name == "random" {
+    let (
+        input_file_name,
+        input_file_ext
+    ) = input_full_name.rsplit_once('.').unwrap_or((&input_full_name, ""));
+
+    if input_file_name == "random" {
         let with_same_hash = db.files_collection.find_one(bson::doc!{
             "user_provided_hash": body.file_hash,
+            "extension": input_file_ext,
             "random_name": true,
         }, None).await.unwrap();
 
-        let reuse = if let Some(already) = with_same_hash {
-            match files.read_file(already.location.clone()).await {
-                Some(files::FileInfo {
-                    real_hash: Some(rh), mime_type: Some(mt), ..
-                }) if
-                    rh == body.file_hash &&
-                    mt == body.mime_type
-                  => Some(already),
-                _ => None,
-            }
-        } else { None };
-
         is_random_name = true;
-        if let Some(existing) = reuse {
+        if let Some(existing) = with_same_hash {
             final_name = existing.name;
+            final_ext = existing.extension;
             final_location = existing.location;
             should_create = false;
         }
@@ -340,19 +336,21 @@ async fn post_file(
                 random_name = ALPHABET.chars()
                     .choose_multiple(&mut thread_rng(), random_name_length)
                     .into_iter().collect::<String>();
-                exist = db.links_collection.find_one(bson::doc!{
+                exist = db.files_collection.find_one(bson::doc!{
                     "name": random_name.as_str(),
+                    "extension": input_file_ext,
                 }, None).await.unwrap().is_some();
                 random_name_length += 1;
             }
             final_name = random_name;
-            final_location = files.new_location(&final_name);
+            final_ext = input_file_ext.to_string();
+            final_location = files.new_location(&(final_name.clone() + "." + &final_ext));
             should_create = true;
         }
     }
     else {
         let existing = db.files_collection.find_one(bson::doc!{
-            "name": name,
+            "name": input_full_name,
         }, None).await.unwrap();
 
         match existing {
@@ -365,7 +363,7 @@ async fn post_file(
                 serde_json::json!({
                     "success": true,
                     "result": "already_known",
-                    "name": name.to_string(),
+                    "name": input_full_name.to_string(),
                 })
             ),
             Some(_) => return (
@@ -378,8 +376,9 @@ async fn post_file(
             ),
         }
 
-        final_name = name.to_string();
-        final_location = files.new_location(&final_name);
+        final_name = input_file_name.to_string();
+        final_ext = input_file_ext.to_string();
+        final_location = files.new_location(&(final_name.clone() + "." + &final_ext));
         is_random_name = false;
         should_create = true;
     }
@@ -388,24 +387,23 @@ async fn post_file(
     let upload_url =
         if should_create { 'should: {
             let create_rstlt = files.create_file(
+                &final_location,
+                body.mime_type,
                 body.file_hash,
-                &final_name,
-                body.mime_type
             ).await;
             let ur = match create_rstlt {
-                files::FileCreateResult::AlreadyUploaded {} =>  {
-                    break 'should None;
-                }
-                files::FileCreateResult::NameInUse { .. } =>
-                    panic!("Database has wrong file type"),
+                files::FileCreateResult::UknownLocation =>
+                    break 'should None,
                 files::FileCreateResult::Success { upload_url }
                     => upload_url,
             };
 
             let doc = db::FileDocument {
                 location: final_location,
-                name: final_name.clone(),
                 random_name: is_random_name,
+
+                name: final_name.clone(),
+                extension: input_file_ext.to_string(),
 
                 user_provided_hash: Some(body.file_hash.to_string()),
                 created_at: Some(bson::Timestamp {
@@ -427,14 +425,14 @@ async fn post_file(
             (Status::Ok, serde_json::json!({
                 "success": true,
                 "result": "already_known",
-                "name": final_name.to_string(),
+                "name": final_name.to_string() + "." + &final_ext,
             })),
         Some(u) =>
             (Status::Ok, serde_json::json!({
                 "success": true,
                 "result": "must_upload",
                 "upload_url": u,
-                "name": final_name.to_string(),
+                "name": final_name.to_string() + "." + &final_ext,
             })),
     }
 }

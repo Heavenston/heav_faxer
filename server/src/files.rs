@@ -15,12 +15,7 @@ pub struct FileInfo {
 }
 
 pub enum FileCreateResult {
-    AlreadyUploaded {
-        
-    },
-    NameInUse {
-        file_hash: String,
-    },
+    UknownLocation,
     Success {
         upload_url: String,
     },
@@ -48,78 +43,39 @@ impl FilesManager {
     }
 
     pub fn new_location(
-        &self, file_name: impl Into<String>
+        &self, file_name: &str
     ) -> db::FileLocation {
         db::FileLocation::Gcs {
             bucket_name: self.bucket_name.clone(),
-            file_name: file_name.into(),
-        }
-    }
-
-    pub async fn read_file(
-        &self, location: db::FileLocation,
-    ) -> Option<FileInfo> {
-        match &location {
-            db::FileLocation::Gcs {
-                bucket_name, file_name
-            } => {
-                // FIXME: Differenciate errors
-                let object = self.client.get_object(&GetObjectRequest {
-                    bucket: bucket_name.to_string(),
-                    object: file_name.to_string(),
-                    ..Default::default()
-                }).await.ok()?;
-                println!("{:?}", object.md5_hash);
-
-                Some(FileInfo {
-                    real_hash: object.md5_hash,
-                    mime_type: object.content_type,
-                    size: object.size.max(0).try_into().unwrap(),
-                    location,
-                })
-            },
-            db::FileLocation::Other => None,
+            file_name: self.subpath.to_string() + file_name,
         }
     }
 
     pub async fn create_file(
-        &self, hash: &str, name: &str, mime_type: &str,
+        &self,
+        location: &db::FileLocation,
+        mime_type: &str,
+        hash: &str,
     ) -> FileCreateResult {
-        // FIXME: Differenciate errors
-        let object = self.client.get_object(&GetObjectRequest {
-            bucket: self.bucket_name.to_string(),
-            object: name.to_string(),
-            ..Default::default()
-        }).await.ok();
-
-        match object {
-            Some(o) if o.md5_hash.as_ref().map(String::as_str) == Some(hash) => {
-                return FileCreateResult::AlreadyUploaded {  };
-            },
-            Some(o) => {
-                return FileCreateResult::NameInUse {
-                    file_hash: o.md5_hash.unwrap_or_default(),
-                };
-            },
-            None => (),
-        }
+        let db::FileLocation::Gcs { bucket_name, file_name } = location
+            else { return FileCreateResult::UknownLocation };
 
         self.client.upload_object(&UploadObjectRequest {
             bucket: self.bucket_name.to_string(),
             ..Default::default()
         }, vec![], &UploadType::Simple(Media {
-            name: name.to_string().into(),
+            name: file_name.to_string().into(),
             content_type: mime_type.to_string().into(),
             content_length: Some(0),
         })).await.expect("Could not create object");
         let upload_url = self.client.signed_url(
-            &self.bucket_name,
-            &name,
+            &bucket_name,
+            &file_name,
             None, None, SignedURLOptions {
                 method: SignedURLMethod::PUT,
                 expires: Duration::from_secs(86400),
                 content_type: Some(mime_type.to_string()),
-                // md5: Some(hash.to_string()),
+                md5: Some(hash.to_string()),
                 ..Default::default()
             },
         ).await.expect("Could not create upload url");

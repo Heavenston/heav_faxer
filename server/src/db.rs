@@ -60,6 +60,8 @@ pub struct FileDocument {
     pub user_provided_hash: Option<String>,
 
     pub name: String,
+    pub extension: String,
+
     #[serde(skip_serializing_if="std::ops::Not::not",default)]
     pub random_name: bool,
 
