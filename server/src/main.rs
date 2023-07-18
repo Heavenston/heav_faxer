@@ -8,12 +8,10 @@ mod utils;
 mod files;
 #[macro_use] extern crate rocket;
 
-use std::{time::{Instant, SystemTime, Duration}, path::PathBuf, sync::Arc};
+use std::{time::{Instant, SystemTime, Duration}, path::PathBuf};
 
 use argon2::Argon2;
 use bson::oid::ObjectId;
-use files::FilesManager;
-use mongodb::options::FindOptions;
 use rand::prelude::*;
 use db::{DBAccess, LinkRedirectDocument, LinkSpecialDocument, LinkDocument, FileDocument, FileConfirmationState};
 use either::{
@@ -23,7 +21,7 @@ use either::{
 use rocket::{
     response::Redirect,
     Config,
-    http::{Header, Status}, State, serde::json::Json, Request, form::{DataField, Form}, data::DataStream, fs::TempFile, futures::{StreamExt, TryStreamExt},
+    http::{Header, Status}, State, serde::json::Json, Request, futures::TryStreamExt,
 };
 
 const ARGON2_SALT: &[u8] = b"very useful salt";

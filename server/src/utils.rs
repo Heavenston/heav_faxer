@@ -1,4 +1,4 @@
-use std::{net::IpAddr, time::{Instant, SystemTime, Duration}};
+use std::{net::IpAddr, time::{SystemTime, Duration}};
 
 use bson::Timestamp;
 use rocket::{request::{FromRequest, self}, Request};
