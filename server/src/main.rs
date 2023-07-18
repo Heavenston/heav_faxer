@@ -8,11 +8,14 @@ mod utils;
 mod files;
 #[macro_use] extern crate rocket;
 
-use std::{time::Instant, path::PathBuf};
+use std::{time::{Instant, SystemTime, Duration}, path::PathBuf, sync::Arc};
 
 use argon2::Argon2;
+use bson::oid::ObjectId;
+use files::FilesManager;
+use mongodb::options::FindOptions;
 use rand::prelude::*;
-use db::{DBAccess, LinkRedirectDocument, LinkSpecialDocument, LinkDocument};
+use db::{DBAccess, LinkRedirectDocument, LinkSpecialDocument, LinkDocument, FileDocument, FileConfirmationState};
 use either::{
     Either,
     Either::*,
@@ -20,7 +23,7 @@ use either::{
 use rocket::{
     response::Redirect,
     Config,
-    http::{Header, Status}, State, serde::json::Json, Request, form::{DataField, Form}, data::DataStream, fs::TempFile,
+    http::{Header, Status}, State, serde::json::Json, Request, form::{DataField, Form}, data::DataStream, fs::TempFile, futures::{StreamExt, TryStreamExt},
 };
 
 const ARGON2_SALT: &[u8] = b"very useful salt";
@@ -198,6 +201,8 @@ async fn post_link(
 
     if should_create {
         let doc = LinkDocument {
+            _id: bson::oid::ObjectId::new(),
+
             name: final_name.clone(),
             random_name: is_random_name,
 
@@ -313,15 +318,63 @@ async fn post_file(
     ) = input_full_name.rsplit_once('.').unwrap_or((&input_full_name, ""));
 
     if input_file_name == "random" {
-        let with_same_hash = db.files_collection.find_one(bson::doc!{
-            "user_provided_hash": body.file_hash,
-            "extension": input_file_ext,
-            "random_name": true,
-            "mime_type": body.mime_type,
-        }, None).await.unwrap();
+        let mut with_same_hash = db.files_collection.find(
+            bson::doc!{
+                "user_provided_hash": body.file_hash,
+                "extension": input_file_ext,
+                "random_name": true,
+                "mime_type": body.mime_type,
+                "confirmation_state": { "$ne": bson::to_bson(&
+                    db::FileConfirmationState::Invalid
+                ).unwrap() },
+            },
+            None
+        ).await.unwrap();
+
+        let mut reuse: Option<FileDocument> = None;
+        while let Some(doc) = with_same_hash.try_next().await.expect("Fetch error") {
+            if doc.confirmation_state.is_confirmed()
+            { reuse = Some(doc); break }
+
+            let ctm = doc.confirmation_timeout.unwrap_or(0);
+            let timeout_time = doc.created_at.as_ref()
+                .map(utils::timestamp_to_time)
+                .map(|c| c + Duration::from_secs(ctm))
+                .unwrap_or(SystemTime::UNIX_EPOCH);
+
+            // Timeoute's in the future
+            if timeout_time.elapsed().is_err()
+            { continue }
+
+            let Some(r) = files.read_file(&doc.location).await
+                else { continue };
+            let is_valid = r.real_hash.map(|h| h == body.file_hash)
+                .unwrap_or(false);
+
+            let new_state = if is_valid {
+                db::FileConfirmationState::Confirmed
+            } else {
+                db::FileConfirmationState::Invalid
+            };
+
+            db.files_collection.update_one(
+                bson::doc! { "_id": doc._id },
+                bson::doc! {
+                    "$set": {
+                        "confirmation_state": bson::to_bson(&new_state).unwrap()
+                    }
+                },
+                None,
+            ).await.expect("Failed to update");
+
+            if is_valid {
+                reuse = Some(doc);
+                break;
+            }
+        }
 
         is_random_name = true;
-        if let Some(existing) = with_same_hash {
+        if let Some(existing) = reuse {
             final_name = existing.name;
             final_ext = existing.extension;
             final_location = existing.location;
@@ -400,12 +453,19 @@ async fn post_file(
             };
 
             let doc = db::FileDocument {
+                _id: ObjectId::new(),
+
                 location: final_location,
                 random_name: is_random_name,
                 mime_type: Some(body.mime_type.to_string()),
 
                 name: final_name.clone(),
                 extension: input_file_ext.to_string(),
+
+                confirmation_state: FileConfirmationState::Unconfirmed,
+                confirmation_timeout: Some(
+                    files::FilesManager::UPLOAD_URL_DURATION.as_secs()
+                ),
 
                 user_provided_hash: Some(body.file_hash.to_string()),
                 created_at: Some(bson::Timestamp {

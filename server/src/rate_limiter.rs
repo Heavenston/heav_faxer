@@ -67,7 +67,7 @@ impl RateLimitState {
                         );
                         *p = Some(ne);
                         delete
-                    }).for_each(|(k, _)| println!("Delete {k:?}"));
+                    }).for_each(|(k, _)| println!("Forgot {k:?} rate limit"));
                 }
             }
         });

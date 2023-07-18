@@ -1,5 +1,6 @@
-use std::net::IpAddr;
+use std::{net::IpAddr, time::{Instant, SystemTime, Duration}};
 
+use bson::Timestamp;
 use rocket::{request::{FromRequest, self}, Request};
 
 pub struct RealIp(pub Option<IpAddr>);
@@ -20,4 +21,8 @@ impl<'r> FromRequest<'r> for RealIp {
             request::Outcome::Success(RealIp(req.client_ip()))
         }
     }
+}
+
+pub fn timestamp_to_time(g: &Timestamp) -> SystemTime {
+    SystemTime::UNIX_EPOCH + Duration::from_secs(g.time.into())
 }

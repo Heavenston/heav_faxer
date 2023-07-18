@@ -23,6 +23,8 @@ pub enum LinkSpecialDocument {
 #[serde_as]
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct LinkDocument {
+    pub _id: bson::oid::ObjectId,
+
     pub name: String,
     #[serde(skip_serializing_if="std::ops::Not::not",default)]
     pub random_name: bool,
@@ -51,9 +53,38 @@ pub enum FileLocation {
     Other,
 }
 
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all="snake_case")]
+pub enum FileConfirmationState {
+    #[default]
+    Unconfirmed,
+    Confirmed,
+    Invalid,
+}
+#[allow(dead_code)]
+impl FileConfirmationState {
+    pub fn skip(&self) -> bool {
+        self == &Self::default()
+    }
+
+    pub fn is_unconfirmed(&self) -> bool {
+        matches!(self, FileConfirmationState::Unconfirmed)
+    }
+
+    pub fn is_confirmed(&self) -> bool {
+        matches!(self, FileConfirmationState::Confirmed)
+    }
+
+    pub fn is_invalid(&self) -> bool {
+        matches!(self, FileConfirmationState::Invalid)
+    }
+}
+
 #[serde_as]
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct FileDocument {
+    pub _id: bson::oid::ObjectId,
+
     #[serde_as(as="DefaultOnError<_>")]
     pub location: FileLocation,
     #[serde(default, skip_serializing_if="Option::is_none")]
@@ -64,8 +95,12 @@ pub struct FileDocument {
     pub name: String,
     pub extension: String,
 
-    #[serde(skip_serializing_if="std::ops::Not::not",default)]
+    #[serde(default, skip_serializing_if="std::ops::Not::not")]
     pub random_name: bool,
+    #[serde(default, skip_serializing_if="FileConfirmationState::skip")]
+    pub confirmation_state: FileConfirmationState,
+    #[serde(default, skip_serializing_if="Option::is_none")]
+    pub confirmation_timeout: Option<u64>,
 
     #[serde(default, skip_serializing_if="Option::is_none")]
     pub created_at: Option<bson::Timestamp>,

@@ -28,6 +28,11 @@ pub struct FilesManager {
 }
 
 impl FilesManager {
+    // pub const UPLOAD_URL_DURATION: Duration =
+    //     Duration::from_secs(10800 /* 3 Hours */);
+    pub const UPLOAD_URL_DURATION: Duration =
+        Duration::from_secs(60 /* 3 Hours */);
+
     pub async fn new(
         bucket_name: String,
         subpath: String,
@@ -48,6 +53,31 @@ impl FilesManager {
         db::FileLocation::Gcs {
             bucket_name: self.bucket_name.clone(),
             file_name: self.subpath.to_string() + file_name,
+        }
+    }
+
+    pub async fn read_file(
+        &self, location: &db::FileLocation,
+    ) -> Option<FileInfo> {
+        match &location {
+            db::FileLocation::Gcs {
+                bucket_name, file_name
+            } => {
+                // FIXME: Differenciate errors
+                let object = self.client.get_object(&GetObjectRequest {
+                    bucket: bucket_name.to_string(),
+                    object: file_name.to_string(),
+                    ..Default::default()
+                }).await.ok()?;
+
+                Some(FileInfo {
+                    real_hash: object.md5_hash,
+                    mime_type: object.content_type,
+                    size: object.size.max(0).try_into().unwrap(),
+                    location: location.clone(),
+                })
+            },
+            db::FileLocation::Other => None,
         }
     }
 
@@ -73,13 +103,13 @@ impl FilesManager {
             &file_name,
             None, None, SignedURLOptions {
                 method: SignedURLMethod::PUT,
-                expires: Duration::from_secs(86400),
+                expires: Self::UPLOAD_URL_DURATION,
                 content_type: Some(mime_type.to_string()),
                 md5: Some(hash.to_string()),
                 ..Default::default()
             },
         ).await.expect("Could not create upload url");
 
-        FileCreateResult::Success { upload_url  }
+        FileCreateResult::Success { upload_url }
     }
 }
