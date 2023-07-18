@@ -284,20 +284,20 @@ async fn delete_link(
     }
 }
 
-#[derive(FromForm)]
+#[derive(serde::Deserialize)]
 struct LinkFilePostData<'r> {
     file_hash: &'r str,
     mime_type: &'r str,
 }
 
 // FIXME: Disgusting code, sorry
-#[post("/<name>", format = "multipart/form-data", data = "<body>")]
+#[post("/<name>", format = "application/json", data = "<body>")]
 async fn post_file(
     _rate_limiter: rate_limiter::RateLimited<"POST_LINK", 10>,
     addr: utils::RealIp,
     db: &State<DBAccess>,
     files: &State<files::FilesManager>,
-    body: Form<LinkFilePostData<'_>>,
+    body: Json<LinkFilePostData<'_>>,
     name: &str,
 ) -> (Status, serde_json::Value) {
     let final_name;
@@ -351,12 +351,23 @@ async fn post_file(
         }
     }
     else {
-        let existing = db.links_collection.find_one(bson::doc!{
+        let existing = db.files_collection.find_one(bson::doc!{
             "name": name,
         }, None).await.unwrap();
 
         match existing {
             None => (),
+            Some(db::FileDocument {
+                user_provided_hash: Some(h),
+                ..
+            }) if h == body.file_hash => return (
+                Status::Ok,
+                serde_json::json!({
+                    "success": true,
+                    "result": "already_known",
+                    "name": name.to_string(),
+                })
+            ),
             Some(_) => return (
                 Status::Conflict,
                 serde_json::json!({
@@ -415,13 +426,15 @@ async fn post_file(
         None =>
             (Status::Ok, serde_json::json!({
                 "success": true,
-                "result": "already_known"
+                "result": "already_known",
+                "name": final_name.to_string(),
             })),
         Some(u) =>
             (Status::Ok, serde_json::json!({
                 "success": true,
                 "result": "must_upload",
                 "upload_url": u,
+                "name": final_name.to_string(),
             })),
     }
 }

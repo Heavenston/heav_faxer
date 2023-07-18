@@ -3,17 +3,17 @@ use std::net::IpAddr;
 use mongodb::{ options::ClientOptions, Collection };
 use serde_with::{ serde_as, PickFirst, DisplayFromStr, DefaultOnError };
 
-#[derive(Clone, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct LinkReservationDocument {
     pub reserved_at: bson::Timestamp,
 }
 
-#[derive(Clone, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct LinkRedirectDocument {
     pub target: String,
 }
 
-#[derive(Clone, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 #[serde(untagged)]
 pub enum LinkSpecialDocument {
     Reservation(LinkReservationDocument),
@@ -21,7 +21,7 @@ pub enum LinkSpecialDocument {
 }
 
 #[serde_as]
-#[derive(Clone, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct LinkDocument {
     pub name: String,
     #[serde(skip_serializing_if="std::ops::Not::not",default)]
@@ -40,10 +40,10 @@ pub struct LinkDocument {
 }
 
 #[serde_as]
-#[derive(Clone, Default, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Clone, Default, serde::Serialize, serde::Deserialize)]
 #[serde(tag="type", rename_all="snake_case")]
 pub enum FileLocation {
-    GCS {
+    Gcs {
         bucket_name: String,
         file_name: String,
     },
@@ -52,7 +52,7 @@ pub enum FileLocation {
 }
 
 #[serde_as]
-#[derive(Clone, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct FileDocument {
     #[serde_as(as="DefaultOnError<_>")]
     pub location: FileLocation,
