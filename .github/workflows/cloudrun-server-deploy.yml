@@ -50,4 +50,4 @@ jobs:
           env_vars: |
             MONGODB_CONNECTION=${{ secrets.MONGODB_CONNECTION_STRING }}
             CLOUD_STORAGE_BUCKET=${{ vars.CLOUD_STORAGE_BUCKET }}
-            ${{ vars.CLOUD_STORAGE_SUBPATH == '' && 'CLOUD_STORAGE_SUBPATH=' || '' }}${{ vars.CLOUD_STORAGE_SUBPATH }}
+            CLOUD_STORAGE_SUBPATH=${{ vars.CLOUD_STORAGE_SUBPATH }}

@@ -43,7 +43,7 @@ impl FilesManager {
         Self {
             client,
             bucket_name,
-            subpath,
+            subpath: if subpath == "/" { "".to_string() } else { subpath },
         }
     }
 
