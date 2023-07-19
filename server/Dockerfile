@@ -2,6 +2,7 @@ FROM rust:alpine AS cuisine
 WORKDIR /workdir
 
 RUN apk add build-base
+RUN apk add openssl
 RUN rustup default nightly
 RUN cargo install cargo-chef
 
