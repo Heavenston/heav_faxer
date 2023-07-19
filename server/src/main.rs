@@ -534,7 +534,7 @@ async fn rocket() -> _ {
     let storage_bucket_name = std::env::var("CLOUD_STORAGE_BUCKET")
         .expect("No storage bucket specified");
     let storage_bucket_subpath = std::env::var("CLOUD_STORAGE_SUBPATH")
-        .expect("No storage bucket subpath specified");
+        .unwrap_or_default();
 
     let db_access = DBAccess::connect(&mongodb_connection).await;
 
