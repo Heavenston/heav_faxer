@@ -1,7 +1,7 @@
-use std::time::Duration;
+use std::{time::Duration, collections::HashMap};
 
 use google_cloud_storage::{
-    client::{ Client as GClient, ClientConfig as GClientCfg }, http::objects::{get::GetObjectRequest, upload::{UploadObjectRequest, UploadType, Media}}, sign::{SignedURLOptions, SignedURLMethod},
+    client::{ Client as GClient, ClientConfig as GClientCfg }, http::objects::{get::GetObjectRequest, upload::{UploadObjectRequest, UploadType, Media}, Object}, sign::{SignedURLOptions, SignedURLMethod, URLStyle},
 };
 
 use crate::db;
@@ -86,18 +86,34 @@ impl FilesManager {
         location: &db::FileLocation,
         mime_type: &str,
         hash: &str,
+        size: Option<u64>,
     ) -> FileCreateResult {
         let db::FileLocation::Gcs { bucket_name, file_name } = location
             else { return FileCreateResult::UknownLocation };
 
+        struct CustomUrlStyle;
+        impl URLStyle for CustomUrlStyle {
+            fn host(&self, bucket: &str) -> String {
+                format!("{bucket}.storage.googleapis.com")
+            }
+
+            fn path(&self, _: &str, object: &str) -> String {
+                object.to_string()
+            }
+        }
+
         self.client.upload_object(&UploadObjectRequest {
             bucket: self.bucket_name.to_string(),
             ..Default::default()
-        }, vec![], &UploadType::Simple(Media {
-            name: file_name.to_string().into(),
+        }, vec![], &UploadType::Multipart(Box::new(Object {
+            name: file_name.to_string(),
             content_type: mime_type.to_string().into(),
-            content_length: Some(0),
-        })).await.expect("Could not create object");
+            size: 0,
+            metadata: Some(HashMap::from([
+                ("Access-Control-Allow-Origin".to_string(), "*".to_string())
+            ])),
+            ..Default::default()
+        }))).await.expect("Could not create object");
         let upload_url = self.client.signed_url(
             &bucket_name,
             &file_name,
@@ -106,6 +122,10 @@ impl FilesManager {
                 expires: Self::UPLOAD_URL_DURATION,
                 content_type: Some(mime_type.to_string()),
                 md5: Some(hash.to_string()),
+                style: Box::new(CustomUrlStyle),
+                headers: if let Some(s) = size {
+                    vec![ format!("Content-Length: {}", s) ]
+                } else { vec![] },
                 ..Default::default()
             },
         ).await.expect("Could not create upload url");

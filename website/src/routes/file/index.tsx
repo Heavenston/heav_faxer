@@ -3,6 +3,7 @@ import { DocumentHead } from "@builder.io/qwik-city";
 
 import BackButton from "~/components/back_button/back_button"
 import Machine, { SendFunction } from "~/components/fax_machine/fax_machine";
+import * as api from "~/api";
 
 import styles from "./index.scss?inline";
 
@@ -37,16 +38,53 @@ export default component$(() => {
         if (!(file instanceof File))
             throw "Expected file";
 
-        const w = 100;
-        for (let i = 0; i <= 30; i++) {
-            const j = i;
-            setTimeout(() => {
-                set_status((1 / 30) * j);
-            }, w * j);
-        }
-        await new Promise(resolve => setTimeout(() => resolve(null), w * 35));
+        set_status(0, "Computing file hash...");
 
-        throw "no";
+        const file_content = new Uint8Array(await file.arrayBuffer());
+        const file_type = file.type;
+
+        console.log(file_content.length);
+
+        const { default: md5 } = await import("md5");
+        const hash = btoa(String.fromCharCode.apply(null, md5(
+            file_content, { asBytes: true }
+        )));
+
+        console.log(file_content.length);
+
+        set_status(0, "Requesting upload config");
+
+        const splitted = file.name.split(".");
+        const file_ext = splitted.length <= 1 ? undefined : splitted[splitted.length-1];
+        // const file_name = splitted.slice(0, splitted.length <= 1 ? undefined : -1).join(".")
+        const rs = await api.upload_file(
+            "random",
+            file_ext, file_type,
+            hash, file_content.length,
+        );
+        if (!rs.success)
+            throw rs.message ?? rs.error;
+        set_status(0, "Starting upload");
+
+        if (rs.result === "already_known")
+            return `${api.FILES_BASE_URL}${rs.name}`;
+
+        const rs2 = await (await import("axios")).default.put(
+            rs.upload_url, file_content,
+            {
+                headers: {
+                    "Content-Type": file_type,
+                    "Content-md5": hash,
+                },
+                onUploadProgress(u) {
+                    set_status(u.progress ?? 0.5);
+                }
+            }
+        );
+        if (rs2.status !== 200)
+            throw rs2.statusText;
+
+        return `${api.FILES_BASE_URL}${rs.name}`;
     });
     const reset = $(() => {
         file_value.value = undefined;

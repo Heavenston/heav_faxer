@@ -91,6 +91,8 @@ pub struct FileDocument {
     pub user_provided_hash: Option<String>,
     #[serde(default, skip_serializing_if="Option::is_none")]
     pub mime_type: Option<String>,
+    #[serde(default, skip_serializing_if="Option::is_none")]
+    pub file_size: Option<u64>,
 
     pub name: String,
     pub extension: String,

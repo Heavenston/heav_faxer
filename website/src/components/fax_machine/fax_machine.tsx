@@ -18,7 +18,7 @@ import Button from "~/components/button/button";
 
 export type SendFunction =
     | (() => Promise<string>)
-    | ((set_progress: (status: number) => void) => Promise<string>);
+    | ((set_progress: (status: number, message?: string) => void) => Promise<string>);
 
 export type Props = {
     show_input_paper?: boolean,
@@ -41,6 +41,7 @@ type State = {
               name: "sending";
               progress: number;
               show_progress: boolean;
+              message?: string;
           }
         | {
               name: "error";
@@ -83,11 +84,12 @@ export default component$<Props>(props => {
             return;
         store.state = { name: "sending", progress: 1, show_progress: false };
         try {
-            const link = await props.send_function(n => {
+            const link = await props.send_function((n, m) => {
                 console.log(`Status = ${n}`);
                 if (store.state.name === "sending") {
                     store.state.progress = n;
                     store.state.show_progress = true;
+                    store.state.message = m;
                 }
             });
             store.state = { name: "showing", shortened_url: link };
@@ -117,10 +119,15 @@ export default component$<Props>(props => {
         display_text = `Error, ${store.state.error_message}`;
     } else if (store.state.name === "sending") {
         if (store.state.show_progress) {
-            let progress_text = (store.state.progress * 100).toFixed(1);
-            while (progress_text.length < 5)
-                progress_text = "0" + progress_text;
-            display_text = `Progress ${progress_text}%`;
+            if (store.state.message === undefined) {
+                let progress_text = (store.state.progress * 100).toFixed(1);
+                while (progress_text.length < 5)
+                    progress_text = "0" + progress_text;
+                display_text = `Progress ${progress_text}%`;
+            }
+            else {
+                display_text = store.state.message;
+            }
         }
         else
             display_text = "Contacting server";

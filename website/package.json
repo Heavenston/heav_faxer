@@ -37,6 +37,9 @@
         "vite-tsconfig-paths": "4.2.0"
     },
     "dependencies": {
+        "@types/md5": "^2.3.2",
+        "axios": "^1.4.0",
+        "md5": "^2.3.0",
         "yaml": "^2.3.1"
     }
 }

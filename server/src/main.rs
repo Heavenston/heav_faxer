@@ -291,6 +291,7 @@ async fn delete_link(
 struct LinkFilePostData<'r> {
     file_hash: &'r str,
     mime_type: &'r str,
+    file_size: u64,
 }
 
 // FIXME: Disgusting code, sorry
@@ -303,6 +304,14 @@ async fn post_file(
     body: Json<LinkFilePostData<'_>>,
     input_full_name: &str,
 ) -> (Status, serde_json::Value) {
+    if body.file_size > 1_000_000_000 {
+        return (Status::PayloadTooLarge, serde_json::json!({
+            "success": false,
+            "error": "too_big",
+            "message": "File is over the 1Gb limit",
+        }));
+    }
+
     let final_name;
     let final_ext;
     let final_location;
@@ -396,7 +405,10 @@ async fn post_file(
             }
             final_name = random_name;
             final_ext = input_file_ext.to_string();
-            final_location = files.new_location(&(final_name.clone() + "." + &final_ext));
+            final_location = files.new_location(&(
+                if final_ext != "" { final_name.clone() + "." + &final_ext }
+                else { final_name.clone() }
+            ));
             should_create = true;
         }
     }
@@ -430,7 +442,10 @@ async fn post_file(
 
         final_name = input_file_name.to_string();
         final_ext = input_file_ext.to_string();
-        final_location = files.new_location(&(final_name.clone() + "." + &final_ext));
+        final_location = files.new_location(&(
+            if final_ext != "" { final_name.clone() + "." + &final_ext }
+            else { final_name.clone() }
+        ));
         is_random_name = false;
         should_create = true;
     }
@@ -442,6 +457,7 @@ async fn post_file(
                 &final_location,
                 body.mime_type,
                 body.file_hash,
+                Some(body.file_size),
             ).await;
             let ur = match create_rstlt {
                 files::FileCreateResult::UknownLocation =>
@@ -456,6 +472,7 @@ async fn post_file(
                 location: final_location,
                 random_name: is_random_name,
                 mime_type: Some(body.mime_type.to_string()),
+                file_size: Some(body.file_size),
 
                 name: final_name.clone(),
                 extension: input_file_ext.to_string(),
@@ -480,19 +497,24 @@ async fn post_file(
             None
         };
 
+
+    let final_full_name =
+        if final_ext != "" { final_name.clone() + "." + &final_ext }
+        else { final_name.clone() };
+    
     match upload_url {
         None =>
             (Status::Ok, serde_json::json!({
                 "success": true,
                 "result": "already_known",
-                "name": final_name.to_string() + "." + &final_ext,
+                "name": &final_full_name,
             })),
         Some(u) =>
             (Status::Ok, serde_json::json!({
                 "success": true,
                 "result": "must_upload",
                 "upload_url": u,
-                "name": final_name.to_string() + "." + &final_ext,
+                "name": &final_full_name,
             })),
     }
 }
