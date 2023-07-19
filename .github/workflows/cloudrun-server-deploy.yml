@@ -49,3 +49,5 @@ jobs:
           image: '${{ vars.GAR_LOCATION }}-docker.pkg.dev/${{ vars.GOOGLE_PROJECT_ID }}/${{ vars.GAR_ID }}/${{ vars.CLOUD_RUN_SERVICE }}:${{ github.sha }}'
           env_vars: |
             MONGODB_CONNECTION=${{ secrets.MONGODB_CONNECTION_STRING }}
+            CLOUD_STORAGE_BUCKET=${{ vars.CLOUD_STORAGE_BUCKET }}
+            ${{ vars.CLOUD_STORAGE_SUBPATH == '' && 'CLOUD_STORAGE_SUBPATH=' || '' }}${{ vars.CLOUD_STORAGE_SUBPATH }}
