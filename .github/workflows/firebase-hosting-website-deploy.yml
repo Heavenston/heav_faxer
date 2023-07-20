@@ -26,6 +26,7 @@ jobs:
              -e 's/#HOSTING_TARGET#/${{ vars.FIREBASE_HOSTING_TARGET }}/g'
              -e 's/#CLOUD_RUN_SERVICE_ID#/${{ vars.CLOUD_RUN_SERVICE }}/g'
              -e "s/#CLOUD_RUN_REGION#/${{ vars.CLOUD_RUN_REGION }}/g"
+             -e "s/#FILE_BUCKET_URL#/${{ vars.FILE_BUCKET_URL }}/g"
              website/firebase.json
 
       - uses: FirebaseExtended/action-hosting-deploy@v0

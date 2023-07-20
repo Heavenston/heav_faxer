@@ -7,7 +7,7 @@
         "redirects": [
             {
                 "regex": "/f/(?P<uri>.*)",
-                "destination": "https://files.hfax.fr/:uri",
+                "destination": "#FILE_BUCKET_URL#:uri",
                 "type": 301
             }
         ],
