@@ -22,12 +22,13 @@ jobs:
           VITE_FILES_BASE_URL: ${{ vars.FILES_BASE_URL }}
 
       - name: Replace firebase config
-        run: sed -i
-             -e 's/#HOSTING_TARGET#/${{ vars.FIREBASE_HOSTING_TARGET }}/g'
-             -e 's/#CLOUD_RUN_SERVICE_ID#/${{ vars.CLOUD_RUN_SERVICE }}/g'
-             -e "s/#CLOUD_RUN_REGION#/${{ vars.CLOUD_RUN_REGION }}/g"
-             -e "s/#FILE_BUCKET_URL#/${{ vars.FILE_BUCKET_URL }}/g"
-             website/firebase.json
+        run: awk '{
+             sub(/#HOSTING_TARGET#/,"${{ vars.FIREBASE_HOSTING_TARGET }}");
+             sub(/#CLOUD_RUN_SERVICE_ID#/,"${{ vars.CLOUD_RUN_SERVICE }}");
+             sub(/#CLOUD_RUN_REGION#/,"${{ vars.CLOUD_RUN_REGION }}");
+             sub(/#FILE_BUCKET_URL#/,"${{ vars.FILE_BUCKET_URL }}");
+             print > "website/firebase.json"
+            }' website/firebase.json
 
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
