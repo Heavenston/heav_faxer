@@ -55,7 +55,7 @@ export default component$(() => {
             let result: ReadableStreamReadResult<Uint8Array>;
             let processed = 0;
             while ((result = await reader.read()).value !== undefined) {
-                let word_array = CryptoJS.lib.WordArray.create(
+                const word_array = CryptoJS.lib.WordArray.create(
                     [], 0
                 );
                 for (let i = 0; i < result.value.length; i++) {
@@ -75,7 +75,7 @@ export default component$(() => {
                 set_status(0, `Hashing ${Math.floor(processed / file_size * 1000) / 10}%`);
                 await new Promise<void>(r => setTimeout(r));
             }
-        };
+        }
         const hash = CryptoJS.enc.Base64.stringify(hasher.finalize());
 
         console.log(file.name, "of size", file.size, "and hash", hash);
