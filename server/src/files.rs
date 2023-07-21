@@ -91,17 +91,6 @@ impl FilesManager {
         let db::FileLocation::Gcs { bucket_name, file_name } = location
             else { return FileCreateResult::UknownLocation };
 
-        struct CustomUrlStyle;
-        impl URLStyle for CustomUrlStyle {
-            fn host(&self, bucket: &str) -> String {
-                format!("{bucket}.storage.googleapis.com")
-            }
-
-            fn path(&self, _: &str, object: &str) -> String {
-                object.to_string()
-            }
-        }
-
         self.client.upload_object(&UploadObjectRequest {
             bucket: self.bucket_name.to_string(),
             ..Default::default()
@@ -122,7 +111,6 @@ impl FilesManager {
                 expires: Self::UPLOAD_URL_DURATION,
                 content_type: Some(mime_type.to_string()),
                 md5: Some(hash.to_string()),
-                style: Box::new(CustomUrlStyle),
                 headers: if let Some(s) = size {
                     vec![ format!("Content-Length: {}", s) ]
                 } else { vec![] },
