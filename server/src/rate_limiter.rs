@@ -157,7 +157,7 @@ impl<
                 request.local_cache(|| Some(RateLimitedLocalCache {
                     until
                 }));
-                request::Outcome::Failure((
+                request::Outcome::Error((
                     Status::TooManyRequests,
                     ()
                 ))
