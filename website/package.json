@@ -1,5 +1,6 @@
 {
     "name": "my-qwik-basic-starter",
+    "type": "module",
     "description": "Recommended for your first Qwik app",
     "engines": {
         "node": ">=15.0.0"
@@ -21,21 +22,21 @@
         "qwik": "qwik"
     },
     "devDependencies": {
-        "@builder.io/qwik": "1.1.4",
-        "@builder.io/qwik-city": "1.1.4",
+        "@builder.io/qwik": "1.5.4",
+        "@builder.io/qwik-city": "1.5.4",
         "@types/crypto-js": "^4.1.1",
-        "@types/eslint": "8.40.0",
+        "@types/eslint": "8.56.10",
         "@types/node": "latest",
-        "@typescript-eslint/eslint-plugin": "5.59.7",
-        "@typescript-eslint/parser": "5.59.7",
-        "eslint": "8.41.0",
-        "eslint-plugin-qwik": "1.1.4",
-        "node-fetch": "3.3.1",
-        "prettier": "2.8.8",
+        "@typescript-eslint/eslint-plugin": "7.9.0",
+        "@typescript-eslint/parser": "7.9.0",
+        "eslint": "8.57.0",
+        "eslint-plugin-qwik": "1.5.4",
+        "node-fetch": "3.3.2",
+        "prettier": "3.2.5",
         "sass": "^1.62.1",
-        "typescript": "5.0.4",
-        "vite": "4.3.8",
-        "vite-tsconfig-paths": "4.2.0"
+        "typescript": "5.4.5",
+        "vite": "5.2.11",
+        "vite-tsconfig-paths": "4.3.2"
     },
     "dependencies": {
         "@types/md5": "^2.3.2",

@@ -6,6 +6,8 @@ import {
     useVisibleTask$,
     useStore,
     useContext,
+    useOn,
+    $,
 } from "@builder.io/qwik";
 import styles from "./paper.scss?inline";
 import globalStyles from "./paper_global.scss?inline";
@@ -28,24 +30,12 @@ export default component$(() => {
     const ref = useSignal<HTMLDivElement>();
     const prevent_drawer_close = useContext(prevent_drawer_close_context);
 
-    useVisibleTask$(({ track, cleanup }) => {
-        const element = track(() => ref.value);
-        if (element === undefined) return;
-
-        const onMouseEnter = () => {
-            state.opened = true;
-        };
-        const onMouseLeave = () => {
-            state.opened = false;
-        };
-        element.addEventListener("mouseenter", onMouseEnter);
-        element.addEventListener("mouseleave", onMouseLeave);
-
-        cleanup(() => {
-            element.removeEventListener("mouseenter", onMouseEnter);
-            element.removeEventListener("mouseleave", onMouseLeave);
-        });
-    });
+    useOn("mouseenter", $(() => {
+        state.opened = true;
+    }));
+    useOn("mouseleave", $(() => {
+        state.opened = false;
+    }));
 
     useVisibleTask$(({ track, cleanup }) => {
         const el = track(() => ref.value);
