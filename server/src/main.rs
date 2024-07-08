@@ -322,7 +322,7 @@ async fn post_file(
     let (
         input_file_name,
         input_file_ext
-    ) = input_full_name.rsplit_once('.').unwrap_or((&input_full_name, ""));
+    ) = input_full_name.rsplit_once('.').unwrap_or((input_full_name, ""));
 
     if input_file_name == "random" {
         let mut with_same_hash = db.files_collection.find(
@@ -406,7 +406,7 @@ async fn post_file(
             final_name = random_name;
             final_ext = input_file_ext.to_string();
             final_location = files.new_location(&(
-                if final_ext != "" { final_name.clone() + "." + &final_ext }
+                if !final_ext.is_empty() { final_name.clone() + "." + &final_ext }
                 else { final_name.clone() }
             ));
             should_create = true;
@@ -443,7 +443,7 @@ async fn post_file(
         final_name = input_file_name.to_string();
         final_ext = input_file_ext.to_string();
         final_location = files.new_location(&(
-            if final_ext != "" { final_name.clone() + "." + &final_ext }
+            if !final_ext.is_empty() { final_name.clone() + "." + &final_ext }
             else { final_name.clone() }
         ));
         is_random_name = false;
@@ -499,7 +499,7 @@ async fn post_file(
 
 
     let final_full_name =
-        if final_ext != "" { final_name.clone() + "." + &final_ext }
+        if !final_ext.is_empty() { final_name.clone() + "." + &final_ext }
         else { final_name.clone() };
     
     match upload_url {
