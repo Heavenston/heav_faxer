@@ -3,8 +3,13 @@
 
   --gray-light: #403d39;
   --gray-dark: #252422;
-  /* --gray-dark: #222831; */
-  /* --gray-light: #393E46; */
+
+  --red: #c23b22;
+
+  --text-color: white;
+  --text-color-gray: #a7a4a0;
+
+  --border-radius: 0.5rem;
 }
 
 * {
@@ -30,7 +35,7 @@ body {
   margin: 0 auto;
   background: var(--gray-dark);
 
-  color: white;
+  color: var(--text-color);
 }
 
 .force-round-cursor {
