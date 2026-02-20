@@ -1,10 +1,6 @@
 <script lang="ts">
   import { tick } from "svelte";
-
-  type FileDocument = {
-    id: string,
-    file: File,
-  };
+  import Document, { type FileDocument } from "./document.svelte";
 
   let documents: FileDocument[] = $state([]);
 
@@ -29,19 +25,23 @@
   }
 </script>
 
+<svelte:document on:dragenter={() => {
+  console.log("enter");
+}} on:dragleave={() => {
+  console.log("leave");
+}} on:dragexit={() => {
+  console.log("exit");
+}} on:dragstart={() => {
+  console.log("start");
+}} on:dragend={() => {
+  console.log("end");
+}} on:dragover={() => {
+  console.log("over");
+}}/>
+
 <div class={["container", {["activated"]: documents.length > 0}]}>
   {#each documents as doc (doc.id)}
-    <div
-      style:view-transition-name={`document-${doc.id}`}
-      class={["fafa", "document"]}
-    >
-      <div class={"document-title"}>
-        {doc.file.name}
-      </div>
-      <button class={["delete-btn"]} onclick={() => removeDoc(doc.id)}>
-        x
-      </button>
-    </div>
+    <Document doc={doc} onremove={() => removeDoc(doc.id)} />
   {/each}
   <form style:view-transition-name="document-form" class={["document", "file-upload-form"]}>
     <input type="file" multiple onchange={(event) => {
@@ -53,7 +53,11 @@
         }
       });
     }} />
-    Select Files
+    {#if documents.length > 0}
+      Select new files
+    {:else}
+      Select or drop new files
+    {/if}
   </form>
 </div>
 
@@ -82,68 +86,17 @@
 }
 
 ::view-transition-new(.animated-item):only-child {
-  animation: fade-in 100ms ease-in;
+  animation: fade-in 100ms ease-out;
   animation-fill-mode: both;
 }
 
 ::view-transition-old(.animated-item):only-child {
-  animation: fade-out 100ms ease-in;
+  animation: fade-out 100ms ease-out;
   animation-fill-mode: both;
 }
 
 ::view-transition-group(*) {
   animation-duration: 200ms;
-}
-
-.document {
-  width: 10rem;
-  aspect-ratio: calc(1/sqrt(2));
-
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
-  position: relative;
-
-  view-transition-class: animated-item;
-
-  contain: layout;
-
-  &.fafa {
-    background: var(--gray-light);
-
-    padding: calc(0.75 * var(--border-radius)) var(--border-radius);
-    border-radius: var(--border-radius);
-
-    overflow-wrap: break-word;
-  }
-
-  .document-title {
-    text-align: center;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    width: 100%;
-  }
-
-  .delete-btn {
-    opacity: 0;
-
-    position: absolute;
-    top: -.5rem;
-    right: -.5rem;
-
-    height: 1rem;
-    width: 1rem;
-    background: var(--red);
-
-    border-radius: 1rem;
-  }
-
-  &:hover {
-    .delete-btn {
-      opacity: 1;
-    }
-  }
 }
 
 .file-upload-form {
@@ -159,6 +112,8 @@
   align-items: center;
 
   position: relative;
+
+  text-align: center;
 
   >input[type=file] {
     position: absolute;
@@ -192,6 +147,19 @@
 
   >* {
     flex-grow: 0;
+  }
+
+  .file-upload-form {
+    width: 10rem;
+    aspect-ratio: calc(1/sqrt(2));
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    position: relative;
+
+    view-transition-class: animated-item;
   }
 }
 </style>

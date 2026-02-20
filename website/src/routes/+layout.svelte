@@ -17,6 +17,7 @@
 
 	  --gray-light: #403d39;
 	  --gray-dark: #252422;
+	  --gray-darker: #0d0c0b;
 
 	  --red: #c23b22;
 
