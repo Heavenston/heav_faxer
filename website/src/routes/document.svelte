@@ -9,6 +9,7 @@
     FileSpreadsheet,
     FileText,
     File as DefaultFileIcon,
+    FileTerminal,
     X,
   } from '@lucide/svelte';
 
@@ -24,6 +25,7 @@
     if (extension === 'json') return FileBraces;
     if (['csv', 'xls', 'xlsx'].includes(extension)) return FileSpreadsheet;
     if (['pdf', 'txt', 'md', 'doc', 'docx', 'rtf', 'log'].includes(extension)) return FileText;
+    if (['jar', "exe"].includes(extension)) return FileTerminal;
 
     if (file.type.includes('pdf') || file.type.includes('text')) return FileText;
     if (file.type.includes('spreadsheet') || file.type.includes('csv')) return FileSpreadsheet;
@@ -48,7 +50,11 @@
     style:view-transition-name={`document-${doc.id}`}
     class="document"
   >
-    <Icon size="4rem" />
+    {#if doc.file.type.startsWith('image/')}
+      <img src={URL.createObjectURL(doc.file)} class="img-previz1" alt={doc.file.name} />
+      <img src={URL.createObjectURL(doc.file)} class="img-previz2" alt={doc.file.name} />
+    {/if}
+    <Icon size="var(--icon-size)" class="doc-icon" />
   </div>
   <button class={["delete-btn"]} onclick={() => onremove?.()}>
     <X size="1rem" />
@@ -83,9 +89,45 @@
     background: var(--gray-light);
     border-radius: var(--border-radius);
 
+    display: flex;
+    justify-content: start;
+    align-items: end;
     padding: 0.6rem 0.2rem;
 
-    color: var(--text-color-gray);
+    color: white;
+
+    position: relative;
+    overflow: hidden;
+
+    --icon-size: 2rem;
+    
+    &:not(:has(img)) {
+      justify-content: center;
+      align-items: center;
+      font-size: 2rem;
+    }
+
+    .img-previz1, .img-previz2 {
+      display: block;
+
+      position: absolute;
+      inset: 0;
+
+      z-index: -1;
+    }
+
+    .img-previz1 {
+      object-fit: cover;
+      filter: blur(10px);
+      width: 100%;
+      height: 100%;
+    }
+    .img-previz2 {
+      object-fit: contain;
+      inset: .5rem;
+      width: calc(100% - 1rem);
+      height: calc(100% - 1rem);
+    }
   }
 
   .document-title {
