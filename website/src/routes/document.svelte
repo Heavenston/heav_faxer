@@ -68,15 +68,14 @@
   >
     {#if doc.mime_type.startsWith('image/')}
       {#if doc.data.kind === "local_file"}
-        <img src={URL.createObjectURL(doc.data.file)} class="img-previz1" alt={doc.data.file.name} />
-        <img src={URL.createObjectURL(doc.data.file)} class="img-previz2" alt={doc.data.file.name} />
+        <img src={URL.createObjectURL(doc.data.file)} class="img-previz" alt={doc.data.file.name} />
       {/if}
     {/if}
     <Icon size="var(--icon-size)" class="doc-icon" />
     {#if doc.progress < 1}
-      <div class="progress-overlay">
+      <div out:fade={{ duration: 100 }} class="progress-overlay">
       </div>
-      <div out:fade class={["progress-text-container", {"progress-start": doc.progress < 0.5}]}>
+      <div out:fade={{ duration: 100 }} class={["progress-text-container", {"progress-start": doc.progress < 0.5}]}>
         {#if doc.progress == 0}
           <Loader />
         {:else}
@@ -135,22 +134,13 @@
       align-items: center;
     }
 
-    .img-previz1, .img-previz2 {
+    .img-previz {
       display: block;
 
       position: absolute;
       inset: 0;
-
       z-index: -1;
-    }
 
-    .img-previz1 {
-      object-fit: cover;
-      filter: blur(10px);
-      width: 100%;
-      height: 100%;
-    }
-    .img-previz2 {
       object-fit: contain;
       inset: .5rem;
       width: calc(100% - 1rem);
@@ -160,49 +150,46 @@
     .progress-text-container {
       content: var(--progress-text1);
       position: absolute;
-      right: 0;
-      left: 0;
+      top: 0;
+      height: 2rem;
 
       display: flex;
       justify-content: center;
       align-items: center;
 
-      transition: top 100ms ease-out, bottom 100ms ease-out;
+      transition: left 100ms ease-out, right 100ms ease-out;
 
       &.progress-start {
-        top: calc(var(--upload-progress) * 100%);
-        bottom: 0;
+        left: calc(var(--upload-progress) * 100%);
+        right: 0;
       }
 
       &:not(.progress-start) {
-        top: 0;
-        bottom: calc((1 - var(--upload-progress)) * 100%);
-
-        >* {
-          background: var(--gray-darker);
-          padding: 0.25rem 0.5rem;
-          border-radius: var(--border-radius);
-        }
+        left: 0;
+        right: calc((1 - var(--upload-progress)) * 100%);
+        color: black;
+        font-weight: bold;
       }
     }
 
     .progress-overlay {
       content: var(--progress-text2);
       position: absolute;
-      bottom: 0;
-      right: 0;
+      top: 0;
       left: 0;
 
       background: rgba(0,0,0,0.75);
-      height: calc((1 - var(--upload-progress)) * 100%);
+      height: 2rem;
+      width: 100%;
 
-      transition: height 100ms linear;
-
-      display: flex;
-      justify-content: center;
-      align-items: center;
-
-      backdrop-filter: grayscale(50%) blur(3px);
+      &::before {
+        content: "";
+        display: block;
+        background: white;
+        width: calc(var(--upload-progress) * 100%);
+        height: 100%;
+        transition: width 100ms linear;
+      }
     }
   }
 
