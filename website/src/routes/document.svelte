@@ -15,12 +15,24 @@
   import { fade } from "svelte/transition";
   import Loader from "./document-loader.svelte";
 
-  export function getLucideIcon(file: File) {
-    if (file.type.startsWith('image/')) return FileImage;
-    if (file.type.startsWith('video/')) return FilePlay;
-    if (file.type.startsWith('audio/')) return FileHeadphone;
+  export type FileDocumentData = {
+    kind: "local_file",
+    file: File,
+  };
+  export type FileDocument = {
+    local_id: string,
+    mime_type: string,
+    file_name: string,
+    data: FileDocumentData,
+    progress: number,
+  };
 
-    const extension = file.name.split('.').pop()?.toLowerCase() || '';
+  function getLucideIcon(doc: FileDocument) {
+    if (doc.mime_type.startsWith('image/')) return FileImage;
+    if (doc.mime_type.startsWith('video/')) return FilePlay;
+    if (doc.mime_type.startsWith('audio/')) return FileHeadphone;
+
+    const extension = doc.file_name.split('.').pop()?.toLowerCase() || '';
 
     if (['zip', 'rar', '7z', 'tar', 'gz'].includes(extension)) return FileArchive;
     if (['js', 'ts', 'jsx', 'tsx', 'html', 'css', 'py', 'rs', 'go', 'java', 'c', 'cpp'].includes(extension)) return FileCode;
@@ -29,25 +41,20 @@
     if (['pdf', 'txt', 'md', 'doc', 'docx', 'rtf', 'log'].includes(extension)) return FileText;
     if (['jar', "exe"].includes(extension)) return FileTerminal;
 
-    if (file.type.includes('pdf') || file.type.includes('text')) return FileText;
-    if (file.type.includes('spreadsheet') || file.type.includes('csv')) return FileSpreadsheet;
-    if (file.type.includes('zip') || file.type.includes('compressed')) return FileArchive;
+    if (doc.mime_type.includes('pdf') || doc.mime_type.includes('text')) return FileText;
+    if (doc.mime_type.includes('spreadsheet') || doc.mime_type.includes('csv')) return FileSpreadsheet;
+    if (doc.mime_type.includes('zip') || doc.mime_type.includes('compressed')) return FileArchive;
 
     return DefaultFileIcon;
   }
-  export type FileDocument = {
-    id: string,
-    file: File,
-    progress: number,
-  };
 
   let { doc, onremove }: { doc: FileDocument, onremove?: () => void } = $props();
 
   let Icon = $derived.by(() => {
-    return getLucideIcon(doc.file);
+    return getLucideIcon(doc);
   });
 
-  let file_name = $derived(doc.file.name);
+  let file_name = $derived(doc.file_name);
   let progress_text = $derived(`${Math.floor(doc.progress * 100)}%`);
 </script>
 
@@ -56,12 +63,14 @@
   style:--upload-progress={doc.progress}
 >
   <div
-    style:view-transition-name={`document-${doc.id}`}
+    style:view-transition-name={`document-${doc.local_id}`}
     class="document"
   >
-    {#if doc.file.type.startsWith('image/')}
-      <img src={URL.createObjectURL(doc.file)} class="img-previz1" alt={doc.file.name} />
-      <img src={URL.createObjectURL(doc.file)} class="img-previz2" alt={doc.file.name} />
+    {#if doc.mime_type.startsWith('image/')}
+      {#if doc.data.kind === "local_file"}
+        <img src={URL.createObjectURL(doc.data.file)} class="img-previz1" alt={doc.data.file.name} />
+        <img src={URL.createObjectURL(doc.data.file)} class="img-previz2" alt={doc.data.file.name} />
+      {/if}
     {/if}
     <Icon size="var(--icon-size)" class="doc-icon" />
     {#if doc.progress < 1}

@@ -18,10 +18,34 @@
 
   function removeDoc(id: string) {
     withTransition(() => {
-      const idx = documents.findIndex(doc => doc.id === id);
+      const idx = documents.findIndex(doc => doc.local_id === id);
       if (idx >= 0)
         documents.splice(idx, 1);
     });
+  }
+
+  function createAndUploadFile(file: File) {
+    documents.push({
+      progress: 0,
+      file_name: file.name,
+      mime_type: file.type,
+      data: {
+        kind: "local_file",
+        file,
+      },
+      local_id: crypto.randomUUID(),
+    });
+    const doc: FileDocument = documents.at(-1)!;
+
+    setTimeout(() => {
+      const i = setInterval(() => {
+        doc.progress += Math.random() * 0.05;
+        if (doc.progress > 1) {
+          doc.progress = 1;
+          clearInterval(i);
+        }
+      }, 100);
+    }, 3000 * Math.random());
   }
 </script>
 
@@ -40,8 +64,8 @@
 }}/>
 
 <div class={["container", {["activated"]: documents.length > 0}]}>
-  {#each documents as doc (doc.id)}
-    <Document doc={doc} onremove={() => removeDoc(doc.id)} />
+  {#each documents as doc (doc.local_id)}
+    <Document doc={doc} onremove={() => removeDoc(doc.local_id)} />
   {/each}
   <form style:view-transition-name="document-form" class={["document", "file-upload-form"]}>
     <input type="file" multiple onchange={(event) => {
@@ -49,21 +73,7 @@
 
       withTransition(() => {
         for (const file of el.files ?? []) {
-          documents.push({
-            progress: 0,
-            file,
-            id: crypto.randomUUID(),
-          });
-          const doc: FileDocument = documents.at(-1)!;
-          setTimeout(() => {
-            const i = setInterval(() => {
-              doc.progress += Math.random() * 0.05;
-              if (doc.progress > 1) {
-                doc.progress = 1;
-                clearInterval(i);
-              }
-            }, 100);
-          }, 3000 * Math.random());
+          createAndUploadFile(file);
         }
       });
     }} />
