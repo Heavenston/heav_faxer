@@ -12,6 +12,7 @@
     FileTerminal,
     X,
   } from '@lucide/svelte';
+  import { fade } from "svelte/transition";
 
   export function getLucideIcon(file: File) {
     if (file.type.startsWith('image/')) return FileImage;
@@ -36,6 +37,7 @@
   export type FileDocument = {
     id: string,
     file: File,
+    progress: number,
   };
 
   let { doc, onremove }: { doc: FileDocument, onremove?: () => void } = $props();
@@ -43,9 +45,15 @@
   let Icon = $derived.by(() => {
     return getLucideIcon(doc.file);
   });
+
+  let file_name = $derived(doc.file.name);
+  let progress_text = $derived(`${Math.floor(doc.progress * 100)}%`);
 </script>
 
-<div class="document-container">
+<div
+  class="document-container"
+  style:--upload-progress={doc.progress}
+>
   <div
     style:view-transition-name={`document-${doc.id}`}
     class="document"
@@ -55,14 +63,21 @@
       <img src={URL.createObjectURL(doc.file)} class="img-previz2" alt={doc.file.name} />
     {/if}
     <Icon size="var(--icon-size)" class="doc-icon" />
+    {#if doc.progress < 1}
+      <div class="progress-overlay">
+      </div>
+      <div out:fade class={["progress-text-container", {"progress-start": doc.progress < 0.5}]}>
+        <div>{progress_text}</div>
+      </div>
+    {/if}
   </div>
   <button class={["delete-btn"]} onclick={() => onremove?.()}>
     <X size="1rem" />
   </button>
   <div class="document-title">
-    <div class="partial-title">{doc.file.name}</div>
+    <div class="partial-title">{file_name}</div>
     <div class="full-title">
-      {doc.file.name}
+      {file_name}
     </div>
   </div>
 </div>
@@ -104,7 +119,6 @@
     &:not(:has(img)) {
       justify-content: center;
       align-items: center;
-      font-size: 2rem;
     }
 
     .img-previz1, .img-previz2 {
@@ -127,6 +141,54 @@
       inset: .5rem;
       width: calc(100% - 1rem);
       height: calc(100% - 1rem);
+    }
+
+    .progress-text-container {
+      content: var(--progress-text1);
+      position: absolute;
+      right: 0;
+      left: 0;
+
+      display: flex;
+      justify-content: center;
+      align-items: center;
+
+      transition: top 100ms ease-out, bottom 100ms ease-out;
+
+      &.progress-start {
+        top: calc(var(--upload-progress) * 100%);
+        bottom: 0;
+      }
+
+      &:not(.progress-start) {
+        top: 0;
+        bottom: calc((1 - var(--upload-progress)) * 100%);
+
+        >* {
+          background: var(--gray-darker);
+          padding: 0.25rem 0.5rem;
+          border-radius: var(--border-radius);
+        }
+      }
+    }
+
+    .progress-overlay {
+      content: var(--progress-text2);
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      left: 0;
+
+      background: rgba(0,0,0,0.75);
+      height: calc((1 - var(--upload-progress)) * 100%);
+
+      transition: height 100ms linear;
+
+      display: flex;
+      justify-content: center;
+      align-items: center;
+
+      backdrop-filter: grayscale(50%) blur(3px);
     }
   }
 

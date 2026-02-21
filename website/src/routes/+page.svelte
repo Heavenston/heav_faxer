@@ -49,7 +49,19 @@
 
       withTransition(() => {
         for (const file of el.files ?? []) {
-          documents.push({ file, id: crypto.randomUUID() });
+          documents.push({
+            progress: 0,
+            file,
+            id: crypto.randomUUID(),
+          });
+          const doc: FileDocument = documents.at(-1)!;
+          const i = setInterval(() => {
+            doc.progress += Math.random() * 0.05;
+            if (doc.progress > 1) {
+              doc.progress = 1;
+              clearInterval(i);
+            }
+          }, 100);
         }
       });
     }} />
