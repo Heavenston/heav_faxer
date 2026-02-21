@@ -1,6 +1,7 @@
 <script lang="ts">
   import { tick } from "svelte";
   import Document, { type FileDocument } from "./document.svelte";
+  import { Share2, Folder } from "@lucide/svelte";
 
   let documents: FileDocument[] = $state([]);
 
@@ -63,36 +64,184 @@
   console.log("over");
 }}/>
 
-<div class={["container", {["activated"]: documents.length > 0}]}>
-  {#each documents as doc (doc.local_id)}
-    <Document doc={doc} onremove={() => removeDoc(doc.local_id)} />
-  {/each}
-  <form style:view-transition-name="document-form" class={["document", "file-upload-form"]}>
-    <input type="file" multiple onchange={(event) => {
-      const el = event.currentTarget;
+{#snippet fileuploadform()}
+<form style:view-transition-name="document-form" class="file-upload-form">
+  <input type="file" multiple onchange={(event) => {
+    const el = event.currentTarget;
 
-      withTransition(() => {
-        for (const file of el.files ?? []) {
-          createAndUploadFile(file);
-        }
-      });
-    }} />
-    {#if documents.length > 0}
-      Select new files
-    {:else}
-      Select or drop new files
-    {/if}
-  </form>
-</div>
+    withTransition(() => {
+      for (const file of el.files ?? []) {
+        createAndUploadFile(file);
+      }
+    });
+  }} />
+  {#if documents.length > 0}
+    Select new files
+  {:else}
+    Select or drop new files
+  {/if}
+</form>
+{/snippet}
+
+{#if documents.length === 0}
+  <div class="unitied-page">
+    {@render fileuploadform()}
+  </div>
+{:else}
+  <div class="container">
+    <div class="section">
+      <div class="section-header">
+        {new Date().toLocaleDateString()}
+        <div class="section-header-separator1"></div>
+        <div class="section-header-buttons">
+          <button class="section-header-button section-share-button"><Share2 size="1.3rem" /></button>
+          <button class="section-header-button"><Folder size="1.3rem" /></button>
+        </div>
+        <div class="section-header-separator2"></div>
+      </div>
+      <div class={["document-container", {["activated"]: documents.length > 0}]}>
+        {#each documents as doc (doc.local_id)}
+          <Document doc={doc} onremove={() => removeDoc(doc.local_id)} />
+        {/each}
+        {@render fileuploadform()}
+      </div>
+    </div>
+  </div>
+{/if}
 
 <style lang="scss">
-.container {
-  width: 100vw;
+.file-upload-form {
+  color: var(--text-color-gray);
+
+  padding: calc(0.75 * var(--border-radius)) var(--border-radius);
+
+  border: dashed var(--text-color-gray);
+  border-radius: var(--border-radius);
 
   display: flex;
+  justify-content: center;
+  align-items: center;
+
+  position: relative;
+
+  text-align: center;
+
+  >input[type=file] {
+    position: absolute;
+    inset: 0;
+
+    opacity: 0;
+
+    cursor: pointer;
+  }
+}
+
+.unitied-page {
+  height: 100vh;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  .file-upload-form {
+    min-width: 20rem;
+    max-width: 100%;
+    aspect-ratio: 4/3;
+  }
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
 
   padding: 1rem;
   gap: 1rem;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+
+  .section-header-separator1, .section-header-separator2 {
+    display: inline-block;
+    height: 3px;
+    background: var(--gray-light);
+  }
+
+  .section-header-separator1 {
+    width: 1rem;
+  }
+
+  .section-header-separator2 {
+    flex-grow: 1;
+  }
+
+  .section-header-buttons {
+    display: flex;
+    align-items: center;
+    gap: .25rem;
+  }
+
+  .section-share-button {
+    :global(>svg) {
+      transform: translateX(-1px);
+    }
+  }
+
+  .section-header-button {
+    height: 2rem;
+    width: 2rem;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    border-radius: var(--border-radius);
+
+    margin: -.25rem;
+
+    :global(>svg) {
+      display: block;
+    }
+
+    &:hover {
+      background: var(--gray-light);
+    }
+  }
+}
+
+.container {
+  min-height: 100vh;
+}
+
+.document-container {
+  display: flex;
+
+  gap: 1rem;
+
+  justify-content: flex-start;
+  align-items: flex-start;
+  align-content: flex-start;
+
+  flex-wrap: wrap;
+
+  >* {
+    flex-grow: 0;
+  }
+
+  .file-upload-form {
+    width: 10rem;
+    aspect-ratio: calc(1/sqrt(2));
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    position: relative;
+
+    view-transition-class: animated-item;
+  }
 }
 
 @keyframes fade-in {
@@ -121,69 +270,5 @@
 
 ::view-transition-group(*) {
   animation-duration: 200ms;
-}
-
-.file-upload-form {
-  color: var(--text-color-gray);
-
-  padding: calc(0.75 * var(--border-radius)) var(--border-radius);
-
-  border: dashed var(--text-color-gray);
-  border-radius: var(--border-radius);
-
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
-  position: relative;
-
-  text-align: center;
-
-  >input[type=file] {
-    position: absolute;
-    inset: 0;
-
-    opacity: 0;
-
-    cursor: pointer;
-  }
-}
-
-.container:not(.activated) {
-  height: 100vh;
-
-  justify-content: center;
-  align-items: center;
-
-  .file-upload-form {
-    min-width: 20rem;
-    max-width: 100%;
-    aspect-ratio: 4/3;
-  }
-}
-
-.container.activated {
-  justify-content: flex-start;
-  align-items: flex-start;
-  align-content: flex-start;
-
-  flex-wrap: wrap;
-
-  >* {
-    flex-grow: 0;
-  }
-
-  .file-upload-form {
-    width: 10rem;
-    aspect-ratio: calc(1/sqrt(2));
-
-    display: flex;
-    justify-content: center;
-    align-items: center;
-
-    position: relative;
-
-    view-transition-class: animated-item;
-  }
 }
 </style>

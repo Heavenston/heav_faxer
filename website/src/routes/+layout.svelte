@@ -15,13 +15,16 @@
 	:root {
 	  --font-without-serif: Segoe,Segoe UI,Candara,Calibri,Arial,sans-serif; 
 
+	  --gray-lightest: #fffcf2;
+	  --gray-lighter: #ccc5b9;
 	  --gray-light: #403d39;
 	  --gray-dark: #252422;
 	  --gray-darker: #151412;
+	  --gray-darkest: #0b0a09;
 
 	  --red: #c23b22;
 
-	  --text-color: white;
+	  --text-color: #fffcf2;
 	  --text-color-gray: #a7a4a0;
 
 	  --border-radius: 0.5rem;

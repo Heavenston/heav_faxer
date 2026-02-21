@@ -135,6 +135,8 @@
     }
 
     .img-previz {
+      $padding: .5rem;
+
       display: block;
 
       position: absolute;
@@ -142,16 +144,16 @@
       z-index: -1;
 
       object-fit: contain;
-      inset: .5rem;
-      width: calc(100% - 1rem);
-      height: calc(100% - 1rem);
+      inset: $padding;
+      width: calc(100% - $padding*2);
+      height: calc(100% - $padding*2);
     }
 
     .progress-text-container {
       content: var(--progress-text1);
       position: absolute;
       top: 0;
-      height: 2rem;
+      height: 1.5rem;
 
       display: flex;
       justify-content: center;
@@ -179,13 +181,13 @@
       left: 0;
 
       background: rgba(0,0,0,0.75);
-      height: 2rem;
+      height: 1.5rem;
       width: 100%;
 
       &::before {
         content: "";
         display: block;
-        background: white;
+        background: var(--gray-lighter);
         width: calc(var(--upload-progress) * 100%);
         height: 100%;
         transition: width 100ms linear;
