@@ -55,13 +55,15 @@
             id: crypto.randomUUID(),
           });
           const doc: FileDocument = documents.at(-1)!;
-          const i = setInterval(() => {
-            doc.progress += Math.random() * 0.05;
-            if (doc.progress > 1) {
-              doc.progress = 1;
-              clearInterval(i);
-            }
-          }, 100);
+          setTimeout(() => {
+            const i = setInterval(() => {
+              doc.progress += Math.random() * 0.05;
+              if (doc.progress > 1) {
+                doc.progress = 1;
+                clearInterval(i);
+              }
+            }, 100);
+          }, 3000 * Math.random());
         }
       });
     }} />

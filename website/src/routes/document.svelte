@@ -13,6 +13,7 @@
     X,
   } from '@lucide/svelte';
   import { fade } from "svelte/transition";
+  import Loader from "./document-loader.svelte";
 
   export function getLucideIcon(file: File) {
     if (file.type.startsWith('image/')) return FileImage;
@@ -67,7 +68,11 @@
       <div class="progress-overlay">
       </div>
       <div out:fade class={["progress-text-container", {"progress-start": doc.progress < 0.5}]}>
-        <div>{progress_text}</div>
+        {#if doc.progress == 0}
+          <Loader />
+        {:else}
+          <div>{progress_text}</div>
+        {/if}
       </div>
     {/if}
   </div>
