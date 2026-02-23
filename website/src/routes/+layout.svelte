@@ -28,6 +28,10 @@
 	  --text-color-gray: #a7a4a0;
 
 	  --border-radius: 0.5rem;
+
+	  --transition-duration: 50ms;
+	  --transition-ease: ease-out;
+	  --transition: var(--transition-duration) var(--transition-ease);
 	}
 
 	* {

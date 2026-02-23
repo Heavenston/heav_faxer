@@ -1,9 +1,35 @@
 <script lang="ts">
   import { tick } from "svelte";
   import Document, { type FileDocument } from "./document.svelte";
-  import { Share2, Folder, UserRound } from "@lucide/svelte";
+  import { Share2, Folder, UserRound, Plus, Pencil, SquareCheckBig, Trash2 } from "@lucide/svelte";
+    import { page } from "$app/state";
+    import { pushState } from "$app/navigation";
 
-  let documents: FileDocument[] = $state([]);
+  type TabData = {
+    name: string,
+    uuid: string,
+
+    documents: FileDocument[],
+  };
+
+  const tabs: TabData[] = $state([
+    { name: "Today's uploads", uuid: crypto.randomUUID(), documents: [] },
+  ]);
+  const selected_tab: number = $derived.by(() => {
+    if (typeof page.state.selected_tab === "number")
+      return page.state.selected_tab;
+    return 0; 
+  });
+
+  function set_selected_tab(new_idx: number) {
+    if (new_idx === selected_tab)
+      return;
+    pushState("", {
+      selected_tab: new_idx,
+    });
+  }
+
+  const documents: FileDocument[] = $derived(tabs[selected_tab].documents);
 
   function withTransition(cb: () => void) {
     if (document.startViewTransition) {
@@ -49,7 +75,6 @@
     }, 3000 * Math.random());
   }
 
-  let selected: number = $state(0);
 </script>
 
 <svelte:document on:dragenter={() => {
@@ -86,32 +111,49 @@
 {/snippet}
 
 {#snippet tab(idx: number, name: string)}
-  <button class={["tab",{["tab-selected"]: selected === idx}]} onclick={() => { selected = idx; }}>
+  <button class={["tab",{["tab-selected"]: selected_tab === idx}]} onclick={() => { set_selected_tab(idx); }}>
     {name}
   </button>
 {/snippet}
 
-{#if documents.length === 0}
-  <div class="unitied-page">
-    {@render fileuploadform()}
-  </div>
-{:else}
-  <div class="container">
-    <header>
-      {@render tab(0, "Today's Uploads")}
-      {@render tab(1, "New Folder")}
-      {@render tab(2, "Older Folder")}
-    </header>
+<div class="container">
+  <header class={{"header-discrete": documents.length === 0 && tabs.length === 1}}>
+    {#each tabs as tab_data, index (tab_data.uuid)}
+      {@render tab(index, tab_data.name)}
+    {/each}
+    <button
+      class="new-tab"
+      onclick={() => {
+        let name = "New Tab";
+        let i = 1;
+        while (tabs.some(t => t.name === name))
+          name = `New Tab #${i += 1}`;
+        tabs.push({
+          name: name,
+          uuid: crypto.randomUUID(),
+          documents: [],
+        });
+        set_selected_tab(tabs.length - 1);
+      }}
+    >
+      <Plus size="1.3rem" />
+    </button>
+    <div class="tabs-separator"></div>
+    <button class="tabs-header-button"><UserRound size="1.3rem" /></button>
+  </header>
+  {#if documents.length === 0}
+    <div class="empty-section">
+      {@render fileuploadform()}
+    </div>
+  {:else}
     <div class="section">
       <div class="section-header">
-        <div class="section-header-buttons">
-          <button class="section-header-button section-alignment-fix"><Share2 size="1.3rem" /></button>
-          <button class="section-header-button"><Folder size="1.3rem" /></button>
-        </div>
-        <div class="section-header-separator2"></div>
-        <div class="section-header-buttons">
-          <button class="section-header-button"><UserRound size="1.3rem" /></button>
-        </div>
+        <button class="section-header-button"><Pencil size="1.3rem" /></button>
+        <button class="section-header-button section-alignment-fix"><Share2 size="1.3rem" /></button>
+        <button class="section-header-button"><Folder size="1.3rem" /></button>
+        <button class="section-header-button"><SquareCheckBig size="1.3rem" /></button>
+        <div class="section-header-separator"></div>
+        <button class="section-header-button section-header-button-red"><Trash2 size="1.3rem" /></button>
       </div>
       <div class={["document-container", {["activated"]: documents.length > 0}]}>
         {#each documents as doc (doc.local_id)}
@@ -120,8 +162,8 @@
         {@render fileuploadform()}
       </div>
     </div>
-  </div>
-{/if}
+  {/if}
+</div>
 
 <style lang="scss">
 .file-upload-form {
@@ -150,8 +192,8 @@
   }
 }
 
-.unitied-page {
-  height: 100vh;
+.empty-section {
+  flex-grow: 1;
 
   display: flex;
   justify-content: center;
@@ -169,32 +211,28 @@
   flex-direction: column;
 
   padding: 1rem;
-  gap: 1rem;
+  padding-top: .5rem;
+  gap: .5rem;
 }
 
 .section-header {
   display: flex;
   align-items: center;
-  gap: .5rem;
+  gap: 0;
 
-  .section-header-separator1, .section-header-separator2 {
+  .section-header-separator {
     display: inline-block;
     height: 3px;
     background: var(--gray-light);
-  }
 
-  .section-header-separator1 {
-    width: 1rem;
-  }
-
-  .section-header-separator2 {
     flex-grow: 1;
-  }
 
-  .section-header-buttons {
-    display: flex;
-    align-items: center;
-    gap: .25rem;
+    &:not(:first-child) {
+      margin-left: .5rem;
+    }
+    &:not(:last-child) {
+      margin-right: .5rem;
+    }
   }
 
   .section-alignment-fix {
@@ -212,21 +250,27 @@
     align-items: center;
 
     border-radius: var(--border-radius);
-
-    margin: -.25rem;
+    transition: color var(--transition);
+    color: var(--text-color-gray);
 
     :global(>svg) {
       display: block;
     }
 
     &:hover {
-      background: var(--gray-light);
+      color: white;
+      &.section-header-button-red {
+        color: var(--red);
+      }
     }
+
   }
 }
 
 .container {
   min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
 header {
@@ -240,6 +284,17 @@ header {
   padding: 0 0rem;
   gap: 0rem;
 
+  transition: opacity var(--transition);
+
+  &.header-discrete {
+    position: absolute;
+    opacity: 0;
+
+    &:hover {
+      opacity: 1;
+    }
+  }
+
   >.tab {
     display: flex;
     justify-content: center;
@@ -251,12 +306,49 @@ header {
     padding: 0 1rem;
     color: var(--text-color-gray);
 
-    transition: background 100ms ease-out, border-radius 100ms ease-out, color 100ms ease-out;
+    transition: background var(--transition), color var(--transition);
 
     &.tab-selected {
-      border-radius: var(--border-radius) var(--border-radius) 0 0;
       background: var(--gray-dark);
       color: var(--text-color);
+    }
+
+    &:hover {
+      color: var(--text-color);
+    }
+  }
+
+  >.new-tab {
+    height: 100%;
+    aspect-ratio: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    transition: color var(--transition);
+    color: var(--text-color-gray);
+
+    &:hover {
+      color: white;
+    }
+  }
+
+  >.tabs-separator {
+    flex-grow: 1;
+  }
+
+  >.tabs-header-button {
+    height: 100%;
+    aspect-ratio: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    transition: color var(--transition);
+    color: var(--text-color-gray);
+
+    &:hover {
+      color: white;
     }
   }
 }
@@ -305,42 +397,16 @@ header {
 }
 
 ::view-transition-new(.animated-item):only-child {
-  animation: fade-in 100ms ease-out;
+  animation: fade-in var(--transition);
   animation-fill-mode: both;
 }
 
 ::view-transition-old(.animated-item):only-child {
-  animation: fade-out 100ms ease-out;
+  animation: fade-out var(--transition);
   animation-fill-mode: both;
 }
 
 ::view-transition-group(*) {
-  animation-duration: 200ms;
-}
-
-.account-button {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-
-  width: 2.5rem;
-  height: 2.5rem;
-
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
-  background: var(--gray-light);
-  border-radius: var(--border-radius);
-
-  box-shadow: rgba(0,0,0,0.25) 0 3px 7.5px;
-
-  transition: box-shadow 100ms ease-out, background 100ms ease-out;
-
-  &:hover {
-    box-shadow: rgba(0,0,0,0.25) 0 5px 15px;
-    background: var(--gray-lightest);
-    color: black;
-  }
+  animation-duration: var(--transition-duration);
 }
 </style>

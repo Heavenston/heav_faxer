@@ -11,6 +11,7 @@
     File as DefaultFileIcon,
     FileTerminal,
     X,
+    Trash,
   } from '@lucide/svelte';
   import { fade } from "svelte/transition";
   import Loader from "./document-loader.svelte";
@@ -85,7 +86,7 @@
     {/if}
   </div>
   <button class={["delete-btn"]} onclick={() => onremove?.()}>
-    <X size="1rem" />
+    <Trash size="1rem" />
   </button>
   <div class="document-title">
     <div class="partial-title">{file_name}</div>
@@ -120,7 +121,7 @@
     display: flex;
     justify-content: start;
     align-items: end;
-    padding: 0.6rem 0.2rem;
+    padding: 0.4rem 0.2rem;
 
     color: white;
 
