@@ -1,6 +1,10 @@
 <script lang="ts">
+	import "../global.scss";
+
 	import favicon from '$lib/assets/favicon.svg';
   import { Modals } from "svelte-modals";
+  import { Plus, UserRound } from "@lucide/svelte";
+  import { discrete_mode, selected_tab, tabs, createTab, set_selected_tab } from "./tab_state.svelte";
 
 	let { children } = $props();
 </script>
@@ -9,128 +13,116 @@
 	<link rel="icon" href={favicon} />
 </svelte:head>
 
-{@render children()}
+<div class="container">
+  <header class={{"header-discrete": discrete_mode()}}>
+    {#each tabs as tab_data (tab_data.uuid)}
+      <button class={["tab",{["tab-selected"]: selected_tab().uuid === tab_data.uuid}]} onclick={() => { set_selected_tab(tab_data.uuid); }}>
+        {tab_data.name}
+      </button>
+    {/each}
+    <button
+      class="new-tab"
+      onclick={() => createTab()}
+    >
+      <Plus size="1.3rem" />
+    </button>
+    <div class="tabs-separator"></div>
+    <a href="/user-settings" class="tabs-header-button"><UserRound size="1.3rem" /></a>
+  </header>
+	{@render children()}
+</div>
 
 <Modals>
 	{#snippet backdrop({ close })}
-    <div class="modal-backdrop" onclick={() => close()}></div>
+    <button aria-label="Close dialog" tabindex="-1" class="modal-backdrop" onclick={() => close()}></button>
   {/snippet}
 </Modals>
 
 <style lang="scss">
-:global {
-	:root {
-	  --font-without-serif: Segoe,Segoe UI,Candara,Calibri,Arial,sans-serif; 
+.container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
 
-	  --gray-lightest: #fffcf2;
-	  --gray-lighter: #ccc5b9;
-	  --gray-light: #403d39;
-	  --gray-dark: #252422;
-	  --gray-darker: #151412;
-	  --gray-darkest: #0b0a09;
+header {
+  height: 2rem;
+  width: 100%;
 
-	  --red: #c23b22;
+  background: var(--gray-darker);
 
-	  --text-color: #fffcf2;
-	  --text-color-gray: #a7a4a0;
-	  --text-color-red: #c23b22;
-	  --text-color-red-light: #ec8f7a;
+  display: flex;
 
-	  --border-radius: 0.5rem;
+  padding: 0 0rem;
+  gap: 0rem;
 
-	  --transition-duration: 50ms;
-	  --transition-ease: ease-out;
-	  --transition: var(--transition-duration) var(--transition-ease);
-	}
+  transition: opacity var(--transition);
 
-	* {
-	  box-sizing: border-box;
-	}
+  &.header-discrete {
+    position: absolute;
+    opacity: 0;
 
-	html, body {
-	  padding: 0;
-	  margin: 0;
+    &:hover {
+      opacity: 1;
+    }
+  }
 
-	  scroll-behavior: smooth;
-	}
+  >.tab {
+    display: flex;
+    justify-content: center;
+    align-items: center;
 
-	html {
-	  height: 100%;
-	}
+    height: 100%;
 
-	body {
-	  min-height: 100%;
-	  line-height: inherit;
-	  font-size: 1.1em;
+    background: var(--gray-darker);
+    padding: 0 1rem;
+    color: var(--text-color-gray);
 
-	  margin: 0 auto;
-	  background: var(--gray-dark);
+    transition: background var(--transition), color var(--transition);
 
-	  color: var(--text-color);
-	}
+    &.tab-selected {
+      background: var(--gray-dark);
+      color: var(--text-color);
+    }
 
-	.force-round-cursor {
-	  cursor: url(/cursor.svg), default !important;
-	  * {
-	    cursor: url(/cursor.svg), default !important;
-	  }
-	}
+    &:hover {
+      color: var(--text-color);
+    }
+  }
 
-	html {
-	  -webkit-text-size-adjust: 100%;
-	  -moz-tab-size: 4;
-	  -o-tab-size: 4;
-	  tab-size: 4;
-		font-family: var(--font-without-serif); 
-	}
+  >.new-tab {
+    height: 100%;
+    aspect-ratio: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 
-	h1,
-	h2,
-	h3,
-	h4,
-	h5,
-	h6,
-	h7,
-	h8,
-	h9,
-	p {
-	  font-size: inherit;
-	  font-weight: inherit;
-	  line-height: inherit;
-	  padding: 0;
-	  margin: 0;
-	}
+    transition: color var(--transition);
+    color: var(--text-color-gray);
 
-	button {
-	  background: transparent;
-	  border: none;
-	  padding: 0;
-	  margin: 0;
-	  cursor: pointer;
-	  color: inherit;
+    &:hover {
+      color: white;
+    }
+  }
 
-	  font-size: inherit;
-	  font-family: inherit;
-	}
+  >.tabs-separator {
+    flex-grow: 1;
+  }
 
-	a {
-	  color: inherit;
-	  text-decoration: none;
-	}
+  >.tabs-header-button {
+    height: 100%;
+    aspect-ratio: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 
-	input, textarea {
-	  border: none;
-	  font-size: 1rem;
-	  color: inherit;
-	  background: initial;
+    transition: color var(--transition);
+    color: var(--text-color-gray);
 
-	  outline: none;
-
-	  &::placeholder {
-	    font-size: 1rem;
-	    color: inherit;
-	  }
-	}
+    &:hover {
+      color: white;
+    }
+  }
 }
 
 .modal-backdrop {

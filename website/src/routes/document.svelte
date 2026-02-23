@@ -16,18 +16,7 @@
   import Loader from "./document-loader.svelte";
   import { modals } from "svelte-modals";
   import ConfirmDialog from '$lib/confirm_dialog.svelte';
-
-  export type FileDocumentData = {
-    kind: "local_file",
-    file: File,
-  };
-  export type FileDocument = {
-    local_id: string,
-    mime_type: string,
-    file_name: string,
-    data: FileDocumentData,
-    progress: number,
-  };
+  import type { FileDocument } from "./tab_state.svelte";
 
   function getLucideIcon(doc: FileDocument) {
     if (doc.mime_type.startsWith('image/')) return FileImage;
