@@ -2,8 +2,8 @@
   import { tick } from "svelte";
   import Document, { type FileDocument } from "./document.svelte";
   import { Share2, Folder, UserRound, Plus, Pencil, SquareCheckBig, Trash2 } from "@lucide/svelte";
-    import { page } from "$app/state";
-    import { pushState } from "$app/navigation";
+  import { page } from "$app/state";
+  import { pushState } from "$app/navigation";
 
   type TabData = {
     name: string,

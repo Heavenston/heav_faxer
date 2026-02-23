@@ -1,5 +1,6 @@
 <script lang="ts">
 	import favicon from '$lib/assets/favicon.svg';
+  import { Modals } from "svelte-modals";
 
 	let { children } = $props();
 </script>
@@ -9,6 +10,12 @@
 </svelte:head>
 
 {@render children()}
+
+<Modals>
+	{#snippet backdrop({ close })}
+    <div class="modal-backdrop" onclick={() => close()}></div>
+  {/snippet}
+</Modals>
 
 <style lang="scss">
 :global {
@@ -26,6 +33,8 @@
 
 	  --text-color: #fffcf2;
 	  --text-color-gray: #a7a4a0;
+	  --text-color-red: #c23b22;
+	  --text-color-red-light: #ec8f7a;
 
 	  --border-radius: 0.5rem;
 
@@ -122,5 +131,14 @@
 	    color: inherit;
 	  }
 	}
+}
+
+.modal-backdrop {
+	position: fixed;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  background: rgba(0, 0, 0, 0.5);
 }
 </style>

@@ -23,6 +23,7 @@
 	},
 	"dependencies": {
 		"@lucide/svelte": "^0.575.0",
-		"arktype": "^2.1.29"
+		"arktype": "^2.1.29",
+		"svelte-modals": "^2.0.1"
 	}
 }

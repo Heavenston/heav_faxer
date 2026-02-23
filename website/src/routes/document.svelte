@@ -10,11 +10,12 @@
     FileText,
     File as DefaultFileIcon,
     FileTerminal,
-    X,
     Trash,
   } from '@lucide/svelte';
   import { fade } from "svelte/transition";
   import Loader from "./document-loader.svelte";
+  import { modals } from "svelte-modals";
+  import ConfirmDialog from '$lib/confirm_dialog.svelte';
 
   export type FileDocumentData = {
     kind: "local_file",
@@ -85,7 +86,17 @@
       </div>
     {/if}
   </div>
-  <button class={["delete-btn"]} onclick={() => onremove?.()}>
+  <button class={["delete-btn"]} onclick={() => {
+    modals.open(ConfirmDialog as any, {
+      description: `Deleting file ${doc.file_name}`,
+      yes_red: true,
+      yes_button: "Delete",
+      no_button: "Cancel",
+      action: () => {
+        onremove?.()
+      },
+    });
+  }}>
     <Trash size="1rem" />
   </button>
   <div class="document-title">
