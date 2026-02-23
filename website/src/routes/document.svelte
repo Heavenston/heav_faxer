@@ -88,7 +88,7 @@
   </div>
   <button class={["delete-btn"]} onclick={() => {
     modals.open(ConfirmDialog as any, {
-      description: `Deleting file ${doc.file_name}`,
+      description: `Deleting file \`${doc.file_name}\``,
       yes_red: true,
       yes_button: "Delete",
       no_button: "Cancel",

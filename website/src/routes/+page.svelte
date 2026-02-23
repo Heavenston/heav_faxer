@@ -4,6 +4,8 @@
   import { Share2, Folder, UserRound, Plus, Pencil, SquareCheckBig, Trash2 } from "@lucide/svelte";
   import { page } from "$app/state";
   import { pushState } from "$app/navigation";
+    import { modals } from "svelte-modals";
+    import ConfirmDialog from "$lib/confirm_dialog.svelte";
 
   type TabData = {
     name: string,
@@ -15,21 +17,31 @@
   const tabs: TabData[] = $state([
     { name: "Today's uploads", uuid: crypto.randomUUID(), documents: [] },
   ]);
-  const selected_tab: number = $derived.by(() => {
-    if (typeof page.state.selected_tab === "number")
+  const selected_tab_id: string = $derived.by(() => {
+    if (typeof page.state.selected_tab === "string")
       return page.state.selected_tab;
-    return 0; 
+    return tabs[0]?.uuid ?? "error"; 
   });
 
-  function set_selected_tab(new_idx: number) {
-    if (new_idx === selected_tab)
-      return;
-    pushState("", {
-      selected_tab: new_idx,
+  function set_selected_tab(new_tab: string) {
+    withTransition(() => {
+      pushState("", {
+        selected_tab: new_tab,
+      });
     });
   }
 
-  const documents: FileDocument[] = $derived(tabs[selected_tab].documents);
+  const selected_tab: TabData = $derived.by(() => {
+    let idx = tabs.findIndex(tab => tab.uuid === selected_tab_id);
+    if (idx < 0) {
+      console.warn(`No such selected tab with id ${selected_tab_id}`);
+      idx = 0;
+    }
+    return tabs[idx];
+  });
+  const documents: FileDocument[] = $derived(selected_tab.documents);
+
+  const discrete_mode = $derived(documents.length === 0 && tabs.length === 1);
 
   function withTransition(cb: () => void) {
     if (document.startViewTransition) {
@@ -49,6 +61,35 @@
       if (idx >= 0)
         documents.splice(idx, 1);
     });
+  }
+
+  function createTab(name?: string): TabData {
+    if (!name) {
+      name = "New Tab";
+      let i = 1;
+      while (tabs.some(t => t.name === name))
+        name = `New Tab #${i += 1}`;
+    }
+    const uuid = crypto.randomUUID();
+    tabs.push({
+      name: name,
+      uuid,
+      documents: [],
+    });
+    set_selected_tab(uuid);
+    return tabs.at(-1)!;
+  }
+
+  function removeTab(id: string) {
+    const idx = tabs.findIndex(tab => tab.uuid === id);
+    if (idx < 0)
+      return;
+    if (tabs.length <= 1)
+      createTab();
+    tabs.splice(idx, 1);
+    if (selected_tab_id === id) {
+      set_selected_tab(tabs[0].uuid);
+    }
   }
 
   function createAndUploadFile(file: File) {
@@ -110,16 +151,12 @@
 </form>
 {/snippet}
 
-{#snippet tab(idx: number, name: string)}
-  <button class={["tab",{["tab-selected"]: selected_tab === idx}]} onclick={() => { set_selected_tab(idx); }}>
-    {name}
-  </button>
-{/snippet}
-
 <div class="container">
-  <header class={{"header-discrete": documents.length === 0 && tabs.length === 1}}>
-    {#each tabs as tab_data, index (tab_data.uuid)}
-      {@render tab(index, tab_data.name)}
+  <header class={{"header-discrete": discrete_mode}}>
+    {#each tabs as tab_data (tab_data.uuid)}
+      <button class={["tab",{["tab-selected"]: selected_tab_id === tab_data.uuid}]} onclick={() => { set_selected_tab(tab_data.uuid); }}>
+        {tab_data.name}
+      </button>
     {/each}
     <button
       class="new-tab"
@@ -128,12 +165,13 @@
         let i = 1;
         while (tabs.some(t => t.name === name))
           name = `New Tab #${i += 1}`;
+        const uuid = crypto.randomUUID();
         tabs.push({
           name: name,
-          uuid: crypto.randomUUID(),
+          uuid,
           documents: [],
         });
-        set_selected_tab(tabs.length - 1);
+        set_selected_tab(uuid);
       }}
     >
       <Plus size="1.3rem" />
@@ -141,7 +179,7 @@
     <div class="tabs-separator"></div>
     <button class="tabs-header-button"><UserRound size="1.3rem" /></button>
   </header>
-  {#if documents.length === 0}
+  {#if discrete_mode}
     <div class="empty-section">
       {@render fileuploadform()}
     </div>
@@ -153,7 +191,22 @@
         <button class="section-header-button"><Folder size="1.3rem" /></button>
         <button class="section-header-button"><SquareCheckBig size="1.3rem" /></button>
         <div class="section-header-separator"></div>
-        <button class="section-header-button section-header-button-red"><Trash2 size="1.3rem" /></button>
+        <button
+          class="section-header-button section-header-button-red"
+          onclick={() => {
+            modals.open(ConfirmDialog as any, {
+              description: `Deleting tab \`${selected_tab.name}\``,
+              yes_red: true,
+              yes_button: "Delete",
+              no_button: "Cancel",
+              action() {
+                removeTab(selected_tab_id);
+              },
+            });
+          }}
+        >
+          <Trash2 size="1.3rem" />
+        </button>
       </div>
       <div class={["document-container", {["activated"]: documents.length > 0}]}>
         {#each documents as doc (doc.local_id)}

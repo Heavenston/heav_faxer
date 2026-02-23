@@ -77,10 +77,6 @@
     font-weight: bold;
   }
 
-  .description {
-    // color: var(--text-color-gray);
-  }
-
   .buttons {
     display: flex;
     justify-content: end;
