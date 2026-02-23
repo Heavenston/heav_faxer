@@ -32,7 +32,9 @@
       <Plus size="1.3rem" />
     </button>
     <div class="tabs-separator"></div>
-    <a href="/user-settings" class="tabs-header-button"><UserRound size="1.3rem" /></a>
+    <a href="/user-settings" class={["tabs-header-button", {"tabs-header-button-selected": page.url.pathname === "/user-settings" }]}>
+      <UserRound size="1.3rem" />
+    </a>
   </header>
 	{@render children()}
 </div>
@@ -126,6 +128,10 @@ header {
 
     &:hover {
       color: white;
+    }
+
+    &.tabs-header-button-selected {
+      background: var(--gray-dark);
     }
   }
 }
