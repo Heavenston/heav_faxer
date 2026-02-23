@@ -15,7 +15,7 @@
   };
 
   const tabs: TabData[] = $state([
-    { name: "Today's uploads", uuid: crypto.randomUUID(), documents: [] },
+    { name: "Default Tab", uuid: crypto.randomUUID(), documents: [] },
   ]);
   const selected_tab_id: string = $derived.by(() => {
     if (typeof page.state.selected_tab === "string")
