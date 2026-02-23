@@ -100,10 +100,7 @@
     <Trash size="1rem" />
   </button>
   <div class="document-title">
-    <div class="partial-title">{file_name}</div>
-    <div class="full-title">
-      {file_name}
-    </div>
+    {file_name}
   </div>
 </div>
 
@@ -213,28 +210,11 @@
 
     position: relative;
 
-    .partial-title {
-      text-align: center;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      width: 100%;
-      white-space: nowrap;
-    }
-
-    .full-title {
-      display: none;
-    
-      position: absolute;
-      top: -0.25rem;
-      left: 50%;
-
-      transform: translateX(-50%);
-
-      background: var(--gray-darker);
-      padding: 0.25rem 0.5rem;
-      border-radius: var(--border-radius);
-      white-space: nowrap;
-    }
+    text-align: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+    white-space: nowrap;
   }
 
   .delete-btn {
@@ -256,14 +236,8 @@
   }
 
   &:hover {
-    z-index: 1;
-
     .delete-btn {
       opacity: 1;
-    }
-
-    .full-title {
-      display: initial;
     }
   }
 }
