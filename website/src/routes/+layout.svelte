@@ -1,10 +1,12 @@
 <script lang="ts">
 	import "../global.scss";
 
-	import favicon from '$lib/assets/favicon.svg';
+	import { page } from "$app/state";
   import { Modals } from "svelte-modals";
   import { Plus, UserRound } from "@lucide/svelte";
-  import { discrete_mode, selected_tab, tabs, createTab, set_selected_tab } from "./tab_state.svelte";
+
+	import favicon from '$lib/assets/favicon.svg';
+  import { discrete_mode, tabs, createTab } from "./tab_state.svelte";
 
 	let { children } = $props();
 </script>
@@ -16,9 +18,12 @@
 <div class="container">
   <header class={{"header-discrete": discrete_mode()}}>
     {#each tabs as tab_data (tab_data.uuid)}
-      <button class={["tab",{["tab-selected"]: selected_tab().uuid === tab_data.uuid}]} onclick={() => { set_selected_tab(tab_data.uuid); }}>
+      <a
+        class={["tab",{["tab-selected"]: page.url.pathname === `/tab/${tab_data.uuid}`}]}
+        href="/tab/{tab_data.uuid}"
+      >
         {tab_data.name}
-      </button>
+      </a>
     {/each}
     <button
       class="new-tab"

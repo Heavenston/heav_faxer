@@ -13,10 +13,10 @@
     Trash,
   } from '@lucide/svelte';
   import { fade } from "svelte/transition";
-  import Loader from "./document-loader.svelte";
+  import Loader from "$lib/loader.svelte";
   import { modals } from "svelte-modals";
   import ConfirmDialog from '$lib/confirm_dialog.svelte';
-  import type { FileDocument } from "./tab_state.svelte";
+  import type { FileDocument } from "../../tab_state.svelte";
 
   function getLucideIcon(doc: FileDocument) {
     if (doc.mime_type.startsWith('image/')) return FileImage;
@@ -222,6 +222,8 @@
     display: flex;
     justify-content: center;
     align-items: center;
+
+    transition: opacity var(--transition);
   }
 
   &:hover {
