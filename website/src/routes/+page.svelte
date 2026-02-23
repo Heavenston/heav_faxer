@@ -1,7 +1,7 @@
 <script lang="ts">
   import { tick } from "svelte";
   import Document, { type FileDocument } from "./document.svelte";
-  import { Share2, Folder } from "@lucide/svelte";
+  import { Share2, Folder, UserRound } from "@lucide/svelte";
 
   let documents: FileDocument[] = $state([]);
 
@@ -48,6 +48,8 @@
       }, 100);
     }, 3000 * Math.random());
   }
+
+  let selected: number = $state(0);
 </script>
 
 <svelte:document on:dragenter={() => {
@@ -83,21 +85,33 @@
 </form>
 {/snippet}
 
+{#snippet tab(idx: number, name: string)}
+  <button class={["tab",{["tab-selected"]: selected === idx}]} onclick={() => { selected = idx; }}>
+    {name}
+  </button>
+{/snippet}
+
 {#if documents.length === 0}
   <div class="unitied-page">
     {@render fileuploadform()}
   </div>
 {:else}
   <div class="container">
+    <header>
+      {@render tab(0, "Today's Uploads")}
+      {@render tab(1, "New Folder")}
+      {@render tab(2, "Older Folder")}
+    </header>
     <div class="section">
       <div class="section-header">
-        {new Date().toLocaleDateString()}
-        <div class="section-header-separator1"></div>
         <div class="section-header-buttons">
-          <button class="section-header-button section-share-button"><Share2 size="1.3rem" /></button>
+          <button class="section-header-button section-alignment-fix"><Share2 size="1.3rem" /></button>
           <button class="section-header-button"><Folder size="1.3rem" /></button>
         </div>
         <div class="section-header-separator2"></div>
+        <div class="section-header-buttons">
+          <button class="section-header-button"><UserRound size="1.3rem" /></button>
+        </div>
       </div>
       <div class={["document-container", {["activated"]: documents.length > 0}]}>
         {#each documents as doc (doc.local_id)}
@@ -183,7 +197,7 @@
     gap: .25rem;
   }
 
-  .section-share-button {
+  .section-alignment-fix {
     :global(>svg) {
       transform: translateX(-1px);
     }
@@ -213,6 +227,38 @@
 
 .container {
   min-height: 100vh;
+}
+
+header {
+  height: 2rem;
+  width: 100%;
+
+  background: var(--gray-darker);
+
+  display: flex;
+
+  padding: 0 0rem;
+  gap: 0rem;
+
+  >.tab {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    height: 100%;
+
+    background: var(--gray-darker);
+    padding: 0 1rem;
+    color: var(--text-color-gray);
+
+    transition: background 100ms ease-out, border-radius 100ms ease-out, color 100ms ease-out;
+
+    &.tab-selected {
+      border-radius: var(--border-radius) var(--border-radius) 0 0;
+      background: var(--gray-dark);
+      color: var(--text-color);
+    }
+  }
 }
 
 .document-container {
@@ -270,5 +316,31 @@
 
 ::view-transition-group(*) {
   animation-duration: 200ms;
+}
+
+.account-button {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+
+  width: 2.5rem;
+  height: 2.5rem;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  background: var(--gray-light);
+  border-radius: var(--border-radius);
+
+  box-shadow: rgba(0,0,0,0.25) 0 3px 7.5px;
+
+  transition: box-shadow 100ms ease-out, background 100ms ease-out;
+
+  &:hover {
+    box-shadow: rgba(0,0,0,0.25) 0 5px 15px;
+    background: var(--gray-lightest);
+    color: black;
+  }
 }
 </style>

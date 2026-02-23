@@ -95,6 +95,9 @@
 	  margin: 0;
 	  cursor: pointer;
 	  color: inherit;
+
+	  font-size: inherit;
+	  font-family: inherit;
 	}
 
 	a {
