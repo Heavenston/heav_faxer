@@ -33,6 +33,11 @@ export function useUser(initialValue: typeof auth.$Infer.Session.user | null) {
         provider: "google",
       });
     },
+    signInGithub: async () => {
+      await authClient.signIn.social({
+        provider: "github",
+      });
+    },
   };
 }
 

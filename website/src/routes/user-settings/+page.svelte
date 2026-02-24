@@ -3,10 +3,11 @@
   import { useUser } from "$lib/auth-state.svelte";
   import { UserRoundX } from "@lucide/svelte";
   import { openConfirmDialog } from "$lib/modal_helpers";
+  import SignInWithGoogle from "$lib/components/sign-in-with-google.svelte";
 
   const { data }: PageProps = $props();
   // svelte-ignore state_referenced_locally
-  const { signOut, signInAnonymous, signInGoogle, user: getUser } = useUser(data.user);
+  const { signOut, signInAnonymous, signInGoogle, signInGithub, user: getUser } = useUser(data.user);
   const user = $derived(getUser());
 </script>
 
@@ -36,21 +37,24 @@
       </button>
       {/if}
     </div>
-    <div>
+    <div class="content">
       {#if user == null}
         You are not logged in
       {:else if user.isAnonymous}
-        You are logged in anonymously
+        <div>
+          <div>You are not logged in</div>
+          <div>Log in to never lose access to your uploaded files</div>
+        </div>
         <div class="signin-buttons">
-          <button class="signin signin-google" onclick={() => {
-            signInGoogle();
-          }}>
-            Sign In With Google
+          <SignInWithGoogle class="signin signin-google" onclick={() => { signInGoogle(); }} />
+          <button class="signin signin-github" onclick={() => { signInGithub(); }}>
+            Sign in with Github
           </button>
         </div>
       {:else}
-        You are logged in as `{user.name}`
-        <pre>{JSON.stringify(user, null, 2)}</pre>
+        <div>
+          You are logged in as {user.email}
+        </div>
       {/if}
     </div>
   </div>
@@ -98,11 +102,15 @@
     }
   }
 
-  .signin-buttons {
+  .content {
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    align-items: center;;
+    gap: 1rem;
+  }
+
+  .signin-buttons {
+    display: flex;
+    flex-direction: row;
 
     gap: 1rem;
 
