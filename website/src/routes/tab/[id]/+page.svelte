@@ -3,9 +3,8 @@
   import { goto } from "$app/navigation";
   import { discrete_mode, tabs, withTransition, type FileDocument, type TabData } from "../../tab_state.svelte";
   import { Folder, Pencil, Share2, SquareCheckBig, Trash2 } from "@lucide/svelte";
-  import { modals } from "svelte-modals";
-  import ConfirmDialog from "$lib/confirm_dialog.svelte";
   import Document from "./document.svelte";
+  import { openConfirmDialog } from "$lib/modal_helpers";
 
   const selected_tab = $derived(tabs.find(tab => tab.uuid === page.params.id) ?? null);
 
@@ -112,7 +111,7 @@
       <button
         class="section-header-button section-header-button-red"
         onclick={() => {
-          modals.open(ConfirmDialog as any, {
+          openConfirmDialog({
             description: `Deleting tab \`${selected_tab?.name}\``,
             yes_red: true,
             yes_button: "Delete",

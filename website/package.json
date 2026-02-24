@@ -15,6 +15,7 @@
 		"@sveltejs/adapter-auto": "^7.0.0",
 		"@sveltejs/kit": "^2.50.2",
 		"@sveltejs/vite-plugin-svelte": "^6.2.4",
+		"@types/better-sqlite3": "^7.6.13",
 		"sass-embedded": "^1.97.3",
 		"svelte": "^5.51.0",
 		"svelte-check": "^4.3.6",
@@ -24,6 +25,8 @@
 	"dependencies": {
 		"@lucide/svelte": "^0.575.0",
 		"arktype": "^2.1.29",
+		"better-auth": "^1.4.19",
+		"better-sqlite3": "^12.6.2",
 		"svelte-modals": "^2.0.1"
 	}
 }

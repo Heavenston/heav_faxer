@@ -10,7 +10,7 @@
   }: {
     isOpen: boolean, close: () => void,
 
-    description: string,
+    description?: string,
     yes_red?: boolean,
     yes_button?: string,
     no_red?: boolean,
@@ -25,9 +25,11 @@
       <h1 class="title">
         Are you sure ?
       </h1>
+      {#if description}
       <div class="description">
         {description}
       </div>
+      {/if}
       <div class="buttons">
         <button class={["yes", { "red": yes_red }]} onclick={() => {
           action();

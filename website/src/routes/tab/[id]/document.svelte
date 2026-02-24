@@ -14,8 +14,7 @@
   } from '@lucide/svelte';
   import { fade } from "svelte/transition";
   import Loader from "$lib/loader.svelte";
-  import { modals } from "svelte-modals";
-  import ConfirmDialog from '$lib/confirm_dialog.svelte';
+  import { openConfirmDialog } from "$lib/modal_helpers";
   import type { FileDocument } from "../../tab_state.svelte";
 
   function getLucideIcon(doc: FileDocument) {
@@ -76,7 +75,7 @@
     {/if}
   </div>
   <button class={["delete-btn"]} onclick={() => {
-    modals.open(ConfirmDialog as any, {
+    openConfirmDialog({
       description: `Deleting file \`${doc.file_name}\``,
       yes_red: true,
       yes_button: "Delete",
