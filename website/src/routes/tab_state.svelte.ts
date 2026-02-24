@@ -26,7 +26,7 @@ export const tabs: TabData[] = $state([
 ]);
 
 export function discrete_mode(): boolean {
-  return tabs.length === 1 && tabs[0].documents.length === 0 && page.url.pathname === `/tab/${tabs[0].uuid}`;
+  return tabs.length === 1 && tabs[0].documents.length === 0 && page.url.pathname.startsWith("/tab") || page.url.pathname === `/`;
 }
 
 export function withTransition(cb: () => void) {
@@ -57,15 +57,3 @@ export function createTab(name?: string): TabData {
   goto(`/tab/${uuid}`);
   return tabs.at(-1)!;
 }
-
-// export function removeTab(id: string) {
-//   const idx = tabs.findIndex(tab => tab.uuid === id);
-//   if (idx < 0)
-//     return;
-//   if (tabs.length <= 1)
-//     createTab();
-//   tabs.splice(idx, 1);
-//   if (selected_tab().uuid === id) {
-//     set_selected_tab(tabs[0].uuid);
-//   }
-// }

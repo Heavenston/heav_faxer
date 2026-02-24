@@ -3,7 +3,7 @@
 
 	import { page } from "$app/state";
   import { Modals } from "svelte-modals";
-  import { Plus, UserRound } from "@lucide/svelte";
+  import { ChevronDown, Plus, UserRound } from "@lucide/svelte";
 
 	import favicon from '$lib/assets/favicon.svg';
   import { discrete_mode, tabs, createTab } from "./tab_state.svelte";
@@ -17,24 +17,29 @@
 
 <div class="container">
   <header class={{"header-discrete": discrete_mode()}}>
-    {#each tabs as tab_data (tab_data.uuid)}
-      <a
-        class={["tab",{["tab-selected"]: page.url.pathname === `/tab/${tab_data.uuid}`}]}
-        href="/tab/{tab_data.uuid}"
+    <div class="header-inside-container">
+      {#each tabs as tab_data (tab_data.uuid)}
+        <a
+          class={["tab",{["tab-selected"]: page.url.pathname === `/tab/${tab_data.uuid}`}]}
+          href="/tab/{tab_data.uuid}"
+        >
+          {tab_data.name}
+        </a>
+      {/each}
+      <button
+        class="new-tab"
+        onclick={() => createTab()}
       >
-        {tab_data.name}
+        <Plus size="1.3rem" />
+      </button>
+      <div class="tabs-separator"></div>
+      <a href="/user-settings" class={["tabs-header-button", {"tabs-header-button-selected": page.url.pathname === "/user-settings" }]}>
+        <UserRound size="1.3rem" />
       </a>
-    {/each}
-    <button
-      class="new-tab"
-      onclick={() => createTab()}
-    >
-      <Plus size="1.3rem" />
-    </button>
-    <div class="tabs-separator"></div>
-    <a href="/user-settings" class={["tabs-header-button", {"tabs-header-button-selected": page.url.pathname === "/user-settings" }]}>
-      <UserRound size="1.3rem" />
-    </a>
+    </div>
+    <div class="discrete-arrow">
+      <ChevronDown size="1.3rem" />
+    </div>
   </header>
 	{@render children()}
 </div>
@@ -56,25 +61,61 @@ header {
   height: 2rem;
   width: 100%;
 
-  background: var(--gray-darker);
-
-  display: flex;
-
-  padding: 0 0rem;
-  gap: 0rem;
-
-  transition: opacity var(--transition);
-
   &.header-discrete {
     position: absolute;
-    opacity: 0;
+    // Bigger outer container size for easier :hover
+    height: 3rem;
+
+    .header-inside-container {
+      opacity: 0;
+      transform: translateY(-2rem);
+    }
+
+    .discrete-arrow {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transform: translateY(0);
+      height: 2rem;
+
+      transition: transform var(--transition);
+
+      color: var(--text-color-gray);
+    }
 
     &:hover {
-      opacity: 1;
+      .header-inside-container {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      .discrete-arrow {
+        transform: translateY(2rem) rotate(180deg);
+      }
     }
   }
 
-  >.tab {
+  &:not(.header-discrete) .discrete-arrow {
+    display: none;
+  }
+
+  .header-inside-container {
+    height: 2rem;
+    width: 100%;
+
+    background: var(--gray-darker);
+
+    display: flex;
+
+    padding: 0 0rem;
+    gap: 0rem;
+
+    transition: opacity var(--transition), transform var(--transition);
+  }
+
+  .tab {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -97,7 +138,7 @@ header {
     }
   }
 
-  >.new-tab {
+  .new-tab {
     height: 100%;
     aspect-ratio: 1;
     display: flex;
@@ -112,11 +153,11 @@ header {
     }
   }
 
-  >.tabs-separator {
+  .tabs-separator {
     flex-grow: 1;
   }
 
-  >.tabs-header-button {
+  .tabs-header-button {
     height: 100%;
     aspect-ratio: 1;
     display: flex;
