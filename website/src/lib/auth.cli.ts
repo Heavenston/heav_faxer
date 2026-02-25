@@ -3,9 +3,8 @@
  * Not actually used during the server's runtime
  */
 
+import 'dotenv/config';
 import { createAuth } from "./auth.server";
-import { Pool } from "pg";
+import { createDb } from "./db.server";
 
-export const auth = await createAuth(new Pool({
-  connectionString: process.env.CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE,
-}));
+export const auth = await createAuth(await createDb(process.env.DATABASE_URL));

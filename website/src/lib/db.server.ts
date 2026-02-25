@@ -1,19 +1,15 @@
 import { getRequestEvent } from '$app/server';
 import { Pool } from "pg";
-// import { drizzle } from "drizzle-orm/node-postgres";
-// import * as private_env from "$env/static/private";
+import { drizzle } from "drizzle-orm/node-postgres";
 
-async function createDb() {
-  const event = getRequestEvent();
+export async function createDb(connectionString?: string) {
   const sql = new Pool({
-    connectionString: event.platform?.env.HYPERDRIVE.connectionString,
+    connectionString: connectionString ?? getRequestEvent().platform?.env.HYPERDRIVE.connectionString,
     min: 1,
     max: 8,
   });
 
-  // await sql.connect();
-
-  return sql;
+  return drizzle(sql);
 }
 
 export async function getDb() {

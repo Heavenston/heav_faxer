@@ -5,15 +5,21 @@ import { sveltekitCookies } from "better-auth/svelte-kit";
 import * as private_env from "$env/static/private";
 import * as public_env from "$env/static/public";
 import { getRequestEvent } from "$app/server";
-import { getDb } from "./db.server";
+import { getDb, type DbClient } from "./db.server";
+import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import * as schema from "./db/schema";
 
 /**
  * We must re-create the auth for every request, because we have to re-create
  * the hyperdrive database for every request
  */
-export async function createAuth(database?: BetterAuthOptions["database"]) {
+export async function createAuth(database?: DbClient) {
   return betterAuth({
-    database: database ?? await getDb(),
+    database: drizzleAdapter(database ?? await getDb(), {
+      provider: "pg",
+      usePlural: true,
+      schema,
+    }),
 
     emailAndPassword: {
       enabled: false,

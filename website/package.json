@@ -9,7 +9,8 @@
 		"preview": "vite preview",
 		"prepare": "svelte-kit sync || echo ''",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
-		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch"
+		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
+		"auth-schema-generate": "bun x @better-auth/cli@latest generate --config src/lib/auth.cli.ts --output src/lib/db/auth-schema.ts -y"
 	},
 	"devDependencies": {
 		"@cloudflare/vite-plugin": "^1.25.5",
@@ -19,6 +20,7 @@
 		"@sveltejs/vite-plugin-svelte": "^6.2.4",
 		"@types/better-sqlite3": "^7.6.13",
 		"@types/pg": "^8.16.0",
+		"dotenv": "^17.3.1",
 		"drizzle-kit": "^0.31.9",
 		"sass-embedded": "^1.97.3",
 		"svelte": "^5.51.0",
