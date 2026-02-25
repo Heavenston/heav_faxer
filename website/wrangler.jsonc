@@ -1,0 +1,18 @@
+{
+	"name": "heav_faxer",
+	"main": ".svelte-kit/cloudflare/_worker.js",
+	"compatibility_flags": [
+		"nodejs_als"
+	],
+	"compatibility_date": "2026-02-25",
+	"assets": {
+		"binding": "ASSETS",
+		"directory": ".svelte-kit/cloudflare",
+	},
+	"hyperdrive": [
+		{
+			"binding": "HYPERDRIVE",
+			"id": "651a2abc03a14503b82df29fbc3b6b21"
+		}
+	]
+}

@@ -1,7 +1,7 @@
 import { json, error, type RequestHandler } from "@sveltejs/kit";
 import { type } from "arktype";
 
-export const UploadfileRequest = type({
+const UploadfileRequest = type({
   name: "string",
 });
 export type UploadfileRequest = typeof UploadfileRequest.infer;

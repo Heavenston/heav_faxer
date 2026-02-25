@@ -12,7 +12,9 @@
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch"
 	},
 	"devDependencies": {
+		"@cloudflare/vite-plugin": "^1.25.5",
 		"@sveltejs/adapter-auto": "^7.0.0",
+		"@sveltejs/adapter-cloudflare": "^7.2.8",
 		"@sveltejs/kit": "^2.50.2",
 		"@sveltejs/vite-plugin-svelte": "^6.2.4",
 		"@types/better-sqlite3": "^7.6.13",
@@ -22,13 +24,13 @@
 		"svelte": "^5.51.0",
 		"svelte-check": "^4.3.6",
 		"typescript": "^5.9.3",
-		"vite": "^7.3.1"
+		"vite": "^7.3.1",
+		"wrangler": "^4.68.1"
 	},
 	"dependencies": {
 		"@lucide/svelte": "^0.575.0",
 		"arktype": "^2.1.29",
 		"better-auth": "^1.4.19",
-		"better-sqlite3": "^12.6.2",
 		"drizzle-orm": "^0.45.1",
 		"pg": "^8.18.0",
 		"svelte-modals": "^2.0.1"

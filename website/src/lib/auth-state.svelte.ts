@@ -1,7 +1,7 @@
-import type { auth } from "$lib/auth";
+import type { Session } from "$lib/auth.server";
 import { authClient } from "./auth-client";
 
-export function useUser(initialValue: typeof auth.$Infer.Session.user | null) {
+export function useUser(initialValue: Session["user"] | null) {
   let user = $state(initialValue);
 
   return {
@@ -24,7 +24,7 @@ export function useUser(initialValue: typeof auth.$Infer.Session.user | null) {
         return false;
       }
       else {
-        user = (result.data?.user ?? null) as typeof auth.$Infer.Session.user;
+        user = (result.data?.user ?? null) as Session["user"];
         return true;
       }
     },
