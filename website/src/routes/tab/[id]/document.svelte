@@ -22,7 +22,7 @@
     if (doc.mime_type.startsWith('video/')) return FilePlay;
     if (doc.mime_type.startsWith('audio/')) return FileHeadphone;
 
-    const extension = doc.file_name.split('.').pop()?.toLowerCase() || '';
+    const extension = doc.name.split('.').pop()?.toLowerCase() || '';
 
     if (['zip', 'rar', '7z', 'tar', 'gz'].includes(extension)) return FileArchive;
     if (['js', 'ts', 'jsx', 'tsx', 'html', 'css', 'py', 'rs', 'go', 'java', 'c', 'cpp'].includes(extension)) return FileCode;
@@ -44,7 +44,7 @@
     return getLucideIcon(doc);
   });
 
-  let file_name = $derived(doc.file_name);
+  let file_name = $derived(doc.name);
   let progress_text = $derived(`${Math.floor(doc.progress * 100)}%`);
 </script>
 

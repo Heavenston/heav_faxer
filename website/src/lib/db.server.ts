@@ -5,8 +5,6 @@ import { drizzle } from "drizzle-orm/node-postgres";
 export async function createDb(connectionString?: string) {
   const sql = new Pool({
     connectionString: connectionString ?? getRequestEvent().platform?.env.HYPERDRIVE.connectionString,
-    min: 1,
-    max: 8,
   });
 
   return drizzle(sql);

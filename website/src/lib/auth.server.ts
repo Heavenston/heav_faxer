@@ -47,7 +47,7 @@ export async function createAuth(database?: DbClient) {
   });
 }
 
-export async function getAuth() {
+export async function getAuth(): Promise<Auth> {
   const event = getRequestEvent();
   if (event.locals.auth == null)
     event.locals.auth = await createAuth();

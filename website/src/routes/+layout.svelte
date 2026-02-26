@@ -4,11 +4,27 @@
 	import { page } from "$app/state";
   import { Modals } from "svelte-modals";
   import { ChevronDown, Plus, UserRound } from "@lucide/svelte";
+  import type { LayoutProps } from "./$types";
 
 	import favicon from '$lib/assets/favicon.svg';
-  import { discrete_mode, tabs, createTab } from "./tab_state.svelte";
+  import { discrete_mode, createTab, setContext, type ContextData } from "$lib/state.svelte";
 
-	let { children } = $props();
+	let { children, data }: LayoutProps = $props();
+
+	// We only initialize the context with the initial page data, we manually
+	// keep the context up to date
+	/* svelte-ignore state_referenced_locally */
+	const ctx: ContextData = $state({
+  	isSignedIn: data.user != null,
+  	isAnonymous: data.user?.isAnonymous ?? false,
+	  tabs: data.tabs.map(tab => ({
+	    id: tab.id,
+	    name: tab.name,
+	    documents: [],
+	  })),
+	} satisfies ContextData);
+
+	setContext(ctx);
 </script>
 
 <svelte:head>
@@ -16,19 +32,19 @@
 </svelte:head>
 
 <div class="container">
-  <header class={{"header-discrete": discrete_mode()}}>
+  <header class={{"header-discrete": discrete_mode(ctx)}}>
     <div class="header-inside-container">
-      {#each tabs as tab_data (tab_data.uuid)}
+      {#each ctx.tabs as tab_data (tab_data.id)}
         <a
-          class={["tab",{["tab-selected"]: page.url.pathname === `/tab/${tab_data.uuid}`}]}
-          href="/tab/{tab_data.uuid}"
+          class={["tab",{["tab-selected"]: page.url.pathname === `/tab/${tab_data.id}`}]}
+          href="/tab/{tab_data.id}"
         >
           {tab_data.name}
         </a>
       {/each}
       <button
         class="new-tab"
-        onclick={() => createTab()}
+        onclick={() => createTab(ctx)}
       >
         <Plus size="1.3rem" />
       </button>

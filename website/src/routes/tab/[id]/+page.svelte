@@ -1,12 +1,16 @@
 <script lang="ts">
+  import { Folder, Pencil, Share2, SquareCheckBig, Trash2 } from "@lucide/svelte";
+
   import { page } from "$app/state";
   import { goto } from "$app/navigation";
-  import { discrete_mode, tabs, withTransition, type FileDocument, type TabData } from "../../tab_state.svelte";
-  import { Folder, Pencil, Share2, SquareCheckBig, Trash2 } from "@lucide/svelte";
-  import Document from "./document.svelte";
-  import { openConfirmDialog } from "$lib/modal_helpers";
 
-  const selected_tab = $derived(tabs.find(tab => tab.uuid === page.params.id) ?? null);
+  import { discrete_mode, createTab, getContext, type FileDocument } from "$lib/state.svelte";
+  import { openConfirmDialog } from "$lib/modal_helpers";
+  import { withTransition } from "$lib/with_transition";
+  import Document from "./document.svelte";
+
+  const ctx = getContext();
+  const selected_tab = $derived(ctx.tabs.find(tab => tab.local_id === page.params.id || tab.id === page.params.id) ?? null);
 
   $effect(() => {
     if (selected_tab === null)
@@ -23,39 +27,22 @@
     });
   }
 
-  function createTab(name?: string): TabData {
-    if (!name) {
-      name = "New Tab";
-      let i = 1;
-      while (tabs.some(t => t.name === name))
-        name = `New Tab #${i += 1}`;
-    }
-    const uuid = crypto.randomUUID();
-    tabs.push({
-      name: name,
-      uuid,
-      documents: [],
-    });
-    goto(`/tab/${uuid}`);
-    return tabs.at(-1)!;
-  }
-
   function removeTab(id: string) {
-    const idx = tabs.findIndex(tab => tab.uuid === id);
+    const idx = ctx.tabs.findIndex(tab => tab.id === id || tab.local_id === id);
     if (idx < 0)
       return;
-    if (tabs.length <= 1)
-      createTab();
-    tabs.splice(idx, 1);
-    if (selected_tab?.uuid === id) {
-      goto(`/tab/${tabs[0].uuid}`);
+    if (ctx.tabs.length <= 1)
+      createTab(ctx);
+    ctx.tabs.splice(idx, 1);
+    if (selected_tab?.id === id || selected_tab?.local_id === id) {
+      goto(`/tab/${ctx.tabs[0].id ?? ctx.tabs[0].local_id}`);
     }
   }
 
   function createAndUploadFile(file: File) {
     documents.push({
       progress: 0,
-      file_name: file.name,
+      name: file.name,
       mime_type: file.type,
       data: {
         kind: "local_file",
@@ -96,7 +83,7 @@
 </form>
 {/snippet}
 
-{#if discrete_mode()}
+{#if discrete_mode(ctx)}
   <div class="empty-section">
     {@render fileuploadform()}
   </div>
@@ -118,7 +105,7 @@
             no_button: "Cancel",
             action() {
               if (selected_tab)
-                removeTab(selected_tab.uuid);
+                removeTab(selected_tab.id ?? selected_tab.local_id);
             },
           });
         }}
