@@ -14,5 +14,11 @@
 			"binding": "HYPERDRIVE",
 			"id": "651a2abc03a14503b82df29fbc3b6b21"
 		}
+	],
+	"r2_buckets": [
+		{
+			"bucket_name": "heav-faxer-bucket",
+			"binding": "heav_faxer_bucket"
+		}
 	]
 }

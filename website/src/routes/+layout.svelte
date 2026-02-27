@@ -15,8 +15,7 @@
 	// keep the context up to date
 	/* svelte-ignore state_referenced_locally */
 	const ctx: ContextData = $state({
-  	isSignedIn: data.user != null,
-  	isAnonymous: data.user?.isAnonymous ?? false,
+  	user: data.user,
 	  tabs: data.tabs.map(tab => ({
 	    id: tab.id,
 	    name: tab.name,

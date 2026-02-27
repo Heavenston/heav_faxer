@@ -4,13 +4,13 @@
   import { page } from "$app/state";
   import { goto } from "$app/navigation";
 
-  import { discrete_mode, createTab, getContext, type FileDocument } from "$lib/state.svelte";
+  import { createTab, getContext, type FileDocument } from "$lib/state.svelte";
   import { openConfirmDialog } from "$lib/modal_helpers";
   import { withTransition } from "$lib/with_transition";
   import Document from "./document.svelte";
 
   const ctx = getContext();
-  const selected_tab = $derived(ctx.tabs.find(tab => tab.local_id === page.params.id || tab.id === page.params.id) ?? null);
+  const selected_tab = $derived(ctx.tabs.find(tab => tab.id === page.params.id) ?? null);
 
   $effect(() => {
     if (selected_tab === null)
@@ -21,21 +21,21 @@
 
   function removeDoc(id: string) {
     withTransition(() => {
-      const idx = documents.findIndex(doc => doc.local_id === id);
+      const idx = documents.findIndex(doc => doc.id === id);
       if (idx >= 0)
         documents.splice(idx, 1);
     });
   }
 
   function removeTab(id: string) {
-    const idx = ctx.tabs.findIndex(tab => tab.id === id || tab.local_id === id);
+    const idx = ctx.tabs.findIndex(tab => tab.id === id || tab.id === id);
     if (idx < 0)
       return;
     if (ctx.tabs.length <= 1)
       createTab(ctx);
     ctx.tabs.splice(idx, 1);
-    if (selected_tab?.id === id || selected_tab?.local_id === id) {
-      goto(`/tab/${ctx.tabs[0].id ?? ctx.tabs[0].local_id}`);
+    if (selected_tab?.id === id || selected_tab?.id === id) {
+      goto(`/tab/${ctx.tabs[0].id ?? ctx.tabs[0].id}`);
     }
   }
 
@@ -48,7 +48,7 @@
         kind: "local_file",
         file,
       },
-      local_id: crypto.randomUUID(),
+      id: crypto.randomUUID(),
     });
     const doc: FileDocument = documents.at(-1)!;
 
@@ -83,44 +83,38 @@
 </form>
 {/snippet}
 
-{#if discrete_mode(ctx)}
-  <div class="empty-section">
+<div class="section">
+  <div class="section-header">
+    <button class="section-header-button"><Pencil size="1.3rem" /></button>
+    <button class="section-header-button section-alignment-fix"><Share2 size="1.3rem" /></button>
+    <button class="section-header-button"><Folder size="1.3rem" /></button>
+    <button class="section-header-button"><SquareCheckBig size="1.3rem" /></button>
+    <div class="section-header-separator"></div>
+    <button
+      class="section-header-button section-header-button-red"
+      onclick={() => {
+        openConfirmDialog({
+          description: `Deleting tab \`${selected_tab?.name}\``,
+          yes_red: true,
+          yes_button: "Delete",
+          no_button: "Cancel",
+          action() {
+            if (selected_tab)
+              removeTab(selected_tab.id);
+          },
+        });
+      }}
+    >
+      <Trash2 size="1.3rem" />
+    </button>
+  </div>
+  <div class={["document-container", {["activated"]: documents.length > 0}]}>
+    {#each documents as doc (doc.id)}
+      <Document doc={doc} onremove={() => removeDoc(doc.id)} />
+    {/each}
     {@render fileuploadform()}
   </div>
-{:else}
-  <div class="section">
-    <div class="section-header">
-      <button class="section-header-button"><Pencil size="1.3rem" /></button>
-      <button class="section-header-button section-alignment-fix"><Share2 size="1.3rem" /></button>
-      <button class="section-header-button"><Folder size="1.3rem" /></button>
-      <button class="section-header-button"><SquareCheckBig size="1.3rem" /></button>
-      <div class="section-header-separator"></div>
-      <button
-        class="section-header-button section-header-button-red"
-        onclick={() => {
-          openConfirmDialog({
-            description: `Deleting tab \`${selected_tab?.name}\``,
-            yes_red: true,
-            yes_button: "Delete",
-            no_button: "Cancel",
-            action() {
-              if (selected_tab)
-                removeTab(selected_tab.id ?? selected_tab.local_id);
-            },
-          });
-        }}
-      >
-        <Trash2 size="1.3rem" />
-      </button>
-    </div>
-    <div class={["document-container", {["activated"]: documents.length > 0}]}>
-      {#each documents as doc (doc.local_id)}
-        <Document doc={doc} onremove={() => removeDoc(doc.local_id)} />
-      {/each}
-      {@render fileuploadform()}
-    </div>
-  </div>
-{/if}
+</div>
 
 <style lang="scss">
 .file-upload-form {
@@ -139,6 +133,17 @@
 
   text-align: center;
 
+  width: 10rem;
+  aspect-ratio: calc(1/sqrt(2));
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  position: relative;
+
+  view-transition-class: animated-item;
+
   >input[type=file] {
     position: absolute;
     inset: 0;
@@ -146,20 +151,6 @@
     opacity: 0;
 
     cursor: pointer;
-  }
-}
-
-.empty-section {
-  flex-grow: 1;
-
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
-  .file-upload-form {
-    min-width: 20rem;
-    max-width: 100%;
-    aspect-ratio: 4/3;
   }
 }
 
@@ -237,19 +228,6 @@
 
   >* {
     flex-grow: 0;
-  }
-
-  .file-upload-form {
-    width: 10rem;
-    aspect-ratio: calc(1/sqrt(2));
-
-    display: flex;
-    justify-content: center;
-    align-items: center;
-
-    position: relative;
-
-    view-transition-class: animated-item;
   }
 }
 

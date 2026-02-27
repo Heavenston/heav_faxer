@@ -16,7 +16,7 @@ export type CreateFileResponse = {
   id: string,
 };
 
-export const POST: RequestHandler = async ({ locals, request }) => {
+export const POST: RequestHandler = async ({ platform, locals, request }) => {
   const user = locals.user;
   if (user == null)
     error(401);
@@ -57,6 +57,8 @@ export const POST: RequestHandler = async ({ locals, request }) => {
   }, {
     isolationLevel: "serializable",
   });
+
+  console.log(platform?.env);
 
   return json({
     id: inserted_id,

@@ -1,14 +1,10 @@
 <script lang="ts">
-  import type { PageProps } from "./$types";
-  import { useUser } from "$lib/auth-state.svelte";
   import { UserRoundX } from "@lucide/svelte";
   import { openConfirmDialog } from "$lib/modal_helpers";
   import SignInWithGoogle from "$lib/components/sign-in-with-google.svelte";
+  import { getContext, signOut, signInGithub, signInGoogle } from "$lib/state.svelte";
 
-  const { data }: PageProps = $props();
-  // svelte-ignore state_referenced_locally
-  const { signOut, signInAnonymous, signInGoogle, signInGithub, user: getUser } = useUser(data.user);
-  const user = $derived(getUser());
+  const ctx = getContext();
 </script>
 
 <div class="outer-container">
@@ -18,15 +14,12 @@
         User Settings
       </h1>
       <div class="header-separator"></div>
-      {#if user != null && !user.isAnonymous}
+      {#if ctx.user != null && !ctx.user.isAnonymous}
       <button
         class="log-off-button"
         onclick={() => {
           openConfirmDialog({
-            action: async () => {
-              await signOut();
-              await signInAnonymous();
-            },
+            action: async () => { await signOut(ctx); },
             yes_red: true,
             yes_button: "Log Out",
             no_button: "Cancel",
@@ -38,22 +31,20 @@
       {/if}
     </div>
     <div class="content">
-      {#if user == null}
-        You are not logged in
-      {:else if user.isAnonymous}
+      {#if ctx.user == null || ctx.user.isAnonymous}
         <div>
           <div>You are not logged in</div>
           <div>Log in to never lose access to your uploaded files</div>
         </div>
         <div class="signin-buttons">
-          <SignInWithGoogle class="signin signin-google" onclick={() => { signInGoogle(); }} />
-          <button class="signin signin-github" onclick={() => { signInGithub(); }}>
+          <SignInWithGoogle class="signin signin-google" onclick={() => { signInGoogle(ctx); }} />
+          <button class="signin signin-github" onclick={() => { signInGithub(ctx); }}>
             Sign in with Github
           </button>
         </div>
       {:else}
         <div>
-          You are logged in as {user.email}
+          You are logged in as {ctx.user.email}
         </div>
       {/if}
     </div>

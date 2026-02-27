@@ -1,8 +1,8 @@
 // See https://svelte.dev/docs/kit/types#app.d.ts
 // for information about these interfaces
 
-import type { Session } from "$lib/auth.server";
-import type { Hyperdrive } from '@cloudflare/workers-types';
+import type { Auth, Session } from "$lib/auth.server";
+import type { R2Bucket, Hyperdrive } from '@cloudflare/workers-types';
 import type { DbClient } from "$lib/db.server";
 
 declare global {
@@ -19,6 +19,7 @@ declare global {
 		interface Platform {
 			env: {
 				HYPERDRIVE: Hyperdrive;
+				heav_faxer_bucket: R2Bucket,
 			};
 		}
 	}
