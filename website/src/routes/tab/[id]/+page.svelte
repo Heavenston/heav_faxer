@@ -10,6 +10,7 @@
   import Document, { type FileDocument } from "./document.svelte";
   import type { PageProps } from "./$types";
   import type { CreateFileRequest, CreateFileResponse, GetTabFilesResponse } from "../../api/tabs/[id]/files/+server";
+  import { startUploadTask } from "$lib/uploader";
 
   const { data }: PageProps = $props();
 
@@ -90,6 +91,8 @@
     new_files.forEach((file, idx) => {
       file.id = body.file_ids[idx];
       file.progress = 0.01;
+
+      startUploadTask(`/api/tabs/${page.params.id}/files/${file.id}`, to_insert_files[idx]);
     });
   }
 </script>
