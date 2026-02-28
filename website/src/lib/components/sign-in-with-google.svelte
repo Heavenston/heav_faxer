@@ -30,6 +30,8 @@
   -webkit-user-select: none;
   -ms-user-select: none;
   -webkit-appearance: none;
+  user-select: none;
+  appearance: none;
   background-color: #131314;
   background-image: none;
   border: 1px solid #747775;

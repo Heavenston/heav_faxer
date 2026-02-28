@@ -9,5 +9,5 @@ export function openConfirmDialog(cfg: {
   no_button?: string,
   action: () => (void | Promise<void>),
 }) {
-  modals.open(ConfirmDialog, cfg);
+  modals.open(ConfirmDialog as any, cfg);
 }

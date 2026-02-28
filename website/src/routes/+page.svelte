@@ -1,31 +1,13 @@
 <script lang="ts">
   import { createTab, getContext } from "$lib/state.svelte";
-  import { withTransition } from "$lib/with_transition";
-
   const ctx = getContext();
 </script>
 
 <div class="empty-section">
   <form style:view-transition-name="document-form" class="file-upload-form">
-    <input type="file" multiple onchange={(event) => {
-      const el = event.currentTarget;
-
-      withTransition(async () => {
-        const tab = await createTab(ctx);
-
-        // for (const file of el.files ?? []) {
-        //   tab.documents.push({
-        //     id: "",
-        //     data: {
-        //       file,
-        //       kind: "local_file",
-        //     },
-        //     mime_type: file.type,
-        //     name: file.name,
-        //     progress: 0,
-        //   });
-        // }
-      });
+    <input type="file" multiple onchange={(_event) => {
+      createTab(ctx);
+      // TODO: Upload the files
     }} />
     Select or drop new files
   </form>
