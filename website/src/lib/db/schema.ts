@@ -13,6 +13,7 @@ export const tabs = pgTable("tabs", {
 
 export const files = pgTable("files", {
   id: uuid("id").primaryKey().default(sql`uuid_generate_v7()`),
+  local_id: text("local_id"),
 
   owner: text("owner").notNull().references(() => users.id, { onDelete: "cascade" }),
   tab: uuid("tab_id").notNull().references(() => tabs.id, { onDelete: "cascade" }),

@@ -7,15 +7,20 @@
   import { createTab, getContext } from "$lib/state.svelte";
   import { openConfirmDialog } from "$lib/modal_helpers";
   import { withTransition } from "$lib/with_transition";
-  import Document from "./document.svelte";
+  import Document, { type FileDocument } from "./document.svelte";
   import type { PageProps } from "./$types";
-    import type { CreateFileRequest, CreateFileResponse } from "../../api/tabs/[id]/files/+server";
+  import type { CreateFileRequest, CreateFileResponse, GetTabFilesResponse } from "../../api/tabs/[id]/files/+server";
 
   const { data }: PageProps = $props();
 
   const ctx = getContext();
   const selected_tab = $derived(ctx.tabs.find(tab => tab.id === page.params.id) ?? null);
-  let files = $derived(data.files);
+  // svelte-ignore state_referenced_locally
+  let files = $state(data.files.map((f: GetTabFilesResponse["files"][number]): FileDocument => f));
+
+  $effect(() => {
+    files = data.files;
+  });
 
   async function removeDoc(id: string) {
     withTransition(() => {
@@ -38,6 +43,33 @@
   }
 
   async function createAndUploadFiles(to_insert_files: File[]) {
+    if (to_insert_files.length > 30) {
+      const rest = to_insert_files.splice(30);
+      await createAndUploadFiles(to_insert_files);
+      await createAndUploadFiles(rest);
+      return;
+    }
+
+    let new_files = to_insert_files.map((file): FileDocument => ({
+      id: null,
+      local_id: crypto.randomUUID(),
+      owner: ctx.user?.id ?? "",
+      tab: page.params.id ?? "",
+      name: file.name,
+      mime_type: file.type || null,
+      size_bytes: file.size,
+
+      progress: 0,
+      data: { kind: "local_file", file },
+    }));
+
+    await withTransition(() => {
+      const start = files.length;
+      files.push(...new_files);
+      // get back the proxied objects
+      new_files = files.slice(start);
+    });
+
     const response = await fetch(`/api/tabs/${page.params.id}/files`, {
       method: "POST",
       headers: {
@@ -54,15 +86,10 @@
     if (!response.ok)
       throw new Error(await response.text());
     const body: CreateFileResponse = await response.json();
-    withTransition(() => {
-      files = [...files, ...body.file_ids.map((inserted_id, idx) => ({
-        id: inserted_id,
-        owner: ctx.user?.id ?? "",
-        tab: page.params.id ?? "",
-        name: to_insert_files[idx].name,
-        mime_type: to_insert_files[idx].type || null,
-        size_bytes: to_insert_files[idx].size,
-      }))];
+
+    new_files.forEach((file, idx) => {
+      file.id = body.file_ids[idx];
+      file.progress = 0.01;
     });
   }
 </script>
@@ -106,8 +133,8 @@
     </button>
   </div>
   <div class={["document-container", {["activated"]: files.length > 0}]}>
-    {#each files as file (file.id)}
-      <Document doc={file} onremove={() => removeDoc(file.id)} />
+    {#each files as file (file.local_id ?? file.id)}
+      <Document doc={file} onremove={() => file.id && removeDoc(file.id)} />
     {/each}
     {@render fileuploadform()}
   </div>

@@ -7,6 +7,7 @@ import { files, tabs } from "$lib/db/schema";
 export type GetTabFilesResponse = {
   files: {
     id: string,
+    local_id: string | null,
     owner: string,
     tab: string,
     name: string,
@@ -35,7 +36,7 @@ export const GET: RequestHandler = async ({ request, params, locals }) => {
 
   const url = new URL(request.url);
   const from = url.searchParams.get("from");
-  const count = maybeToInteger(url.searchParams.get("count"), 100) ?? 10;
+  const count = maybeToInteger(url.searchParams.get("count"), 1_000) ?? 100;
 
   const found_files = await db.transaction(async tx => {
     const found_tabs = await tx.select({ owner: tabs.owner })
@@ -49,6 +50,7 @@ export const GET: RequestHandler = async ({ request, params, locals }) => {
 
     return await tx.select({
       id: files.id,
+      local_id: files.local_id,
       owner: files.owner,
       tab: files.tab,
       name: files.name,
@@ -72,10 +74,11 @@ export const GET: RequestHandler = async ({ request, params, locals }) => {
 
 const CreateFileRequest = type({
   files: type({
+    "local_id?": "string",
     name: "string >= 1",
     "mime_type?": "string",
     size_bytes: "number.integer >= 0",
-  }).array().moreThanLength(0).atMostLength(10),
+  }).array().moreThanLength(0).atMostLength(100),
 });
 export type CreateFileRequest = typeof CreateFileRequest.infer;
 
@@ -107,6 +110,8 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 
     const inserted_ids = await tx.insert(files)
       .values(body.files.map(file => ({
+        local_id: file.local_id,
+
         name: file.name,
         mime_type: file.mime_type,
 

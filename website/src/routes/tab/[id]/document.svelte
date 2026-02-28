@@ -22,7 +22,7 @@
     file: File,
   };
 
-  export type FileDocument = GetTabFilesResponse["files"][number] & { data?: FileDocumentData, progress?: number };
+  export type FileDocument = Omit<GetTabFilesResponse["files"][number], "id"> & { id: string | null, data?: FileDocumentData, progress?: number };
 
   function getLucideIcon(doc: FileDocument) {
     if (doc.mime_type?.startsWith('image/')) return FileImage;
@@ -60,7 +60,7 @@
   style:--upload-progress={doc.progress}
 >
   <div
-    style:view-transition-name={`document-${doc.id}`}
+    style:view-transition-name={`document-${doc.local_id ?? doc.id}`}
     class="document"
   >
     {#if doc.mime_type?.startsWith('image/')}
@@ -68,7 +68,7 @@
         <img src={URL.createObjectURL(doc.data.file)} class="img-previz" alt={doc.data.file.name} />
       {/if}
     {/if}
-    <Icon size="var(--icon-size)" class="doc-icon" />
+    <Icon size="2rem" class="doc-icon" />
     {#if progress < 1}
       <div out:fade={{ duration: 100 }} class="progress-overlay">
       </div>
@@ -130,8 +130,6 @@
 
     position: relative;
     overflow: hidden;
-
-    --icon-size: 2rem;
     
     &:not(:has(img)) {
       justify-content: center;
