@@ -15,12 +15,19 @@
   import { fade } from "svelte/transition";
   import Loader from "$lib/loader.svelte";
   import { openConfirmDialog } from "$lib/modal_helpers";
-  import type { FileDocument } from "../../tab_state.svelte";
+  import type { GetTabFilesResponse } from '../../api/tabs/[id]/files/+server';
+
+  export type FileDocumentData = {
+    kind: "local_file",
+    file: File,
+  };
+
+  export type FileDocument = GetTabFilesResponse["files"][number] & { data?: FileDocumentData, progress?: number };
 
   function getLucideIcon(doc: FileDocument) {
-    if (doc.mime_type.startsWith('image/')) return FileImage;
-    if (doc.mime_type.startsWith('video/')) return FilePlay;
-    if (doc.mime_type.startsWith('audio/')) return FileHeadphone;
+    if (doc.mime_type?.startsWith('image/')) return FileImage;
+    if (doc.mime_type?.startsWith('video/')) return FilePlay;
+    if (doc.mime_type?.startsWith('audio/')) return FileHeadphone;
 
     const extension = doc.name.split('.').pop()?.toLowerCase() || '';
 
@@ -31,9 +38,9 @@
     if (['pdf', 'txt', 'md', 'doc', 'docx', 'rtf', 'log'].includes(extension)) return FileText;
     if (['jar', "exe"].includes(extension)) return FileTerminal;
 
-    if (doc.mime_type.includes('pdf') || doc.mime_type.includes('text')) return FileText;
-    if (doc.mime_type.includes('spreadsheet') || doc.mime_type.includes('csv')) return FileSpreadsheet;
-    if (doc.mime_type.includes('zip') || doc.mime_type.includes('compressed')) return FileArchive;
+    if (doc.mime_type?.includes('pdf') || doc.mime_type?.includes('text')) return FileText;
+    if (doc.mime_type?.includes('spreadsheet') || doc.mime_type?.includes('csv')) return FileSpreadsheet;
+    if (doc.mime_type?.includes('zip') || doc.mime_type?.includes('compressed')) return FileArchive;
 
     return DefaultFileIcon;
   }
@@ -44,8 +51,8 @@
     return getLucideIcon(doc);
   });
 
-  let file_name = $derived(doc.name);
-  let progress_text = $derived(`${Math.floor(doc.progress * 100)}%`);
+  const progress = $derived(doc.progress ?? 1);
+  const progress_text = $derived(`${Math.floor(progress * 100)}%`);
 </script>
 
 <div
@@ -53,19 +60,19 @@
   style:--upload-progress={doc.progress}
 >
   <div
-    style:view-transition-name={`document-${doc.local_id}`}
+    style:view-transition-name={`document-${doc.id}`}
     class="document"
   >
-    {#if doc.mime_type.startsWith('image/')}
-      {#if doc.data.kind === "local_file"}
+    {#if doc.mime_type?.startsWith('image/')}
+      {#if doc.data?.kind === "local_file"}
         <img src={URL.createObjectURL(doc.data.file)} class="img-previz" alt={doc.data.file.name} />
       {/if}
     {/if}
     <Icon size="var(--icon-size)" class="doc-icon" />
-    {#if doc.progress < 1}
+    {#if progress < 1}
       <div out:fade={{ duration: 100 }} class="progress-overlay">
       </div>
-      <div out:fade={{ duration: 100 }} class={["progress-text-container", {"progress-start": doc.progress < 0.5}]}>
+      <div out:fade={{ duration: 100 }} class={["progress-text-container", {"progress-start": progress < 0.5}]}>
         {#if doc.progress == 0}
           <Loader />
         {:else}
@@ -76,7 +83,7 @@
   </div>
   <button class={["delete-btn"]} onclick={() => {
     openConfirmDialog({
-      description: `Deleting file \`${doc.file_name}\``,
+      description: `Deleting file \`${doc.name}\``,
       yes_red: true,
       yes_button: "Delete",
       no_button: "Cancel",
@@ -88,7 +95,7 @@
     <Trash size="1rem" />
   </button>
   <div class="document-title">
-    {file_name}
+    {doc.name}
   </div>
 </div>
 

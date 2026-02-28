@@ -1,29 +1,12 @@
 import { goto } from "$app/navigation";
-import { page } from "$app/state";
 import { createContext } from "svelte";
-import type { CreateTabResponse } from "../routes/api/create-tab/+server";
 import { authClient } from "$lib/auth-client";
 import type { Session } from "$lib/auth.server";
-
-export type FileDocumentData = {
-  kind: "local_file",
-  file: File,
-} | {
-  kind: "no_data",
-};
-
-export type FileDocument = {
-  id: string,
-  mime_type: string,
-  name: string,
-  data: FileDocumentData,
-  progress: number,
-};
+import type { CreateTabResponse } from "../routes/api/tabs/+server";
 
 export type TabData = {
   id: string,
   name: string,
-  documents: FileDocument[],
 };
 
 export type ContextData = {
@@ -32,10 +15,6 @@ export type ContextData = {
 };
 
 export const [getContext, setContext] = createContext<ContextData>();
-
-export function discrete_mode(ctx: ContextData): boolean {
-  return (ctx.tabs.length === 0 || ctx.tabs.length === 1 && ctx.tabs[0].documents.length === 0) && page.url.pathname === `/`;
-}
 
 export async function signOut(ctx: ContextData) {
   const result = await authClient.signOut();
@@ -85,7 +64,7 @@ export async function createTab(ctx: ContextData, name?: string): Promise<TabDat
       name = `New Tab #${i += 1}`;
   }
 
-  const response = await fetch("/api/create-tab", {
+  const response = await fetch("/api/tabs", {
     method: "POST",
     body: JSON.stringify({
       name,
@@ -101,7 +80,6 @@ export async function createTab(ctx: ContextData, name?: string): Promise<TabDat
   ctx.tabs.push({
     id: result.id,
     name: name,
-    documents: [],
   });
   goto(`/tab/${result.id}`);
   return ctx.tabs.at(-1)!;

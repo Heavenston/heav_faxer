@@ -7,8 +7,7 @@
   import type { LayoutProps } from "./$types";
 
 	import favicon from '$lib/assets/favicon.svg';
-  import { discrete_mode, createTab, setContext, type ContextData } from "$lib/state.svelte";
-
+  import { createTab, setContext, type ContextData, type TabData } from "$lib/state.svelte";
 	let { children, data }: LayoutProps = $props();
 
 	// We only initialize the context with the initial page data, we manually
@@ -19,8 +18,7 @@
 	  tabs: data.tabs.map(tab => ({
 	    id: tab.id,
 	    name: tab.name,
-	    documents: [],
-	  })),
+	  } satisfies TabData)),
 	} satisfies ContextData);
 
 	setContext(ctx);
@@ -31,7 +29,7 @@
 </svelte:head>
 
 <div class="container">
-  <header class={{"header-discrete": discrete_mode(ctx)}}>
+  <header class={{"header-discrete": page.url.pathname === "/"}}>
     <div class="header-inside-container">
       {#each ctx.tabs as tab_data (tab_data.id)}
         <a

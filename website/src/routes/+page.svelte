@@ -13,18 +13,18 @@
       withTransition(async () => {
         const tab = await createTab(ctx);
 
-        for (const file of el.files ?? []) {
-          tab.documents.push({
-            id: "",
-            data: {
-              file,
-              kind: "local_file",
-            },
-            mime_type: file.type,
-            name: file.name,
-            progress: 0,
-          });
-        }
+        // for (const file of el.files ?? []) {
+        //   tab.documents.push({
+        //     id: "",
+        //     data: {
+        //       file,
+        //       kind: "local_file",
+        //     },
+        //     mime_type: file.type,
+        //     name: file.name,
+        //     progress: 0,
+        //   });
+        // }
       });
     }} />
     Select or drop new files

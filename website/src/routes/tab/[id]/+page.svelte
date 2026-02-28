@@ -4,30 +4,28 @@
   import { page } from "$app/state";
   import { goto } from "$app/navigation";
 
-  import { createTab, getContext, type FileDocument } from "$lib/state.svelte";
+  import { createTab, getContext } from "$lib/state.svelte";
   import { openConfirmDialog } from "$lib/modal_helpers";
   import { withTransition } from "$lib/with_transition";
   import Document from "./document.svelte";
+  import type { PageProps } from "./$types";
+    import type { CreateFileRequest, CreateFileResponse } from "../../api/tabs/[id]/files/+server";
+
+  const { data }: PageProps = $props();
 
   const ctx = getContext();
   const selected_tab = $derived(ctx.tabs.find(tab => tab.id === page.params.id) ?? null);
+  let files = $derived(data.files);
 
-  $effect(() => {
-    if (selected_tab === null)
-      goto("/");
-  });
-
-  const documents = $derived(selected_tab?.documents ?? []);
-
-  function removeDoc(id: string) {
+  async function removeDoc(id: string) {
     withTransition(() => {
-      const idx = documents.findIndex(doc => doc.id === id);
+      const idx = files.findIndex(doc => doc.id === id);
       if (idx >= 0)
-        documents.splice(idx, 1);
+        files.splice(idx, 1);
     });
   }
 
-  function removeTab(id: string) {
+  async function removeTab(id: string) {
     const idx = ctx.tabs.findIndex(tab => tab.id === id || tab.id === id);
     if (idx < 0)
       return;
@@ -39,46 +37,45 @@
     }
   }
 
-  function createAndUploadFile(file: File) {
-    documents.push({
-      progress: 0,
-      name: file.name,
-      mime_type: file.type,
-      data: {
-        kind: "local_file",
-        file,
+  async function createAndUploadFiles(to_insert_files: File[]) {
+    const response = await fetch(`/api/tabs/${page.params.id}/files`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
       },
-      id: crypto.randomUUID(),
+      body: JSON.stringify({
+        files: to_insert_files.map(file => ({
+          name: file.name,
+          mime_type: file.type,
+          size_bytes: file.size,
+        })),
+      } satisfies CreateFileRequest),
     });
-    const doc: FileDocument = documents.at(-1)!;
-
-    setTimeout(() => {
-      const i = setInterval(() => {
-        doc.progress += Math.random() * 0.05;
-        if (doc.progress > 1) {
-          doc.progress = 1;
-          clearInterval(i);
-        }
-      }, 100);
-    }, 3000 * Math.random());
+    if (!response.ok)
+      throw new Error(await response.text());
+    const body: CreateFileResponse = await response.json();
+    withTransition(() => {
+      files = [...files, ...body.file_ids.map((inserted_id, idx) => ({
+        id: inserted_id,
+        owner: ctx.user?.id ?? "",
+        tab: page.params.id ?? "",
+        name: to_insert_files[idx].name,
+        mime_type: to_insert_files[idx].type || null,
+        size_bytes: to_insert_files[idx].size,
+      }))];
+    });
   }
 </script>
 
 {#snippet fileuploadform()}
 <form style:view-transition-name="document-form" class="file-upload-form">
   <input type="file" multiple onchange={(event) => {
-    const el = event.currentTarget;
-
-    withTransition(() => {
-      for (const file of el.files ?? []) {
-        createAndUploadFile(file);
-      }
-    });
+    createAndUploadFiles([...(event.currentTarget.files ?? [])]);
   }} />
-  {#if documents.length > 0}
+  {#if files.length > 0}
     Select new files
   {:else}
-    Select or drop new files
+    Select or drop files
   {/if}
 </form>
 {/snippet}
@@ -98,9 +95,9 @@
           yes_red: true,
           yes_button: "Delete",
           no_button: "Cancel",
-          action() {
+          async action() {
             if (selected_tab)
-              removeTab(selected_tab.id);
+              await removeTab(selected_tab.id);
           },
         });
       }}
@@ -108,9 +105,9 @@
       <Trash2 size="1.3rem" />
     </button>
   </div>
-  <div class={["document-container", {["activated"]: documents.length > 0}]}>
-    {#each documents as doc (doc.id)}
-      <Document doc={doc} onremove={() => removeDoc(doc.id)} />
+  <div class={["document-container", {["activated"]: files.length > 0}]}>
+    {#each files as file (file.id)}
+      <Document doc={file} onremove={() => removeDoc(file.id)} />
     {/each}
     {@render fileuploadform()}
   </div>
