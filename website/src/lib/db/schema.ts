@@ -1,4 +1,4 @@
-import { uuid, integer, pgTable, text } from "drizzle-orm/pg-core";
+import { uuid, bigint, integer, pgTable, text } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 
 export * from "./auth-schema";
@@ -19,7 +19,9 @@ export const files = pgTable("files", {
   tab: uuid("tab_id").notNull().references(() => tabs.id, { onDelete: "cascade" }),
   name: text("name").notNull(),
   mime_type: text("mime_type"),
-  size_bytes: integer("size_bytes").notNull(),
+  size_bytes: bigint({
+    mode: "number",
+  }).notNull(),
 
   location: text("location"),
 });
