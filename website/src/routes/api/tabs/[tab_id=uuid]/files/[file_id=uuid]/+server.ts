@@ -68,6 +68,11 @@ export const PUT: RequestHandler = async ({ params, locals, request }) => {
     if (done || !value) break;
     count += 1;
     size += value.byteLength;
+
+    if (size > 100_000_000) {
+      await new Promise(cb => setTimeout(cb, 100));
+      size = 0;
+    }
   }
 
   console.log(`${size} bytes in ${count} chuncks`);

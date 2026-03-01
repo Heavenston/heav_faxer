@@ -35,10 +35,20 @@
     const idx = ctx.tabs.findIndex(tab => tab.id === id || tab.id === id);
     if (idx < 0)
       return;
+
+    (async () => {
+      const response = await fetch(`/api/tabs/${id}`, { method: "DELETE" });
+      // TODO: Rollback on error(?)
+      if (!response.ok)
+        throw new Error(await response.text());
+    })();
+
     if (ctx.tabs.length <= 1)
-      createTab(ctx);
+      await createTab(ctx);
+
+    const sid = selected_tab?.id;
     ctx.tabs.splice(idx, 1);
-    if (selected_tab?.id === id || selected_tab?.id === id) {
+    if (sid === id) {
       goto(`/tab/${ctx.tabs[0].id ?? ctx.tabs[0].id}`);
     }
   }
