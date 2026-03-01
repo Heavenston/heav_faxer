@@ -9,8 +9,8 @@
   import { withTransition } from "$lib/with_transition";
   import Document, { type FileDocument } from "./document.svelte";
   import type { PageProps } from "./$types";
-  import type { CreateFileRequest, CreateFileResponse, GetTabFilesResponse } from "../../api/tabs/[id]/files/+server";
-  import { startUploadTask } from "$lib/uploader";
+  import type { CreateFileRequest, CreateFileResponse, GetTabFilesResponse } from "../../api/tabs/[tab_id=uuid]/files/+server";
+  import { UploadTask } from "$lib/uploader";
 
   const { data }: PageProps = $props();
 
@@ -92,7 +92,11 @@
       file.id = body.file_ids[idx];
       file.progress = 0.01;
 
-      startUploadTask(`/api/tabs/${page.params.id}/files/${file.id}`, to_insert_files[idx]);
+      const task = new UploadTask(`/api/tabs/${page.params.id}/files/${file.id}`, to_insert_files[idx]);
+
+      task.progress.subscribe(progress => {
+        file.progress = progress;
+      });
     });
   }
 </script>

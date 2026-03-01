@@ -41,7 +41,7 @@ export const GET: RequestHandler = async ({ request, params, locals }) => {
   const found_files = await db.transaction(async tx => {
     const found_tabs = await tx.select({ owner: tabs.owner })
       .from(tabs)
-      .where(eq(tabs.id, params.id ?? ""));
+      .where(eq(tabs.id, params.tab_id ?? ""));
 
     if (found_tabs.length === 0)
       error(404, "No such tab");
@@ -59,7 +59,7 @@ export const GET: RequestHandler = async ({ request, params, locals }) => {
     })
       .from(files)
       .where(and(
-        eq(files.tab, params.id ?? ""),
+        eq(files.tab, params.tab_id ?? ""),
         from != null ? gt(files.id, from) : undefined,
       ))
       .limit(count);
@@ -100,7 +100,7 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
   const inserted_ids = await db.transaction(async tx => {
     const tab = await tx.select({ owner: tabs.owner })
       .from(tabs)
-      .where(eq(tabs.id, params.id ?? ""))
+      .where(eq(tabs.id, params.tab_id ?? ""))
       .limit(1);
 
     if (tab.length === 0)
@@ -118,7 +118,7 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
         owner: user.id,
         size_bytes: file.size_bytes,
 
-        tab: params.id ?? "",
+        tab: params.tab_id ?? "",
       })))
       .returning({ inserted_id: files.id });
 

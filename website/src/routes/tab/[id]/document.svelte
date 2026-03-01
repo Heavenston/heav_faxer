@@ -15,7 +15,7 @@
   import { fade } from "svelte/transition";
   import Loader from "$lib/loader.svelte";
   import { openConfirmDialog } from "$lib/modal_helpers";
-  import type { GetTabFilesResponse } from '../../api/tabs/[id]/files/+server';
+  import type { GetTabFilesResponse } from '../../api/tabs/[tab_id=uuid]/files/+server';
 
   export type FileDocumentData = {
     kind: "local_file",

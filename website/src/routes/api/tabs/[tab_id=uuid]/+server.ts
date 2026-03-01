@@ -12,7 +12,7 @@ export const DELETE: RequestHandler = async ({ params, locals }) => {
 
   const result = await db.delete(tabs)
     .where(and(
-      eq(tabs.id, params.id ?? ""),
+      eq(tabs.id, params.tab_id ?? ""),
       eq(tabs.owner, user.id),
     ));
 
