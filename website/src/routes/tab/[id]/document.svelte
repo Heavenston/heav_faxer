@@ -16,6 +16,7 @@
   import Loader from "$lib/loader.svelte";
   import { openConfirmDialog } from "$lib/modal_helpers";
   import type { GetTabFilesResponse } from '../../api/tabs/[tab_id=uuid]/files/+server';
+  import type { UploadTask } from '$lib/uploader';
 
   export type FileDocumentData = {
     kind: "local_file",
@@ -29,9 +30,11 @@
     progress: number,
   } | {
     kind: "error",
+  } | {
+    kind: "success",
   };
 
-  export type FileDocument = Omit<GetTabFilesResponse["files"][number], "id"> & { id: string | null, data?: FileDocumentData, progress?: FileDocumentProgress };
+  export type FileDocument = Omit<GetTabFilesResponse["files"][number], "id"> & { id: string | null, data?: FileDocumentData, progress?: FileDocumentProgress, upload_task?: UploadTask };
 
   function getLucideIcon(doc: FileDocument) {
     if (doc.mime_type?.startsWith('image/')) return FileImage;
@@ -67,16 +70,22 @@
     case "uploading":
       return doc.progress.progress;
     case "error":
+    case "success":
       return 1;
     default:
       return 0;
     }
   });
+
+  function onDeleteDocument() {
+    doc.upload_task?.abort();
+    onremove?.();
+  }
 </script>
 
 <div
   class="document-container"
-  style:--upload-progress={doc.progress?.kind === "uploading" ? doc.progress.progress : 1}
+  style:--upload-progress={progress}
 >
   <div
     style:view-transition-name={`document-${doc.local_id ?? doc.id}`}
@@ -88,24 +97,29 @@
       {/if}
     {/if}
     <Icon size="2rem" class="doc-icon" />
-    {#if doc.progress == null}{""}
-    {:else if doc.progress.kind === "creating"}
-      <div out:fade={{ duration: 100 }} class="progress-overlay">
+    {#if doc.progress != null}
+      <div out:fade={{ duration: 100 }} class={[
+        "progress-overlay",  {
+          "progress-error": doc.progress.kind === "error",
+          "progress-success": doc.progress.kind === "success",
+        },
+      ]}>
       </div>
-      <div out:fade={{ duration: 100 }} class={["progress-text-container", {"progress-start": progress < 0.5}]}>
-        <Loader />
-      </div>
-    {:else if doc.progress.kind === "uploading"}
-      <div out:fade={{ duration: 100 }} class="progress-overlay">
-      </div>
-      <div out:fade={{ duration: 100 }} class={["progress-text-container", {"progress-start": progress < 0.5}]}>
-        <div>{Math.floor(progress * 100)}%</div>
-      </div>
-    {:else if doc.progress.kind === "error"}
-      <div out:fade={{ duration: 100 }} class={["progress-overlay", "progress-error"]}>
-      </div>
-      <div out:fade={{ duration: 100 }} class={["progress-text-container"]}>
-        <div>Error</div>
+      <div out:fade={{ duration: 100 }} class={[
+        "progress-text-container", {
+          "progress-start": progress < 0.5,
+          "progress-success": doc.progress.kind === "success",
+        },
+      ]}>
+        {#if doc.progress.kind === "creating"}
+          <Loader />
+        {:else if doc.progress.kind === "uploading"}
+          <div>{Math.floor(progress * 100)}%</div>
+        {:else if doc.progress.kind === "error"}
+          <div>Error</div>
+        {:else if doc.progress.kind === "success"}
+          <div>Success</div>
+        {/if}
       </div>
     {/if}
   </div>
@@ -115,9 +129,7 @@
       yes_red: true,
       yes_button: "Delete",
       no_button: "Cancel",
-      action: () => {
-        onremove?.()
-      },
+      action: onDeleteDocument,
     });
   }}>
     <Trash size="1rem" />
@@ -179,6 +191,19 @@
       height: calc(100% - $padding*2);
     }
 
+    @keyframes disapear {
+      100% {
+        height: 0;
+      }
+    }
+
+    // Make the progress overlay disapear after 3s
+    .progress-success {
+      animation: var(--transition) 3s disapear;
+      animation-fill-mode: both;
+      overflow: hidden;
+    }
+
     .progress-text-container {
       position: absolute;
       top: 0;
@@ -219,11 +244,15 @@
         background: var(--gray-lighter);
         width: calc(var(--upload-progress) * 100%);
         height: 100%;
-        transition: width 100ms linear;
+        transition: width 300ms ease-out, background var(--transition);
       }
 
       &.progress-error::before {
         background: var(--red);
+      }
+
+      &.progress-success::before {
+        background: var(--green);
       }
     }
   }

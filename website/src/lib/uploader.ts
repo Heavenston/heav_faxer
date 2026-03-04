@@ -26,9 +26,9 @@ export class UploadTask implements EmitterMixin<Events> {
     this.#xhr.upload.addEventListener("progress", e => {
       this.#setProgress(e.loaded / e.total);
     });
-    this.#xhr.addEventListener("loadend", e => {
+    this.#xhr.addEventListener("loadend", () => {
       UploadTask.#active_tasks.delete(this);
-      console.log(e);
+      console.log("Task", this.id, "ended");
       if (this.#xhr.status < 200 || this.#xhr.status > 299) {
         this.#emitter.emit("finishedError");
       }
@@ -42,10 +42,6 @@ export class UploadTask implements EmitterMixin<Events> {
 
     UploadTask.#task_queue.push(this);
     UploadTask.#startFromQueue();
-  }
-
-  on<K extends keyof Events>(event: K, cb: Events[K]): Unsubscribe {
-    return this.#emitter.on(event, cb);
   }
 
   #setProgress(progress: number) {
@@ -68,5 +64,17 @@ export class UploadTask implements EmitterMixin<Events> {
       UploadTask.#active_tasks.add(task);
       task.#start();
     }
+  }
+
+  public on<K extends keyof Events>(event: K, cb: Events[K]): Unsubscribe {
+    return this.#emitter.on(event, cb);
+  }
+
+  /**
+   * Cancels the upload
+   */
+  public abort() {
+    console.log("Canceling task", this.id);
+    this.#xhr.abort();
   }
 }

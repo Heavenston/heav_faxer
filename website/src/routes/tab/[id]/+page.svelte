@@ -103,12 +103,13 @@
       file.progress = { kind: "uploading", progress: 0 };
 
       const task = new UploadTask(`/api/tabs/${page.params.id}/files/${file.id}`, to_insert_files[idx]);
+      file.upload_task = task;
 
       task.on("uploadProgress", progress => {
         file.progress = { kind: "uploading", progress };
       })
       task.on("finishedSuccess", () => {
-        file.progress = undefined;
+        file.progress = { kind: "success" };
       });
       task.on("finishedError", () => {
         file.progress = { kind: "error" };
