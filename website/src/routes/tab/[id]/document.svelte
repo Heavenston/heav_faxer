@@ -22,7 +22,16 @@
     file: File,
   };
 
-  export type FileDocument = Omit<GetTabFilesResponse["files"][number], "id"> & { id: string | null, data?: FileDocumentData, progress?: number };
+  export type FileDocumentProgress = {
+    kind: "creating",
+  } | {
+    kind: "uploading",
+    progress: number,
+  } | {
+    kind: "error",
+  };
+
+  export type FileDocument = Omit<GetTabFilesResponse["files"][number], "id"> & { id: string | null, data?: FileDocumentData, progress?: FileDocumentProgress };
 
   function getLucideIcon(doc: FileDocument) {
     if (doc.mime_type?.startsWith('image/')) return FileImage;
@@ -51,13 +60,23 @@
     return getLucideIcon(doc);
   });
 
-  const progress = $derived(doc.progress ?? 1);
-  const progress_text = $derived(`${Math.floor(progress * 100)}%`);
+  const progress = $derived.by((): number => {
+    switch (doc.progress?.kind) {
+    case "creating":
+      return 0;
+    case "uploading":
+      return doc.progress.progress;
+    case "error":
+      return 1;
+    default:
+      return 0;
+    }
+  });
 </script>
 
 <div
   class="document-container"
-  style:--upload-progress={doc.progress}
+  style:--upload-progress={doc.progress?.kind === "uploading" ? doc.progress.progress : 1}
 >
   <div
     style:view-transition-name={`document-${doc.local_id ?? doc.id}`}
@@ -69,15 +88,24 @@
       {/if}
     {/if}
     <Icon size="2rem" class="doc-icon" />
-    {#if progress < 1}
+    {#if doc.progress == null}{""}
+    {:else if doc.progress.kind === "creating"}
       <div out:fade={{ duration: 100 }} class="progress-overlay">
       </div>
       <div out:fade={{ duration: 100 }} class={["progress-text-container", {"progress-start": progress < 0.5}]}>
-        {#if doc.progress == 0}
-          <Loader />
-        {:else}
-          <div>{progress_text}</div>
-        {/if}
+        <Loader />
+      </div>
+    {:else if doc.progress.kind === "uploading"}
+      <div out:fade={{ duration: 100 }} class="progress-overlay">
+      </div>
+      <div out:fade={{ duration: 100 }} class={["progress-text-container", {"progress-start": progress < 0.5}]}>
+        <div>{Math.floor(progress * 100)}%</div>
+      </div>
+    {:else if doc.progress.kind === "error"}
+      <div out:fade={{ duration: 100 }} class={["progress-overlay", "progress-error"]}>
+      </div>
+      <div out:fade={{ duration: 100 }} class={["progress-text-container"]}>
+        <div>Error</div>
       </div>
     {/if}
   </div>
@@ -152,7 +180,6 @@
     }
 
     .progress-text-container {
-      content: var(--progress-text1);
       position: absolute;
       top: 0;
       height: 1.5rem;
@@ -193,6 +220,10 @@
         width: calc(var(--upload-progress) * 100%);
         height: 100%;
         transition: width 100ms linear;
+      }
+
+      &.progress-error::before {
+        background: var(--red);
       }
     }
   }

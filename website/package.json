@@ -34,6 +34,7 @@
 		"arktype": "^2.1.29",
 		"better-auth": "^1.4.19",
 		"drizzle-orm": "^0.45.1",
+		"nanoevents": "^9.1.0",
 		"pg": "^8.18.0",
 		"svelte-modals": "^2.0.1"
 	}

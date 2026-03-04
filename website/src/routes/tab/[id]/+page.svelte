@@ -70,7 +70,7 @@
       mime_type: file.type || null,
       size_bytes: file.size,
 
-      progress: 0,
+      progress: { kind: "creating" },
       data: { kind: "local_file", file },
     }));
 
@@ -100,12 +100,18 @@
 
     new_files.forEach((file, idx) => {
       file.id = body.file_ids[idx];
-      file.progress = 0.01;
+      file.progress = { kind: "uploading", progress: 0 };
 
       const task = new UploadTask(`/api/tabs/${page.params.id}/files/${file.id}`, to_insert_files[idx]);
 
-      task.progress.subscribe(progress => {
-        file.progress = progress;
+      task.on("uploadProgress", progress => {
+        file.progress = { kind: "uploading", progress };
+      })
+      task.on("finishedSuccess", () => {
+        file.progress = undefined;
+      });
+      task.on("finishedError", () => {
+        file.progress = { kind: "error" };
       });
     });
   }

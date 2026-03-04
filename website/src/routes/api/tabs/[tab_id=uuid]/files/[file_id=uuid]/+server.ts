@@ -1,10 +1,11 @@
 import { error, json, type RequestHandler } from "@sveltejs/kit";
 import { files } from "$lib/db/schema";
 import { and, eq, isNull } from "drizzle-orm";
+import type { R2UploadedPart } from '@cloudflare/workers-types';
 
 export type PutFileResponse = { };
 
-export const PUT: RequestHandler = async ({ params, locals, request }) => {
+export const PUT: RequestHandler = async ({ params, locals, request, platform }) => {
   const user = locals.user;
   if (user == null)
     error(401);
@@ -61,22 +62,51 @@ export const PUT: RequestHandler = async ({ params, locals, request }) => {
     return { ...found_file, location };
   })();
 
-  let count = 0;
-  let size = 0;
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done || !value) break;
-    count += 1;
-    size += value.byteLength;
+  const bucket = platform?.env.heav_faxer_bucket!;
 
-    if (size > 100_000_000) {
-      await new Promise(cb => setTimeout(cb, 100));
-      size = 0;
+  const PART_SIZE = 5 * 1024 * 1024;
+  const current_buffer = new Uint8Array(10 * 1024 * 1024);
+  let current_buffer_offset = 0;
+
+  const upload = await bucket.createMultipartUpload(found_file.location);
+  const parts: R2UploadedPart[] = [];
+
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done || !value) break;
+
+      // Flush before writing if the chunk would overflow the buffer
+      if (current_buffer_offset + value.byteLength > current_buffer.byteLength) {
+        parts.push(await upload.uploadPart(parts.length+1, current_buffer.subarray(0, current_buffer_offset)));
+        current_buffer_offset = 0;
+      }
+
+      current_buffer.set(value, current_buffer_offset);
+      current_buffer_offset += value.byteLength;
+
+      if (current_buffer_offset >= PART_SIZE) {
+        parts.push(await upload.uploadPart(parts.length+1, current_buffer.subarray(0, current_buffer_offset)));
+        current_buffer_offset = 0;
+      }
     }
-  }
 
-  console.log(`${size} bytes in ${count} chuncks`);
+    // Flush remaining data as the final part
+    if (current_buffer_offset > 0) {
+      parts.push(await upload.uploadPart(parts.length+1, current_buffer.subarray(0, current_buffer_offset)));
+    }
+
+    // R2 can't complete with 0 parts, use a simple put for empty files
+    if (parts.length === 0) {
+      await upload.abort();
+      await bucket.put(found_file.location, new Uint8Array(0));
+    } else {
+      await upload.complete(parts);
+    }
+  } catch (e) {
+    await upload.abort();
+    throw e;
+  }
 
   return json({ } satisfies PutFileResponse);
 };
-
