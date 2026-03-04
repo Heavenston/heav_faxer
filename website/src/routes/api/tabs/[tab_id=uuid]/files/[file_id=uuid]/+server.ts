@@ -5,6 +5,7 @@ import type { R2UploadedPart } from '@cloudflare/workers-types';
 
 export type PutFileResponse = { };
 
+/// This is only intended for local develoment where I cannot use presigned urls
 export const PUT: RequestHandler = async ({ params, locals, request, platform }) => {
   const user = locals.user;
   if (user == null)
@@ -65,7 +66,7 @@ export const PUT: RequestHandler = async ({ params, locals, request, platform })
   const bucket = platform?.env.heav_faxer_bucket!;
 
   const PART_SIZE = 5 * 1024 * 1024;
-  const current_buffer = new Uint8Array(10 * 1024 * 1024);
+  let current_buffer = new Uint8Array(PART_SIZE);
   let current_buffer_offset = 0;
 
   const upload = await bucket.createMultipartUpload(found_file.location);
@@ -76,18 +77,21 @@ export const PUT: RequestHandler = async ({ params, locals, request, platform })
       const { done, value } = await reader.read();
       if (done || !value) break;
 
-      // Flush before writing if the chunk would overflow the buffer
-      if (current_buffer_offset + value.byteLength > current_buffer.byteLength) {
-        parts.push(await upload.uploadPart(parts.length+1, current_buffer.subarray(0, current_buffer_offset)));
-        current_buffer_offset = 0;
-      }
+      let value_offset = 0;
 
-      current_buffer.set(value, current_buffer_offset);
-      current_buffer_offset += value.byteLength;
+      while (value_offset < value.byteLength) {
+        const space_remaining = PART_SIZE - current_buffer_offset;
+        const bytes_to_copy = Math.min(space_remaining, value.byteLength - value_offset);
 
-      if (current_buffer_offset >= PART_SIZE) {
-        parts.push(await upload.uploadPart(parts.length+1, current_buffer.subarray(0, current_buffer_offset)));
-        current_buffer_offset = 0;
+        current_buffer.set(value.subarray(value_offset, value_offset + bytes_to_copy), current_buffer_offset);
+        current_buffer_offset += bytes_to_copy;
+        value_offset += bytes_to_copy;
+
+        if (current_buffer_offset === PART_SIZE) {
+          parts.push(await upload.uploadPart(parts.length+1, current_buffer));
+          current_buffer = new Uint8Array(PART_SIZE);
+          current_buffer_offset = 0;
+        }
       }
     }
 
