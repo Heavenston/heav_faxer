@@ -28,9 +28,11 @@ export const PUT: RequestHandler = async ({ params, locals, request, platform })
 
   const found_file = await (async function location_choser() {
     const found_files = await db.select({
+      id: files.id,
       owner: files.owner,
       size_bytes: files.size_bytes,
       location: files.location,
+      mime_type: files.mime_type,
     })
       .from(files)
       .where(and(
@@ -69,7 +71,14 @@ export const PUT: RequestHandler = async ({ params, locals, request, platform })
   let current_buffer = new Uint8Array(PART_SIZE);
   let current_buffer_offset = 0;
 
-  const upload = await bucket.createMultipartUpload(found_file.location);
+  const upload = await bucket.createMultipartUpload(found_file.location, {
+    customMetadata: {
+      "fileId": found_file.id,
+    },
+    httpMetadata: {
+      "contentType": found_file.mime_type ?? undefined,
+    },
+  });
   const parts: R2UploadedPart[] = [];
 
   try {
@@ -113,4 +122,46 @@ export const PUT: RequestHandler = async ({ params, locals, request, platform })
   }
 
   return json({ } satisfies PutFileResponse);
+};
+
+export const GET: RequestHandler = async ({ params, locals, platform }) => {
+  const user = locals.user;
+  if (user == null)
+    error(401);
+  const db = locals.db_client!;
+
+  const found_files = await db.select({
+    owner: files.owner,
+    location: files.location,
+    name: files.name,
+  })
+    .from(files)
+    .where(and(
+      eq(files.id, params.file_id ?? ""),
+      eq(files.tab, params.tab_id ?? ""),
+    ));
+
+  if (found_files.length === 0)
+    error(404, "Unknown File");
+
+  const found_file = found_files[0];
+
+  if (found_file.owner !== user.id)
+    error(403, "You are not the owner of this file");
+  if (found_file.location == null)
+    error(404, "File not uploaded");
+
+  const bucket = platform?.env.heav_faxer_bucket!;
+  const object = await bucket.get(found_file.location);
+
+  if (!object || !object.body)
+    error(404, "File data missing");
+
+  return new Response(object.body as any, {
+    headers: {
+      "Content-Type": object.httpMetadata?.contentType ?? "application/octet-stream",
+      "Content-Length": object.size.toString(),
+      "Content-Disposition": `attachment; filename="${found_file.name}"`,
+    },
+  });
 };

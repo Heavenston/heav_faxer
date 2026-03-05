@@ -1,4 +1,4 @@
-import { uuid, bigint, integer, pgTable, text } from "drizzle-orm/pg-core";
+import { uuid, bigint, pgTable, text } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 
 export * from "./auth-schema";
