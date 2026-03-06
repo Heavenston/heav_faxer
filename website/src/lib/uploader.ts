@@ -1,7 +1,16 @@
 import { createNanoEvents, type EmitterMixin, type Unsubscribe } from "nanoevents";
+import { browser } from "$app/environment";
+import type { GetTabFilesResponse } from "../routes/api/tabs/[tab_id=uuid]/files/+server";
 
 // TODO: Tweak, maybe decide at runtime
 const MAX_ACTIVE_TASKS = 10;
+
+if (browser) {
+  window.onbeforeunload = () => {
+    if (UploadTask.hasActiveTasks())
+      return "Reloading will stop the current uploads";
+  };
+}
 
 type Events = {
   started: () => void,
@@ -20,7 +29,7 @@ export class UploadTask implements EmitterMixin<Events> {
   #emitter = createNanoEvents<Events>();
   #xhr: XMLHttpRequest = new XMLHttpRequest();
 
-  constructor(public readonly path: string, public readonly blob: Blob) {
+  constructor(public readonly path: string, public readonly blob: Blob, public readonly file: GetTabFilesResponse["files"][number]) {
     UploadTask.#tasks.set(this.id, this);
 
     this.#xhr.upload.addEventListener("progress", e => {
@@ -64,6 +73,14 @@ export class UploadTask implements EmitterMixin<Events> {
       UploadTask.#active_tasks.add(task);
       task.#start();
     }
+  }
+
+  static get tasks() {
+    return this.#tasks.values();
+  }
+
+  static hasActiveTasks(): boolean {
+    return this.#active_tasks.size > 0;
   }
 
   public on<K extends keyof Events>(event: K, cb: Events[K]): Unsubscribe {

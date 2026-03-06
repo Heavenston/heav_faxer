@@ -14,13 +14,18 @@
 
   const { data }: PageProps = $props();
 
+  function documentFromFile(f: GetTabFilesResponse["files"][number]): FileDocument {
+    const task = UploadTask.tasks.find(task => task.file.id === f.id);
+    return task?.file ?? f;
+  }
+
   const ctx = getContext();
   const selected_tab = $derived(ctx.tabs.find(tab => tab.id === page.params.id) ?? null);
-  // svelte-ignore state_referenced_locally
-  let files = $state(data.files.map((f: GetTabFilesResponse["files"][number]): FileDocument => f));
 
+  // svelte-ignore state_referenced_locally
+  let files = $state(data.files.map(documentFromFile));
   $effect(() => {
-    files = data.files;
+    files = data.files.map(documentFromFile);
   });
 
   async function removeDoc(id: string) {
@@ -102,7 +107,7 @@
       file.id = body.file_ids[idx];
       file.progress = { kind: "uploading", progress: 0 };
 
-      const task = new UploadTask(`/api/tabs/${page.params.id}/files/${file.id}`, to_insert_files[idx]);
+      const task = new UploadTask(`/api/tabs/${page.params.id}/files/${file.id}`, to_insert_files[idx], file);
       file.upload_task = task;
 
       task.on("uploadProgress", progress => {

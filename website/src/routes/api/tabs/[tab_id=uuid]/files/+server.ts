@@ -62,6 +62,7 @@ export const GET: RequestHandler = async ({ request, params, locals }) => {
         eq(files.tab, params.tab_id ?? ""),
         from != null ? gt(files.id, from) : undefined,
       ))
+      .orderBy(files.id)
       .limit(count);
   }, {
     isolationLevel: "serializable",

@@ -19,9 +19,7 @@ export const files = pgTable("files", {
   tab: uuid("tab_id").notNull().references(() => tabs.id, { onDelete: "cascade" }),
   name: text("name").notNull(),
   mime_type: text("mime_type"),
-  size_bytes: bigint({
-    mode: "number",
-  }).notNull(),
+  size_bytes: bigint({ mode: "number" }).notNull(),
 
   location: text("location"),
 });
