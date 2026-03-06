@@ -1,0 +1,65 @@
+.file-upload-form {
+  color: var(--text-color-gray);
+
+  padding: calc(0.75 * var(--border-radius)) var(--border-radius);
+
+  border: dashed var(--text-color-gray);
+  border-radius: var(--border-radius);
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  position: relative;
+
+  text-align: center;
+
+  >input[type=file] {
+    position: absolute;
+    inset: 0;
+
+    opacity: 0;
+
+    cursor: pointer;
+  }
+}
+
+.empty-section {
+  flex-grow: 1;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  .file-upload-form {
+    min-width: 20rem;
+    max-width: 100%;
+    aspect-ratio: 4/3;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes fade-out {
+  to {
+    opacity: 0;
+  }
+}
+
+::view-transition-new(.animated-item):only-child {
+  animation: fade-in var(--transition);
+  animation-fill-mode: both;
+}
+
+::view-transition-old(.animated-item):only-child {
+  animation: fade-out var(--transition);
+  animation-fill-mode: both;
+}
+
+::view-transition-group(*) {
+  animation-duration: var(--transition-duration);
+}

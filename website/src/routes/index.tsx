@@ -1,25 +1,25 @@
 import { component$ } from "@builder.io/qwik";
 import type { DocumentHead } from "@builder.io/qwik-city";
+import c from "./index.module.scss";
 
 export default component$(() => {
+  function createTab() {
+    
+  }
+
   return (
-    <>
-      <h1>Hi 👋</h1>
-      <div>
-        Can't wait to see what you build with qwik!
-        <br />
-        Happy coding.
-      </div>
-    </>
+    <div class={c["empty-section"]}>
+      <form style:view-transition-name="document-form" class={c["file-upload-form"]}>
+        <input type="file" multiple onChange$={(_event) => {
+          createTab();
+          // TODO: Upload the files
+        }} />
+        Select or drop new files
+      </form>
+    </div>
   );
 });
 
 export const head: DocumentHead = {
-  title: "Welcome to Qwik",
-  meta: [
-    {
-      name: "description",
-      content: "Qwik site description",
-    },
-  ],
+  title: "Heav Faxer",
 };
