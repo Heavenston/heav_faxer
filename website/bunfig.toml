@@ -1,0 +1,2 @@
+[install.scopes]
+heav-websites = { token = "$GITHUB_NPM_REGISTRY_TOKEN", url = "https://npm.pkg.github.com/" }

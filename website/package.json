@@ -15,9 +15,17 @@
     "deploy": "echo 'Run \"npm run qwik add\" to install a server adapter'",
     "dev": "vite --mode ssr",
     "dev.debug": "node --inspect-brk ./node_modules/vite/bin/vite.js --mode ssr --force",
+    "drizzle:check": "drizzle-kit check",
+    "drizzle:generate": "drizzle-kit generate",
+    "drizzle:migrate": "drizzle-kit migrate",
+    "drizzle:pull": "drizzle-kit pull",
+    "drizzle:push": "drizzle-kit push",
+    "drizzle:studio": "drizzle-kit studio",
+    "drizzle:up": "drizzle-kit up",
     "fmt": "prettier --write .",
     "fmt.check": "prettier --check .",
     "lint": "eslint \"src/**/*.ts*\"",
+    "postinstall": "drizzle-kit generate",
     "preview": "qwik build preview && vite preview --open",
     "start": "vite --open --mode ssr",
     "qwik": "qwik"
@@ -26,7 +34,11 @@
     "@builder.io/qwik": "^1.19.1",
     "@builder.io/qwik-city": "^1.19.1",
     "@eslint/js": "^9",
+    "@types/better-sqlite3": "^7.6.12",
     "@types/node": "20.19.0",
+    "better-sqlite3": "^11.8.1",
+    "drizzle-kit": "^0.30.3",
+    "drizzle-orm": "^0.39.0",
     "eslint": "9.32.0",
     "eslint-plugin-qwik": "^1.19.1",
     "globals": "16.4.0",
@@ -39,6 +51,8 @@
     "vite-tsconfig-paths": "^4.2.1"
   },
   "dependencies": {
-    "@qwikest/icons": "^0.0.13"
+    "@heav-websites/component-lib": "^0.2.6",
+    "@qwikest/icons": "^0.0.13",
+    "lucide": "^0.577.0"
   }
 }
